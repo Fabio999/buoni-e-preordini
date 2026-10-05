@@ -10,33 +10,63 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as PrenotazioniRouteImport } from './routes/prenotazioni'
+import { Route as EventiIndexRouteImport } from './routes/eventi.index'
+import { Route as EventiIdRouteImport } from './routes/eventi.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PrenotazioniRoute = PrenotazioniRouteImport.update({
+  id: '/prenotazioni',
+  path: '/prenotazioni',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EventiIndexRoute = EventiIndexRouteImport.update({
+  id: '/eventi/',
+  path: '/eventi/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EventiIdRoute = EventiIdRouteImport.update({
+  id: '/eventi/$id',
+  path: '/eventi/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/prenotazioni': typeof PrenotazioniRoute
+  '/eventi/$id': typeof EventiIdRoute
+  '/eventi/': typeof EventiIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/prenotazioni': typeof PrenotazioniRoute
+  '/eventi/$id': typeof EventiIdRoute
+  '/eventi': typeof EventiIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/prenotazioni': typeof PrenotazioniRoute
+  '/eventi/$id': typeof EventiIdRoute
+  '/eventi/': typeof EventiIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/prenotazioni' | '/eventi/$id' | '/eventi/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/prenotazioni' | '/eventi/$id' | '/eventi'
+  id: '__root__' | '/' | '/prenotazioni' | '/eventi/$id' | '/eventi/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  PrenotazioniRoute: typeof PrenotazioniRoute
+  EventiIdRoute: typeof EventiIdRoute
+  EventiIndexRoute: typeof EventiIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +78,35 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/prenotazioni': {
+      id: '/prenotazioni'
+      path: '/prenotazioni'
+      fullPath: '/prenotazioni'
+      preLoaderRoute: typeof PrenotazioniRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/eventi/': {
+      id: '/eventi/'
+      path: '/eventi'
+      fullPath: '/eventi/'
+      preLoaderRoute: typeof EventiIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/eventi/$id': {
+      id: '/eventi/$id'
+      path: '/eventi/$id'
+      fullPath: '/eventi/$id'
+      preLoaderRoute: typeof EventiIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  PrenotazioniRoute: PrenotazioniRoute,
+  EventiIdRoute: EventiIdRoute,
+  EventiIndexRoute: EventiIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

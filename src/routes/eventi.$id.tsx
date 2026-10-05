@@ -13,7 +13,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
-import { bookingTotal, errMsg, useBookings, useChecklist, useEvents, useRefresh } from "@/lib/data";
+import { bookingTotal, errMsg, useBookings, useChecklist, useEvents, useRefresh, type Booking } from "@/lib/data";
 import { CHECKLIST_CATEGORIES, EVENT_STATUS, euro, fmtDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
@@ -136,7 +136,7 @@ function EventDetail() {
   );
 }
 
-function Preparation({ bookings }: { bookings: ReturnType<typeof useBookings>["data"] & object }) {
+function Preparation({ bookings }: { bookings: Booking[] }) {
   const rows = useMemo(() => {
     const map = new Map<string, { name: string; category: string; total: number; ready: number; toPrepare: number }>();
     for (const b of bookings) {

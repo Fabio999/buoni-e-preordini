@@ -14,16 +14,338 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      balance_movements: {
+        Row: {
+          amount: number
+          balance_after: number
+          balance_before: number
+          client_id: string
+          created_at: string
+          description: string
+          id: string
+          purchase_id: string | null
+          type: Database["public"]["Enums"]["movement_type"]
+        }
+        Insert: {
+          amount: number
+          balance_after: number
+          balance_before: number
+          client_id: string
+          created_at?: string
+          description?: string
+          id?: string
+          purchase_id?: string | null
+          type: Database["public"]["Enums"]["movement_type"]
+        }
+        Update: {
+          amount?: number
+          balance_after?: number
+          balance_before?: number
+          client_id?: string
+          created_at?: string
+          description?: string
+          id?: string
+          purchase_id?: string | null
+          type?: Database["public"]["Enums"]["movement_type"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "balance_movements_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "balance_movements_purchase_id_fkey"
+            columns: ["purchase_id"]
+            isOneToOne: false
+            referencedRelation: "purchases"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      booking_items: {
+        Row: {
+          booking_id: string
+          id: string
+          product_id: string
+          quantity: number
+          unit_price: number
+        }
+        Insert: {
+          booking_id: string
+          id?: string
+          product_id: string
+          quantity?: number
+          unit_price: number
+        }
+        Update: {
+          booking_id?: string
+          id?: string
+          product_id?: string
+          quantity?: number
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "booking_items_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "booking_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bookings: {
+        Row: {
+          client_id: string
+          created_at: string
+          event_id: string
+          id: string
+          notes: string
+          payment_status: Database["public"]["Enums"]["payment_status"]
+          status: Database["public"]["Enums"]["booking_status"]
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          event_id: string
+          id?: string
+          notes?: string
+          payment_status?: Database["public"]["Enums"]["payment_status"]
+          status?: Database["public"]["Enums"]["booking_status"]
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          event_id?: string
+          id?: string
+          notes?: string
+          payment_status?: Database["public"]["Enums"]["payment_status"]
+          status?: Database["public"]["Enums"]["booking_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bookings_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bookings_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      checklist_items: {
+        Row: {
+          category: string
+          created_at: string
+          done: boolean
+          event_id: string
+          id: string
+          label: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          done?: boolean
+          event_id: string
+          id?: string
+          label: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          done?: boolean
+          event_id?: string
+          id?: string
+          label?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "checklist_items_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      clients: {
+        Row: {
+          created_at: string
+          first_name: string
+          id: string
+          last_name: string
+        }
+        Insert: {
+          created_at?: string
+          first_name: string
+          id?: string
+          last_name: string
+        }
+        Update: {
+          created_at?: string
+          first_name?: string
+          id?: string
+          last_name?: string
+        }
+        Relationships: []
+      }
+      events: {
+        Row: {
+          created_at: string
+          event_date: string
+          id: string
+          location: string
+          name: string
+          notes: string
+          status: Database["public"]["Enums"]["event_status"]
+        }
+        Insert: {
+          created_at?: string
+          event_date: string
+          id?: string
+          location?: string
+          name: string
+          notes?: string
+          status?: Database["public"]["Enums"]["event_status"]
+        }
+        Update: {
+          created_at?: string
+          event_date?: string
+          id?: string
+          location?: string
+          name?: string
+          notes?: string
+          status?: Database["public"]["Enums"]["event_status"]
+        }
+        Relationships: []
+      }
+      products: {
+        Row: {
+          category: string
+          created_at: string
+          id: string
+          name: string
+          price: number
+          sku: string | null
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          id?: string
+          name: string
+          price?: number
+          sku?: string | null
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          id?: string
+          name?: string
+          price?: number
+          sku?: string | null
+        }
+        Relationships: []
+      }
+      purchases: {
+        Row: {
+          amount: number
+          client_id: string
+          created_at: string
+          id: string
+          notes: string
+          product_id: string | null
+          product_name: string
+          purchase_date: string
+          quantity: number
+        }
+        Insert: {
+          amount: number
+          client_id: string
+          created_at?: string
+          id?: string
+          notes?: string
+          product_id?: string | null
+          product_name: string
+          purchase_date?: string
+          quantity?: number
+        }
+        Update: {
+          amount?: number
+          client_id?: string
+          created_at?: string
+          id?: string
+          notes?: string
+          product_id?: string | null
+          product_name?: string
+          purchase_date?: string
+          quantity?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "purchases_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchases_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      add_balance_movement: {
+        Args: {
+          _amount: number
+          _client: string
+          _description: string
+          _type: Database["public"]["Enums"]["movement_type"]
+        }
+        Returns: string
+      }
+      client_balance: { Args: { _client: string }; Returns: number }
+      register_purchase: {
+        Args: {
+          _amount: number
+          _client: string
+          _date: string
+          _notes: string
+          _product: string
+          _product_name: string
+          _quantity: number
+        }
+        Returns: string
+      }
     }
     Enums: {
-      [_ in never]: never
+      booking_status: "da_preparare" | "pronta" | "consegnata" | "annullata"
+      event_status: "programmato" | "in_preparazione" | "concluso"
+      movement_type: "ricarica" | "acquisto" | "correzione"
+      payment_status: "non_pagato" | "pagato"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +472,11 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      booking_status: ["da_preparare", "pronta", "consegnata", "annullata"],
+      event_status: ["programmato", "in_preparazione", "concluso"],
+      movement_type: ["ricarica", "acquisto", "correzione"],
+      payment_status: ["non_pagato", "pagato"],
+    },
   },
 } as const

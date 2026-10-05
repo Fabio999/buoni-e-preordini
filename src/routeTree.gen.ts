@@ -11,6 +11,10 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PrenotazioniRouteImport } from './routes/prenotazioni'
+import { Route as ProdottiRouteImport } from './routes/prodotti'
+import { Route as SaldoRouteImport } from './routes/saldo'
+import { Route as ClientiIndexRouteImport } from './routes/clienti.index'
+import { Route as ClientiIdRouteImport } from './routes/clienti.$id'
 import { Route as EventiIndexRouteImport } from './routes/eventi.index'
 import { Route as EventiIdRouteImport } from './routes/eventi.$id'
 
@@ -22,6 +26,26 @@ const IndexRoute = IndexRouteImport.update({
 const PrenotazioniRoute = PrenotazioniRouteImport.update({
   id: '/prenotazioni',
   path: '/prenotazioni',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProdottiRoute = ProdottiRouteImport.update({
+  id: '/prodotti',
+  path: '/prodotti',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SaldoRoute = SaldoRouteImport.update({
+  id: '/saldo',
+  path: '/saldo',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ClientiIndexRoute = ClientiIndexRouteImport.update({
+  id: '/clienti/',
+  path: '/clienti/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ClientiIdRoute = ClientiIdRouteImport.update({
+  id: '/clienti/$id',
+  path: '/clienti/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
 const EventiIndexRoute = EventiIndexRouteImport.update({
@@ -38,34 +62,75 @@ const EventiIdRoute = EventiIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/prenotazioni': typeof PrenotazioniRoute
+  '/prodotti': typeof ProdottiRoute
+  '/saldo': typeof SaldoRoute
+  '/clienti/$id': typeof ClientiIdRoute
   '/eventi/$id': typeof EventiIdRoute
+  '/clienti/': typeof ClientiIndexRoute
   '/eventi/': typeof EventiIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/prenotazioni': typeof PrenotazioniRoute
+  '/prodotti': typeof ProdottiRoute
+  '/saldo': typeof SaldoRoute
+  '/clienti/$id': typeof ClientiIdRoute
   '/eventi/$id': typeof EventiIdRoute
+  '/clienti': typeof ClientiIndexRoute
   '/eventi': typeof EventiIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/prenotazioni': typeof PrenotazioniRoute
+  '/prodotti': typeof ProdottiRoute
+  '/saldo': typeof SaldoRoute
+  '/clienti/$id': typeof ClientiIdRoute
   '/eventi/$id': typeof EventiIdRoute
+  '/clienti/': typeof ClientiIndexRoute
   '/eventi/': typeof EventiIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/prenotazioni' | '/eventi/$id' | '/eventi/'
+  fullPaths:
+    | '/'
+    | '/prenotazioni'
+    | '/prodotti'
+    | '/saldo'
+    | '/clienti/$id'
+    | '/eventi/$id'
+    | '/clienti/'
+    | '/eventi/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/prenotazioni' | '/eventi/$id' | '/eventi'
-  id: '__root__' | '/' | '/prenotazioni' | '/eventi/$id' | '/eventi/'
+  to:
+    | '/'
+    | '/prenotazioni'
+    | '/prodotti'
+    | '/saldo'
+    | '/clienti/$id'
+    | '/eventi/$id'
+    | '/clienti'
+    | '/eventi'
+  id:
+    | '__root__'
+    | '/'
+    | '/prenotazioni'
+    | '/prodotti'
+    | '/saldo'
+    | '/clienti/$id'
+    | '/eventi/$id'
+    | '/clienti/'
+    | '/eventi/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   PrenotazioniRoute: typeof PrenotazioniRoute
+  ProdottiRoute: typeof ProdottiRoute
+  SaldoRoute: typeof SaldoRoute
+  ClientiIdRoute: typeof ClientiIdRoute
   EventiIdRoute: typeof EventiIdRoute
+  ClientiIndexRoute: typeof ClientiIndexRoute
   EventiIndexRoute: typeof EventiIndexRoute
 }
 
@@ -83,6 +148,34 @@ declare module '@tanstack/react-router' {
       path: '/prenotazioni'
       fullPath: '/prenotazioni'
       preLoaderRoute: typeof PrenotazioniRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/prodotti': {
+      id: '/prodotti'
+      path: '/prodotti'
+      fullPath: '/prodotti'
+      preLoaderRoute: typeof ProdottiRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/saldo': {
+      id: '/saldo'
+      path: '/saldo'
+      fullPath: '/saldo'
+      preLoaderRoute: typeof SaldoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/clienti/': {
+      id: '/clienti/'
+      path: '/clienti'
+      fullPath: '/clienti/'
+      preLoaderRoute: typeof ClientiIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/clienti/$id': {
+      id: '/clienti/$id'
+      path: '/clienti/$id'
+      fullPath: '/clienti/$id'
+      preLoaderRoute: typeof ClientiIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/eventi/': {
@@ -105,7 +198,11 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   PrenotazioniRoute: PrenotazioniRoute,
+  ProdottiRoute: ProdottiRoute,
+  SaldoRoute: SaldoRoute,
+  ClientiIdRoute: ClientiIdRoute,
   EventiIdRoute: EventiIdRoute,
+  ClientiIndexRoute: ClientiIndexRoute,
   EventiIndexRoute: EventiIndexRoute,
 }
 export const routeTree = rootRouteImport

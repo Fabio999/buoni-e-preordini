@@ -3,7 +3,15 @@ import { cn } from "@/lib/utils";
 import type { PaymentStatus } from "@/lib/format";
 import type { ReactNode } from "react";
 
-export function PaymentPill({ status, onClick, className }: { status: PaymentStatus; onClick?: () => void; className?: string }) {
+export function PaymentPill({
+  status,
+  onClick,
+  className,
+}: {
+  status: PaymentStatus;
+  onClick?: () => void;
+  className?: string;
+}) {
   const paid = status === "pagato";
   return (
     <button
@@ -48,7 +56,9 @@ export function StatCard({
     <div className="relative overflow-hidden rounded-xl border bg-card p-4 shadow-sm">
       <span className={cn("absolute inset-y-0 left-0 w-1", bar)} />
       <div className="flex items-start justify-between gap-2">
-        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{label}</p>
+        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          {label}
+        </p>
         {icon && <span className="text-muted-foreground">{icon}</span>}
       </div>
       <p className="mt-2 font-display text-2xl font-semibold">{value}</p>
@@ -57,7 +67,15 @@ export function StatCard({
   );
 }
 
-export function Section({ title, actions, children }: { title: string; actions?: ReactNode; children: ReactNode }) {
+export function Section({
+  title,
+  actions,
+  children,
+}: {
+  title: string;
+  actions?: ReactNode;
+  children: ReactNode;
+}) {
   return (
     <section className="rounded-xl border bg-card shadow-sm">
       <div className="flex flex-wrap items-center justify-between gap-2 border-b px-4 py-3">
@@ -70,7 +88,11 @@ export function Section({ title, actions, children }: { title: string; actions?:
 }
 
 export function SectionLabel({ children }: { children: ReactNode }) {
-  return <h2 className="mb-3 mt-8 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-secondary first:mt-0">{children}</h2>;
+  return (
+    <h2 className="mb-3 mt-8 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-secondary first:mt-0">
+      {children}
+    </h2>
+  );
 }
 
 export function Empty({ children }: { children: ReactNode }) {

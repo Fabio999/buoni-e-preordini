@@ -8,7 +8,9 @@ export type Product = Tables<"products">;
 export type Movement = Tables<"balance_movements">;
 export type Purchase = Tables<"purchases">;
 export type ChecklistItem = Tables<"checklist_items">;
-export type BookingItem = Tables<"booking_items"> & { products: { name: string; category: string } | null };
+export type BookingItem = Tables<"booking_items"> & {
+  products: { name: string; category: string } | null;
+};
 export type Booking = Tables<"bookings"> & {
   clients: { id: string; first_name: string; last_name: string } | null;
   events: { id: string; name: string; event_date: string } | null;
@@ -23,13 +25,15 @@ function unwrap<T>(res: { data: T | null; error: { message: string } | null }): 
 export const useClients = () =>
   useQuery({
     queryKey: ["clients"],
-    queryFn: async () => unwrap(await supabase.from("clients").select("*").order("last_name").order("first_name")),
+    queryFn: async () =>
+      unwrap(await supabase.from("clients").select("*").order("last_name").order("first_name")),
   });
 
 export const useEvents = () =>
   useQuery({
     queryKey: ["events"],
-    queryFn: async () => unwrap(await supabase.from("events").select("*").order("event_date", { ascending: false })),
+    queryFn: async () =>
+      unwrap(await supabase.from("events").select("*").order("event_date", { ascending: false })),
   });
 
 export const useProducts = () =>
@@ -45,7 +49,9 @@ export const useBookings = () =>
       unwrap(
         await supabase
           .from("bookings")
-          .select("*, clients(id, first_name, last_name), events(id, name, event_date), booking_items(*, products(name, category))")
+          .select(
+            "*, clients(id, first_name, last_name), events(id, name, event_date), booking_items(*, products(name, category))",
+          )
           .order("created_at", { ascending: false }),
       ) as unknown as Booking[],
   });
@@ -54,20 +60,34 @@ export const useMovements = () =>
   useQuery({
     queryKey: ["movements"],
     queryFn: async () =>
-      unwrap(await supabase.from("balance_movements").select("*").order("created_at", { ascending: false })),
+      unwrap(
+        await supabase
+          .from("balance_movements")
+          .select("*")
+          .order("created_at", { ascending: false }),
+      ),
   });
 
 export const usePurchases = () =>
   useQuery({
     queryKey: ["purchases"],
-    queryFn: async () => unwrap(await supabase.from("purchases").select("*").order("created_at", { ascending: false })),
+    queryFn: async () =>
+      unwrap(
+        await supabase.from("purchases").select("*").order("created_at", { ascending: false }),
+      ),
   });
 
 export const useChecklist = (eventId: string) =>
   useQuery({
     queryKey: ["checklist", eventId],
     queryFn: async () =>
-      unwrap(await supabase.from("checklist_items").select("*").eq("event_id", eventId).order("created_at")),
+      unwrap(
+        await supabase
+          .from("checklist_items")
+          .select("*")
+          .eq("event_id", eventId)
+          .order("created_at"),
+      ),
   });
 
 export const useRefresh = () => {
@@ -86,7 +106,11 @@ export function balancesByClient(movements: Movement[] | undefined) {
     const cur = map.get(m.client_id);
     const amt = Number(m.amount);
     if (!cur) {
-      map.set(m.client_id, { balance: Number(m.balance_after), loaded: amt > 0 ? amt : 0, used: m.type === "acquisto" ? -amt : 0 });
+      map.set(m.client_id, {
+        balance: Number(m.balance_after),
+        loaded: amt > 0 ? amt : 0,
+        used: m.type === "acquisto" ? -amt : 0,
+      });
     } else {
       if (amt > 0) cur.loaded += amt;
       if (m.type === "acquisto") cur.used += -amt;
@@ -97,7 +121,9 @@ export function balancesByClient(movements: Movement[] | undefined) {
 
 export function errMsg(e: unknown) {
   const msg = e instanceof Error ? e.message : String(e);
-  if (msg.includes("clients_unique_name")) return "Esiste già un cliente con questo nome e cognome.";
-  if (msg.includes("violates foreign key")) return "Elemento collegato ad altri dati: non può essere eliminato.";
+  if (msg.includes("clients_unique_name"))
+    return "Esiste già un cliente con questo nome e cognome.";
+  if (msg.includes("violates foreign key"))
+    return "Elemento collegato ad altri dati: non può essere eliminato.";
   return msg;
 }

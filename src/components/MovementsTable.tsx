@@ -7,7 +7,13 @@ import { Empty } from "./Status";
 
 const icons = { ricarica: ArrowUpRight, acquisto: ArrowDownRight, correzione: SlidersHorizontal };
 
-export function MovementsTable({ movements, clients }: { movements: Movement[]; clients?: Map<string, Client> }) {
+export function MovementsTable({
+  movements,
+  clients,
+}: {
+  movements: Movement[];
+  clients?: Map<string, Client>;
+}) {
   if (!movements.length) return <Empty>Nessun movimento</Empty>;
   return (
     <div className="overflow-x-auto">
@@ -30,8 +36,12 @@ export function MovementsTable({ movements, clients }: { movements: Movement[]; 
             const amt = Number(m.amount);
             return (
               <tr key={m.id} className="border-b last:border-0">
-                <td className="whitespace-nowrap py-2.5 pr-3 text-muted-foreground">{fmtDateTime(m.created_at)}</td>
-                {clients && <td className="py-2.5 pr-3 font-medium">{fullName(clients.get(m.client_id))}</td>}
+                <td className="whitespace-nowrap py-2.5 pr-3 text-muted-foreground">
+                  {fmtDateTime(m.created_at)}
+                </td>
+                {clients && (
+                  <td className="py-2.5 pr-3 font-medium">{fullName(clients.get(m.client_id))}</td>
+                )}
                 <td className="py-2.5 pr-3">
                   <Badge variant={t.variant} className="gap-1">
                     <Icon className="h-3 w-3" />
@@ -39,11 +49,18 @@ export function MovementsTable({ movements, clients }: { movements: Movement[]; 
                   </Badge>
                 </td>
                 <td className="py-2.5 pr-3">{m.description}</td>
-                <td className={cn("whitespace-nowrap py-2.5 pr-3 text-right font-semibold", amt < 0 ? "text-destructive" : "text-success")}>
+                <td
+                  className={cn(
+                    "whitespace-nowrap py-2.5 pr-3 text-right font-semibold",
+                    amt < 0 ? "text-destructive" : "text-success",
+                  )}
+                >
                   {amt > 0 ? "+" : "−"}
                   {euro(Math.abs(amt))}
                 </td>
-                <td className="py-2.5 pr-3 text-right text-muted-foreground">{euro(m.balance_before)}</td>
+                <td className="py-2.5 pr-3 text-right text-muted-foreground">
+                  {euro(m.balance_before)}
+                </td>
                 <td className="py-2.5 text-right font-semibold">{euro(m.balance_after)}</td>
               </tr>
             );

@@ -16,9 +16,13 @@ export function GlobalSearch() {
     const t = q.trim().toLowerCase();
     if (t.length < 2) return null;
     return {
-      clients: (clients ?? []).filter((c) => `${c.first_name} ${c.last_name}`.toLowerCase().includes(t)).slice(0, 5),
+      clients: (clients ?? [])
+        .filter((c) => `${c.first_name} ${c.last_name}`.toLowerCase().includes(t))
+        .slice(0, 5),
       events: (events ?? []).filter((e) => e.name.toLowerCase().includes(t)).slice(0, 5),
-      products: (products ?? []).filter((p) => `${p.name} ${p.sku ?? ""}`.toLowerCase().includes(t)).slice(0, 5),
+      products: (products ?? [])
+        .filter((p) => `${p.name} ${p.sku ?? ""}`.toLowerCase().includes(t))
+        .slice(0, 5),
     };
   }, [q, clients, events, products]);
 
@@ -26,7 +30,8 @@ export function GlobalSearch() {
     setOpen(false);
     setQ("");
   };
-  const empty = results && !results.clients.length && !results.events.length && !results.products.length;
+  const empty =
+    results && !results.clients.length && !results.events.length && !results.products.length;
 
   return (
     <div className="relative w-full max-w-md">
@@ -47,20 +52,37 @@ export function GlobalSearch() {
           {empty && <p className="p-3 text-sm text-muted-foreground">Nessun risultato</p>}
           {results.clients.length > 0 && <Group label="Clienti" />}
           {results.clients.map((c) => (
-            <Link key={c.id} to="/clienti/$id" params={{ id: c.id }} onClick={close} className="block rounded-md px-3 py-2 text-sm hover:bg-accent">
+            <Link
+              key={c.id}
+              to="/clienti/$id"
+              params={{ id: c.id }}
+              onClick={close}
+              className="block rounded-md px-3 py-2 text-sm hover:bg-accent"
+            >
               {c.first_name} {c.last_name}
             </Link>
           ))}
           {results.events.length > 0 && <Group label="Eventi" />}
           {results.events.map((e) => (
-            <Link key={e.id} to="/eventi/$id" params={{ id: e.id }} onClick={close} className="flex justify-between rounded-md px-3 py-2 text-sm hover:bg-accent">
+            <Link
+              key={e.id}
+              to="/eventi/$id"
+              params={{ id: e.id }}
+              onClick={close}
+              className="flex justify-between rounded-md px-3 py-2 text-sm hover:bg-accent"
+            >
               <span>{e.name}</span>
               <span className="text-muted-foreground">{fmtDate(e.event_date)}</span>
             </Link>
           ))}
           {results.products.length > 0 && <Group label="Prodotti" />}
           {results.products.map((p) => (
-            <Link key={p.id} to="/prodotti" onClick={close} className="flex justify-between rounded-md px-3 py-2 text-sm hover:bg-accent">
+            <Link
+              key={p.id}
+              to="/prodotti"
+              onClick={close}
+              className="flex justify-between rounded-md px-3 py-2 text-sm hover:bg-accent"
+            >
               <span>{p.name}</span>
               <span className="text-muted-foreground">{euro(p.price)}</span>
             </Link>
@@ -72,5 +94,7 @@ export function GlobalSearch() {
 }
 
 const Group = ({ label }: { label: string }) => (
-  <div className="px-3 pb-1 pt-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">{label}</div>
+  <div className="px-3 pb-1 pt-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+    {label}
+  </div>
 );

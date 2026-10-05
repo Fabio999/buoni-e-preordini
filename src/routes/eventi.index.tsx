@@ -25,7 +25,8 @@ function EventsPage() {
   const { data: events = [], isLoading } = useEvents();
   const { data: bookings = [] } = useBookings();
   const [open, setOpen] = useState(false);
-  const count = (id: string) => bookings.filter((b) => b.event_id === id && b.status !== "annullata").length;
+  const count = (id: string) =>
+    bookings.filter((b) => b.event_id === id && b.status !== "annullata").length;
 
   return (
     <div className="mx-auto max-w-7xl">
@@ -40,9 +41,16 @@ function EventsPage() {
       {!isLoading && !events.length && <Empty>Nessun evento. Crea il primo!</Empty>}
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {events.map((e) => (
-          <Link key={e.id} to="/eventi/$id" params={{ id: e.id }} className="rounded-xl border bg-card p-4 shadow-sm transition hover:border-primary hover:shadow-md">
+          <Link
+            key={e.id}
+            to="/eventi/$id"
+            params={{ id: e.id }}
+            className="rounded-xl border bg-card p-4 shadow-sm transition hover:border-primary hover:shadow-md"
+          >
             <div className="flex items-start justify-between gap-2">
-              <div className="text-xs font-semibold uppercase tracking-wide text-secondary">{fmtDate(e.event_date)}</div>
+              <div className="text-xs font-semibold uppercase tracking-wide text-secondary">
+                {fmtDate(e.event_date)}
+              </div>
               <Badge variant={EVENT_STATUS[e.status].variant}>{EVENT_STATUS[e.status].label}</Badge>
             </div>
             <h3 className="mt-2 text-lg font-semibold">{e.name}</h3>

@@ -18,7 +18,10 @@ export const Route = createFileRoute("/prodotti")({
       { title: "Prodotti — Mana Flask" },
       { name: "description", content: "Catalogo prodotti e oggetti prenotabili di Mana Flask." },
       { property: "og:title", content: "Prodotti — Mana Flask" },
-      { property: "og:description", content: "Catalogo prodotti e oggetti prenotabili di Mana Flask." },
+      {
+        property: "og:description",
+        content: "Catalogo prodotti e oggetti prenotabili di Mana Flask.",
+      },
     ],
   }),
   component: ProductsPage,
@@ -31,12 +34,17 @@ function ProductsPage() {
   const [editing, setEditing] = useState<Product | null>(null);
   const [open, setOpen] = useState(false);
   const t = q.trim().toLowerCase();
-  const filtered = products.filter((p) => `${p.name} ${p.category} ${p.sku ?? ""}`.toLowerCase().includes(t));
+  const filtered = products.filter((p) =>
+    `${p.name} ${p.category} ${p.sku ?? ""}`.toLowerCase().includes(t),
+  );
 
   const remove = async (p: Product) => {
     if (!confirm(`Eliminare "${p.name}"?`)) return;
     const { error } = await supabase.from("products").delete().eq("id", p.id);
-    if (error) return toast.error(errMsg(error));
+    if (error) {
+      toast.error(errMsg(error));
+      return;
+    }
     refresh();
   };
 
@@ -57,7 +65,12 @@ function ProductsPage() {
       />
       <div className="relative mb-4 max-w-sm">
         <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-        <Input className="pl-9" placeholder="Cerca prodotto, categoria, SKU" value={q} onChange={(e) => setQ(e.target.value)} />
+        <Input
+          className="pl-9"
+          placeholder="Cerca prodotto, categoria, SKU"
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+        />
       </div>
       <Section title={`${filtered.length} prodotti`}>
         {!isLoading && !filtered.length && <Empty>Nessun prodotto</Empty>}

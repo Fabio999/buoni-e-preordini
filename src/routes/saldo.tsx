@@ -15,9 +15,15 @@ export const Route = createFileRoute("/saldo")({
   head: () => ({
     meta: [
       { title: "Saldo Negozio — Mana Flask" },
-      { name: "description", content: "Saldo spendibile in negozio: ricariche, acquisti e storico movimenti." },
+      {
+        name: "description",
+        content: "Saldo spendibile in negozio: ricariche, acquisti e storico movimenti.",
+      },
       { property: "og:title", content: "Saldo Negozio — Mana Flask" },
-      { property: "og:description", content: "Saldo spendibile in negozio: ricariche, acquisti e storico movimenti." },
+      {
+        property: "og:description",
+        content: "Saldo spendibile in negozio: ricariche, acquisti e storico movimenti.",
+      },
     ],
   }),
   component: BalancePage,
@@ -34,7 +40,9 @@ function BalancePage() {
   const clientMap = useMemo(() => new Map(clients.map((c) => [c.id, c])), [clients]);
   const rows = clients
     .map((c) => ({ c, b: balances.get(c.id) ?? { balance: 0, loaded: 0, used: 0 } }))
-    .filter((r) => (filter === "available" ? r.b.balance > 0 : filter === "empty" ? r.b.balance <= 0 : true))
+    .filter((r) =>
+      filter === "available" ? r.b.balance > 0 : filter === "empty" ? r.b.balance <= 0 : true,
+    )
     .sort((a, b) => b.b.balance - a.b.balance);
   const all = [...balances.values()];
 
@@ -58,10 +66,26 @@ function BalancePage() {
         }
       />
       <div className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <StatCard label="Clienti con saldo" value={all.filter((b) => b.balance > 0).length} tone="info" />
-        <StatCard label="Saldo disponibile" value={euro(all.reduce((s, b) => s + b.balance, 0))} tone="action" />
-        <StatCard label="Totale caricato" value={euro(all.reduce((s, b) => s + b.loaded, 0))} tone="success" />
-        <StatCard label="Totale utilizzato" value={euro(all.reduce((s, b) => s + b.used, 0))} tone="danger" />
+        <StatCard
+          label="Clienti con saldo"
+          value={all.filter((b) => b.balance > 0).length}
+          tone="info"
+        />
+        <StatCard
+          label="Saldo disponibile"
+          value={euro(all.reduce((s, b) => s + b.balance, 0))}
+          tone="action"
+        />
+        <StatCard
+          label="Totale caricato"
+          value={euro(all.reduce((s, b) => s + b.loaded, 0))}
+          tone="success"
+        />
+        <StatCard
+          label="Totale utilizzato"
+          value={euro(all.reduce((s, b) => s + b.used, 0))}
+          tone="danger"
+        />
       </div>
 
       <Tabs defaultValue="clienti">
@@ -74,15 +98,22 @@ function BalancePage() {
             title="Saldi clienti"
             actions={
               <div className="flex gap-1 rounded-lg bg-muted p-1 text-xs font-medium">
-                {([
-                  ["all", "Tutti"],
-                  ["available", "Con saldo"],
-                  ["empty", "Saldo esaurito"],
-                ] as const).map(([k, l]) => (
+                {(
+                  [
+                    ["all", "Tutti"],
+                    ["available", "Con saldo"],
+                    ["empty", "Saldo esaurito"],
+                  ] as const
+                ).map(([k, l]) => (
                   <button
                     key={k}
                     onClick={() => setFilter(k)}
-                    className={cn("rounded-md px-3 py-1.5", filter === k ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground")}
+                    className={cn(
+                      "rounded-md px-3 py-1.5",
+                      filter === k
+                        ? "bg-primary text-primary-foreground"
+                        : "text-muted-foreground hover:text-foreground",
+                    )}
                   >
                     {l}
                   </button>
@@ -107,13 +138,22 @@ function BalancePage() {
                     {rows.map(({ c, b }) => (
                       <tr key={c.id} className="border-b last:border-0 hover:bg-muted/40">
                         <td className="py-2.5 pr-3 font-medium">
-                          <Link to="/clienti/$id" params={{ id: c.id }} className="hover:text-primary">
+                          <Link
+                            to="/clienti/$id"
+                            params={{ id: c.id }}
+                            className="hover:text-primary"
+                          >
                             {c.first_name} {c.last_name}
                           </Link>
                         </td>
                         <td className="py-2.5 pr-3 text-right text-success">{euro(b.loaded)}</td>
                         <td className="py-2.5 pr-3 text-right text-destructive">{euro(b.used)}</td>
-                        <td className={cn("py-2.5 text-right font-display font-semibold", b.balance > 0 ? "text-primary" : "text-muted-foreground")}>
+                        <td
+                          className={cn(
+                            "py-2.5 text-right font-display font-semibold",
+                            b.balance > 0 ? "text-primary" : "text-muted-foreground",
+                          )}
+                        >
                           {euro(b.balance)}
                         </td>
                       </tr>

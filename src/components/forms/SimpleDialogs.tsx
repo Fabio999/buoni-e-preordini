@@ -1,7 +1,13 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -19,7 +25,12 @@ export const Field = ({ label, children }: { label: string; children: ReactNode 
 export const selectClass =
   "flex h-9 w-full rounded-md border border-input bg-card px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring";
 
-type DialogProps<T> = { open: boolean; onOpenChange: (o: boolean) => void; initial?: T | null; onSaved?: (id: string) => void };
+type DialogProps<T> = {
+  open: boolean;
+  onOpenChange: (o: boolean) => void;
+  initial?: T | null;
+  onSaved?: (id: string) => void;
+};
 
 export function ClientDialog({ open, onOpenChange, initial, onSaved }: DialogProps<Client>) {
   const [first, setFirst] = useState("");
@@ -37,7 +48,10 @@ export function ClientDialog({ open, onOpenChange, initial, onSaved }: DialogPro
     const res = initial
       ? await supabase.from("clients").update(row).eq("id", initial.id).select("id").single()
       : await supabase.from("clients").insert(row).select("id").single();
-    if (res.error) return toast.error(errMsg(res.error));
+    if (res.error) {
+      toast.error(errMsg(res.error));
+      return;
+    }
     toast.success(initial ? "Cliente aggiornato" : "Cliente creato");
     refresh();
     onSaved?.(res.data.id);
@@ -81,9 +95,19 @@ export function ProductDialog({ open, onOpenChange, initial }: DialogProps<Produ
   }, [open, initial]);
   const submit = async (e: FormEvent) => {
     e.preventDefault();
-    const row = { name: f.name.trim(), price: Number(f.price), category: f.category.trim(), sku: f.sku.trim() || null };
-    const res = initial ? await supabase.from("products").update(row).eq("id", initial.id) : await supabase.from("products").insert(row);
-    if (res.error) return toast.error(errMsg(res.error));
+    const row = {
+      name: f.name.trim(),
+      price: Number(f.price),
+      category: f.category.trim(),
+      sku: f.sku.trim() || null,
+    };
+    const res = initial
+      ? await supabase.from("products").update(row).eq("id", initial.id)
+      : await supabase.from("products").insert(row);
+    if (res.error) {
+      toast.error(errMsg(res.error));
+      return;
+    }
     toast.success("Prodotto salvato");
     refresh();
     onOpenChange(false);
@@ -100,13 +124,27 @@ export function ProductDialog({ open, onOpenChange, initial }: DialogProps<Produ
           </Field>
           <div className="grid gap-4 sm:grid-cols-3">
             <Field label="Prezzo (€)">
-              <Input required type="number" min="0" step="0.01" value={f.price} onChange={(e) => setF({ ...f, price: e.target.value })} />
+              <Input
+                required
+                type="number"
+                min="0"
+                step="0.01"
+                value={f.price}
+                onChange={(e) => setF({ ...f, price: e.target.value })}
+              />
             </Field>
             <Field label="Categoria">
-              <Input value={f.category} onChange={(e) => setF({ ...f, category: e.target.value })} />
+              <Input
+                value={f.category}
+                onChange={(e) => setF({ ...f, category: e.target.value })}
+              />
             </Field>
             <Field label="Codice / SKU">
-              <Input value={f.sku} onChange={(e) => setF({ ...f, sku: e.target.value })} placeholder="Opzionale" />
+              <Input
+                value={f.sku}
+                onChange={(e) => setF({ ...f, sku: e.target.value })}
+                placeholder="Opzionale"
+              />
             </Field>
           </div>
           <DialogFooter>
@@ -119,7 +157,13 @@ export function ProductDialog({ open, onOpenChange, initial }: DialogProps<Produ
 }
 
 export function EventDialog({ open, onOpenChange, initial, onSaved }: DialogProps<EventRow>) {
-  const [f, setF] = useState({ name: "", event_date: "", location: "", notes: "", status: "programmato" as EventStatus });
+  const [f, setF] = useState({
+    name: "",
+    event_date: "",
+    location: "",
+    notes: "",
+    status: "programmato" as EventStatus,
+  });
   const refresh = useRefresh();
   useEffect(() => {
     if (open)
@@ -136,7 +180,10 @@ export function EventDialog({ open, onOpenChange, initial, onSaved }: DialogProp
     const res = initial
       ? await supabase.from("events").update(f).eq("id", initial.id).select("id").single()
       : await supabase.from("events").insert(f).select("id").single();
-    if (res.error) return toast.error(errMsg(res.error));
+    if (res.error) {
+      toast.error(errMsg(res.error));
+      return;
+    }
     toast.success("Evento salvato");
     refresh();
     onSaved?.(res.data.id);
@@ -154,10 +201,19 @@ export function EventDialog({ open, onOpenChange, initial, onSaved }: DialogProp
           </Field>
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Data">
-              <Input required type="date" value={f.event_date} onChange={(e) => setF({ ...f, event_date: e.target.value })} />
+              <Input
+                required
+                type="date"
+                value={f.event_date}
+                onChange={(e) => setF({ ...f, event_date: e.target.value })}
+              />
             </Field>
             <Field label="Stato">
-              <select className={selectClass} value={f.status} onChange={(e) => setF({ ...f, status: e.target.value as EventStatus })}>
+              <select
+                className={selectClass}
+                value={f.status}
+                onChange={(e) => setF({ ...f, status: e.target.value as EventStatus })}
+              >
                 {Object.entries(EVENT_STATUS).map(([k, v]) => (
                   <option key={k} value={k}>
                     {v.label}

@@ -11,9 +11,15 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "Dashboard — Mana Flask" },
-      { name: "description", content: "Panoramica di eventi, prenotazioni e saldo negozio di Mana Flask." },
+      {
+        name: "description",
+        content: "Panoramica di eventi, prenotazioni e saldo negozio di Mana Flask.",
+      },
       { property: "og:title", content: "Dashboard — Mana Flask" },
-      { property: "og:description", content: "Panoramica di eventi, prenotazioni e saldo negozio di Mana Flask." },
+      {
+        property: "og:description",
+        content: "Panoramica di eventi, prenotazioni e saldo negozio di Mana Flask.",
+      },
     ],
   }),
   component: Dashboard,
@@ -26,7 +32,9 @@ function Dashboard() {
 
   const stats = useMemo(() => {
     const today = new Date().toISOString().slice(0, 10);
-    const next = [...events].filter((e) => e.event_date >= today && e.status !== "concluso").sort((a, b) => a.event_date.localeCompare(b.event_date))[0];
+    const next = [...events]
+      .filter((e) => e.event_date >= today && e.status !== "concluso")
+      .sort((a, b) => a.event_date.localeCompare(b.event_date))[0];
     const active = bookings.filter((b) => b.status !== "annullata");
     const bal = [...balancesByClient(movements).values()];
     return {
@@ -73,14 +81,19 @@ function Dashboard() {
               </div>
             </div>
             <div className="text-right">
-              <div className="font-display text-4xl font-semibold text-primary">{stats.nextCount}</div>
+              <div className="font-display text-4xl font-semibold text-primary">
+                {stats.nextCount}
+              </div>
               <div className="text-sm opacity-85">prenotazioni</div>
             </div>
           </div>
         </Link>
       ) : (
         <div className="rounded-xl border border-dashed bg-card p-6 text-center text-sm text-muted-foreground">
-          Nessun evento in programma. <Link to="/eventi" className="font-medium text-primary">Crea un evento</Link>
+          Nessun evento in programma.{" "}
+          <Link to="/eventi" className="font-medium text-primary">
+            Crea un evento
+          </Link>
         </div>
       )}
 

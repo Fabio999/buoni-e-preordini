@@ -13,7 +13,15 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
-import { bookingTotal, errMsg, useBookings, useChecklist, useEvents, useRefresh, type Booking } from "@/lib/data";
+import {
+  bookingTotal,
+  errMsg,
+  useBookings,
+  useChecklist,
+  useEvents,
+  useRefresh,
+  type Booking,
+} from "@/lib/data";
 import { CHECKLIST_CATEGORIES, EVENT_STATUS, euro, fmtDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
@@ -21,9 +29,15 @@ export const Route = createFileRoute("/eventi/$id")({
   head: () => ({
     meta: [
       { title: "Dettaglio evento — Mana Flask" },
-      { name: "description", content: "Riepilogo, prenotazioni, preparazione e checklist dell'evento." },
+      {
+        name: "description",
+        content: "Riepilogo, prenotazioni, preparazione e checklist dell'evento.",
+      },
       { property: "og:title", content: "Dettaglio evento — Mana Flask" },
-      { property: "og:description", content: "Riepilogo, prenotazioni, preparazione e checklist dell'evento." },
+      {
+        property: "og:description",
+        content: "Riepilogo, prenotazioni, preparazione e checklist dell'evento.",
+      },
     ],
   }),
   component: EventDetail,
@@ -58,14 +72,20 @@ function EventDetail() {
   const remove = async () => {
     if (!confirm("Eliminare l'evento? Possibile solo se non ha prenotazioni.")) return;
     const { error } = await supabase.from("events").delete().eq("id", id);
-    if (error) return toast.error(errMsg(error));
+    if (error) {
+      toast.error(errMsg(error));
+      return;
+    }
     refresh();
     navigate({ to: "/eventi" });
   };
 
   return (
     <div className="mx-auto max-w-7xl">
-      <Link to="/eventi" className="mb-3 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
+      <Link
+        to="/eventi"
+        className="mb-3 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+      >
         <ArrowLeft className="h-4 w-4" /> Eventi
       </Link>
       <PageHeader
@@ -82,7 +102,9 @@ function EventDetail() {
         }
       />
       <div className="-mt-4 mb-6 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
-        <Badge variant={EVENT_STATUS[event.status].variant}>{EVENT_STATUS[event.status].label}</Badge>
+        <Badge variant={EVENT_STATUS[event.status].variant}>
+          {EVENT_STATUS[event.status].label}
+        </Badge>
         <span className="flex items-center gap-1.5">
           <CalendarDays className="h-4 w-4" />
           {fmtDate(event.event_date)}
@@ -138,10 +160,19 @@ function EventDetail() {
 
 function Preparation({ bookings }: { bookings: Booking[] }) {
   const rows = useMemo(() => {
-    const map = new Map<string, { name: string; category: string; total: number; ready: number; toPrepare: number }>();
+    const map = new Map<
+      string,
+      { name: string; category: string; total: number; ready: number; toPrepare: number }
+    >();
     for (const b of bookings) {
       for (const i of b.booking_items) {
-        const r = map.get(i.product_id) ?? { name: i.products?.name ?? "?", category: i.products?.category ?? "", total: 0, ready: 0, toPrepare: 0 };
+        const r = map.get(i.product_id) ?? {
+          name: i.products?.name ?? "?",
+          category: i.products?.category ?? "",
+          total: 0,
+          ready: 0,
+          toPrepare: 0,
+        };
         r.total += i.quantity;
         if (b.status === "da_preparare") r.toPrepare += i.quantity;
         else r.ready += i.quantity;
@@ -173,10 +204,21 @@ function Preparation({ bookings }: { bookings: Booking[] }) {
                   <tr key={r.name} className="border-b last:border-0">
                     <td className="py-2.5 pr-3">
                       <div className="font-medium">{r.name}</div>
-                      {r.category && <div className="text-xs text-muted-foreground">{r.category}</div>}
+                      {r.category && (
+                        <div className="text-xs text-muted-foreground">{r.category}</div>
+                      )}
                     </td>
-                    <td className="py-2.5 pr-3 text-right font-display text-base font-semibold">{r.total}</td>
-                    <td className={cn("py-2.5 pr-3 text-right font-semibold", r.toPrepare ? "text-primary" : "text-muted-foreground")}>{r.toPrepare}</td>
+                    <td className="py-2.5 pr-3 text-right font-display text-base font-semibold">
+                      {r.total}
+                    </td>
+                    <td
+                      className={cn(
+                        "py-2.5 pr-3 text-right font-semibold",
+                        r.toPrepare ? "text-primary" : "text-muted-foreground",
+                      )}
+                    >
+                      {r.toPrepare}
+                    </td>
                     <td className="py-2.5 text-right font-semibold text-success">{r.ready}</td>
                   </tr>
                 ))}
@@ -188,8 +230,16 @@ function Preparation({ bookings }: { bookings: Booking[] }) {
       <div className="grid content-start gap-3">
         <StatCard label="Prenotazioni da preparare" value={toPrepare} tone="action" />
         <StatCard label="Pronte / consegnate" value={bookings.length - toPrepare} tone="success" />
-        <StatCard label="Pagate" value={bookings.filter((b) => b.payment_status === "pagato").length} tone="success" />
-        <StatCard label="Non pagate" value={bookings.filter((b) => b.payment_status === "non_pagato").length} tone="danger" />
+        <StatCard
+          label="Pagate"
+          value={bookings.filter((b) => b.payment_status === "pagato").length}
+          tone="success"
+        />
+        <StatCard
+          label="Non pagate"
+          value={bookings.filter((b) => b.payment_status === "non_pagato").length}
+          tone="danger"
+        />
       </div>
     </div>
   );
@@ -199,13 +249,18 @@ function Checklist({ eventId }: { eventId: string }) {
   const { data: items = [] } = useChecklist(eventId);
   const refresh = useRefresh();
   const [label, setLabel] = useState("");
-  const [category, setCategory] = useState(CHECKLIST_CATEGORIES[0]);
+  const [category, setCategory] = useState<string>("Prodotti");
 
   const add = async (e: FormEvent) => {
     e.preventDefault();
     if (!label.trim()) return;
-    const { error } = await supabase.from("checklist_items").insert({ event_id: eventId, label: label.trim(), category });
-    if (error) return toast.error(errMsg(error));
+    const { error } = await supabase
+      .from("checklist_items")
+      .insert({ event_id: eventId, label: label.trim(), category });
+    if (error) {
+      toast.error(errMsg(error));
+      return;
+    }
     setLabel("");
     refresh();
   };
@@ -218,17 +273,28 @@ function Checklist({ eventId }: { eventId: string }) {
     refresh();
   };
   const done = items.filter((i) => i.done).length;
-  const grouped = CHECKLIST_CATEGORIES.map((c) => ({ c, list: items.filter((i) => i.category === c) })).filter((g) => g.list.length);
+  const grouped = CHECKLIST_CATEGORIES.map((c) => ({
+    c,
+    list: items.filter((i) => i.category === c),
+  })).filter((g) => g.list.length);
 
   return (
     <Section title={`Checklist (${done}/${items.length} preparati)`}>
       <form onSubmit={add} className="mb-4 flex flex-col gap-2 sm:flex-row">
-        <select className={cn(selectClass, "sm:w-56")} value={category} onChange={(e) => setCategory(e.target.value)}>
+        <select
+          className={cn(selectClass, "sm:w-56")}
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+        >
           {CHECKLIST_CATEGORIES.map((c) => (
             <option key={c}>{c}</option>
           ))}
         </select>
-        <Input value={label} onChange={(e) => setLabel(e.target.value)} placeholder="Es. Tovaglia stand, POS carico…" />
+        <Input
+          value={label}
+          onChange={(e) => setLabel(e.target.value)}
+          placeholder="Es. Tovaglia stand, POS carico…"
+        />
         <Button type="submit">
           <Plus className="h-4 w-4" /> Aggiungi
         </Button>
@@ -237,16 +303,31 @@ function Checklist({ eventId }: { eventId: string }) {
       <div className="space-y-4">
         {grouped.map((g) => (
           <div key={g.c}>
-            <div className="mb-1 text-xs font-semibold uppercase tracking-wide text-secondary">{g.c}</div>
+            <div className="mb-1 text-xs font-semibold uppercase tracking-wide text-secondary">
+              {g.c}
+            </div>
             <ul className="divide-y rounded-lg border">
               {g.list.map((i) => (
                 <li key={i.id} className="flex items-center gap-3 px-3 py-2">
                   <Checkbox checked={i.done} onCheckedChange={(v) => toggle(i.id, !!v)} id={i.id} />
-                  <label htmlFor={i.id} className={cn("flex-1 cursor-pointer text-sm", i.done && "text-muted-foreground line-through")}>
+                  <label
+                    htmlFor={i.id}
+                    className={cn(
+                      "flex-1 cursor-pointer text-sm",
+                      i.done && "text-muted-foreground line-through",
+                    )}
+                  >
                     {i.label}
                   </label>
-                  <Badge variant={i.done ? "success" : "action"}>{i.done ? "Preparato" : "Da preparare"}</Badge>
-                  <Button size="icon" variant="ghost" onClick={() => remove(i.id)} aria-label="Rimuovi">
+                  <Badge variant={i.done ? "success" : "action"}>
+                    {i.done ? "Preparato" : "Da preparare"}
+                  </Badge>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    onClick={() => remove(i.id)}
+                    aria-label="Rimuovi"
+                  >
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </li>

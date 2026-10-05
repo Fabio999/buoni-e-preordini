@@ -22,19 +22,31 @@ export function useBookingActions() {
   return {
     togglePayment: async (b: Booking) => {
       const next = b.payment_status === "pagato" ? "non_pagato" : "pagato";
-      const { error } = await supabase.from("bookings").update({ payment_status: next }).eq("id", b.id);
-      if (error) return toast.error(errMsg(error));
+      const { error } = await supabase
+        .from("bookings")
+        .update({ payment_status: next })
+        .eq("id", b.id);
+      if (error) {
+        toast.error(errMsg(error));
+        return;
+      }
       refresh();
     },
     setStatus: async (b: Booking, status: BookingStatus) => {
       const { error } = await supabase.from("bookings").update({ status }).eq("id", b.id);
-      if (error) return toast.error(errMsg(error));
+      if (error) {
+        toast.error(errMsg(error));
+        return;
+      }
       refresh();
     },
     remove: async (b: Booking) => {
       if (!confirm("Eliminare questa prenotazione?")) return;
       const { error } = await supabase.from("bookings").delete().eq("id", b.id);
-      if (error) return toast.error(errMsg(error));
+      if (error) {
+        toast.error(errMsg(error));
+        return;
+      }
       toast.success("Prenotazione eliminata");
       refresh();
     },
@@ -46,7 +58,10 @@ function StatusSelect({ b, onChange }: { b: Booking; onChange: (s: BookingStatus
     <select
       value={b.status}
       onChange={(e) => onChange(e.target.value as BookingStatus)}
-      className={cn("cursor-pointer rounded-full border-0 px-2.5 py-1 text-xs font-semibold focus:ring-2 focus:ring-ring", statusTone[b.status])}
+      className={cn(
+        "cursor-pointer rounded-full border-0 px-2.5 py-1 text-xs font-semibold focus:ring-2 focus:ring-ring",
+        statusTone[b.status],
+      )}
     >
       {Object.entries(BOOKING_STATUS).map(([k, v]) => (
         <option key={k} value={k}>
@@ -57,9 +72,16 @@ function StatusSelect({ b, onChange }: { b: Booking; onChange: (s: BookingStatus
   );
 }
 
-const itemsText = (b: Booking) => b.booking_items.map((i) => `${i.quantity}× ${i.products?.name ?? "?"}`).join(", ");
+const itemsText = (b: Booking) =>
+  b.booking_items.map((i) => `${i.quantity}× ${i.products?.name ?? "?"}`).join(", ");
 
-export function BookingsTable({ bookings, hide = [] }: { bookings: Booking[]; hide?: ("client" | "event")[] }) {
+export function BookingsTable({
+  bookings,
+  hide = [],
+}: {
+  bookings: Booking[];
+  hide?: ("client" | "event")[];
+}) {
   const [editing, setEditing] = useState<Booking | null>(null);
   const a = useBookingActions();
   if (!bookings.length) return <Empty>Nessuna prenotazione</Empty>;
@@ -91,7 +113,11 @@ export function BookingsTable({ bookings, hide = [] }: { bookings: Booking[]; hi
                 {showClient && (
                   <td className="py-2.5 pr-3 font-medium">
                     {b.clients ? (
-                      <Link to="/clienti/$id" params={{ id: b.clients.id }} className="hover:text-primary">
+                      <Link
+                        to="/clienti/$id"
+                        params={{ id: b.clients.id }}
+                        className="hover:text-primary"
+                      >
                         {fullName(b.clients)}
                       </Link>
                     ) : (
@@ -102,9 +128,15 @@ export function BookingsTable({ bookings, hide = [] }: { bookings: Booking[]; hi
                 {showEvent && (
                   <td className="py-2.5 pr-3">
                     {b.events ? (
-                      <Link to="/eventi/$id" params={{ id: b.events.id }} className="hover:text-primary">
+                      <Link
+                        to="/eventi/$id"
+                        params={{ id: b.events.id }}
+                        className="hover:text-primary"
+                      >
                         {b.events.name}
-                        <span className="block text-xs text-muted-foreground">{fmtDate(b.events.event_date)}</span>
+                        <span className="block text-xs text-muted-foreground">
+                          {fmtDate(b.events.event_date)}
+                        </span>
                       </Link>
                     ) : (
                       "—"
@@ -117,10 +149,20 @@ export function BookingsTable({ bookings, hide = [] }: { bookings: Booking[]; hi
                   <StatusSelect b={b} onChange={(s) => a.setStatus(b, s)} />
                 </td>
                 <td className="whitespace-nowrap py-2.5 text-right">
-                  <Button size="icon" variant="ghost" onClick={() => setEditing(b)} aria-label="Modifica">
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    onClick={() => setEditing(b)}
+                    aria-label="Modifica"
+                  >
                     <Pencil className="h-4 w-4" />
                   </Button>
-                  <Button size="icon" variant="ghost" onClick={() => a.remove(b)} aria-label="Elimina">
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    onClick={() => a.remove(b)}
+                    aria-label="Elimina"
+                  >
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </td>
@@ -134,12 +176,19 @@ export function BookingsTable({ bookings, hide = [] }: { bookings: Booking[]; hi
         {bookings.map((b) => (
           <div
             key={b.id}
-            className={cn("rounded-lg border border-l-4 bg-card p-3", b.payment_status === "pagato" ? "border-l-success" : "border-l-destructive")}
+            className={cn(
+              "rounded-lg border border-l-4 bg-card p-3",
+              b.payment_status === "pagato" ? "border-l-success" : "border-l-destructive",
+            )}
           >
             <div className="flex items-start justify-between gap-2">
               <div>
                 {showClient && <div className="font-semibold">{fullName(b.clients)}</div>}
-                {showEvent && <div className="text-xs text-muted-foreground">{b.events?.name} · {fmtDate(b.events?.event_date)}</div>}
+                {showEvent && (
+                  <div className="text-xs text-muted-foreground">
+                    {b.events?.name} · {fmtDate(b.events?.event_date)}
+                  </div>
+                )}
               </div>
               <div className="font-display font-semibold">{euro(bookingTotal(b))}</div>
             </div>
@@ -159,7 +208,11 @@ export function BookingsTable({ bookings, hide = [] }: { bookings: Booking[]; hi
           </div>
         ))}
       </div>
-      <BookingDialog open={!!editing} onOpenChange={(o) => !o && setEditing(null)} initial={editing} />
+      <BookingDialog
+        open={!!editing}
+        onOpenChange={(o) => !o && setEditing(null)}
+        initial={editing}
+      />
     </>
   );
 }

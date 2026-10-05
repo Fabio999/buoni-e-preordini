@@ -1,11 +1,24 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
-import { balancesByClient, errMsg, useClients, useMovements, useProducts, useRefresh } from "@/lib/data";
+import {
+  balancesByClient,
+  errMsg,
+  useClients,
+  useMovements,
+  useProducts,
+  useRefresh,
+} from "@/lib/data";
 import { euro } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { Field, selectClass } from "./SimpleDialogs";
@@ -14,13 +27,30 @@ type Props = { open: boolean; onOpenChange: (o: boolean) => void; clientId?: str
 
 function useBalance(clientId: string) {
   const { data: movements } = useMovements();
-  return useMemo(() => balancesByClient(movements).get(clientId)?.balance ?? 0, [movements, clientId]);
+  return useMemo(
+    () => balancesByClient(movements).get(clientId)?.balance ?? 0,
+    [movements, clientId],
+  );
 }
 
-function ClientSelect({ value, onChange, fixed }: { value: string; onChange: (v: string) => void; fixed?: boolean }) {
+function ClientSelect({
+  value,
+  onChange,
+  fixed,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  fixed?: boolean;
+}) {
   const { data: clients = [] } = useClients();
   return (
-    <select required disabled={fixed} className={selectClass} value={value} onChange={(e) => onChange(e.target.value)}>
+    <select
+      required
+      disabled={fixed}
+      className={selectClass}
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+    >
       <option value="">Seleziona…</option>
       {clients.map((c) => (
         <option key={c.id} value={c.id}>
@@ -40,21 +70,40 @@ function Preview({ before, delta }: { before: number; delta: number }) {
         <div className="font-display text-lg font-semibold">{euro(before)}</div>
       </div>
       <div>
-        <div className="text-xs text-muted-foreground">{delta < 0 ? "Totale acquisto" : "Variazione"}</div>
-        <div className={cn("font-display text-lg font-semibold", delta < 0 ? "text-destructive" : "text-success")}>
+        <div className="text-xs text-muted-foreground">
+          {delta < 0 ? "Totale acquisto" : "Variazione"}
+        </div>
+        <div
+          className={cn(
+            "font-display text-lg font-semibold",
+            delta < 0 ? "text-destructive" : "text-success",
+          )}
+        >
           {delta < 0 ? "−" : "+"}
           {euro(Math.abs(delta))}
         </div>
       </div>
       <div>
         <div className="text-xs text-muted-foreground">Saldo dopo</div>
-        <div className={cn("font-display text-lg font-semibold", after < 0 ? "text-destructive" : "text-secondary")}>{euro(after)}</div>
+        <div
+          className={cn(
+            "font-display text-lg font-semibold",
+            after < 0 ? "text-destructive" : "text-secondary",
+          )}
+        >
+          {euro(after)}
+        </div>
       </div>
     </div>
   );
 }
 
-export function TopUpDialog({ open, onOpenChange, clientId: fixedClient, mode = "ricarica" }: Props & { mode?: "ricarica" | "correzione" }) {
+export function TopUpDialog({
+  open,
+  onOpenChange,
+  clientId: fixedClient,
+  mode = "ricarica",
+}: Props & { mode?: "ricarica" | "correzione" }) {
   const [clientId, setClientId] = useState("");
   const [amount, setAmount] = useState("");
   const [sign, setSign] = useState<1 | -1>(1);
@@ -74,8 +123,14 @@ export function TopUpDialog({ open, onOpenChange, clientId: fixedClient, mode = 
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
-    if (!delta) return toast.error("Inserisci un importo");
-    if (before + delta < 0) return toast.error("Il saldo non può diventare negativo");
+    if (!delta) {
+      toast.error("Inserisci un importo");
+      return;
+    }
+    if (before + delta < 0) {
+      toast.error("Il saldo non può diventare negativo");
+      return;
+    }
     setBusy(true);
     const { error } = await supabase.rpc("add_balance_movement", {
       _client: clientId,
@@ -84,7 +139,10 @@ export function TopUpDialog({ open, onOpenChange, clientId: fixedClient, mode = 
       _description: desc || (mode === "ricarica" ? "Ricarica saldo" : "Correzione saldo"),
     });
     setBusy(false);
-    if (error) return toast.error(errMsg(error));
+    if (error) {
+      toast.error(errMsg(error));
+      return;
+    }
     toast.success(mode === "ricarica" ? "Saldo ricaricato" : "Correzione registrata");
     refresh();
     onOpenChange(false);
@@ -103,18 +161,36 @@ export function TopUpDialog({ open, onOpenChange, clientId: fixedClient, mode = 
           <div className="grid gap-4 sm:grid-cols-2">
             {mode === "correzione" && (
               <Field label="Tipo">
-                <select className={selectClass} value={sign} onChange={(e) => setSign(Number(e.target.value) as 1 | -1)}>
+                <select
+                  className={selectClass}
+                  value={sign}
+                  onChange={(e) => setSign(Number(e.target.value) as 1 | -1)}
+                >
                   <option value={1}>Aggiungi (+)</option>
                   <option value={-1}>Togli (−)</option>
                 </select>
               </Field>
             )}
             <Field label="Importo (€)">
-              <Input required type="number" min="0.01" step="0.01" value={amount} onChange={(e) => setAmount(e.target.value)} autoFocus />
+              <Input
+                required
+                type="number"
+                min="0.01"
+                step="0.01"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                autoFocus
+              />
             </Field>
           </div>
           <Field label="Descrizione">
-            <Input value={desc} onChange={(e) => setDesc(e.target.value)} placeholder={mode === "ricarica" ? "Es. Ricarica in contanti" : "Motivo della correzione"} />
+            <Input
+              value={desc}
+              onChange={(e) => setDesc(e.target.value)}
+              placeholder={
+                mode === "ricarica" ? "Es. Ricarica in contanti" : "Motivo della correzione"
+              }
+            />
           </Field>
           {clientId && <Preview before={before} delta={delta} />}
           <DialogFooter>
@@ -157,8 +233,14 @@ export function PurchaseDialog({ open, onOpenChange, clientId: fixedClient }: Pr
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
-    if (!product) return toast.error("Seleziona un prodotto");
-    if (insufficient) return toast.error("Saldo insufficiente");
+    if (!product) {
+      toast.error("Seleziona un prodotto");
+      return;
+    }
+    if (insufficient) {
+      toast.error("Saldo insufficiente");
+      return;
+    }
     setBusy(true);
     const { error } = await supabase.rpc("register_purchase", {
       _client: clientId,
@@ -170,7 +252,10 @@ export function PurchaseDialog({ open, onOpenChange, clientId: fixedClient }: Pr
       _notes: notes,
     });
     setBusy(false);
-    if (error) return toast.error(errMsg(error));
+    if (error) {
+      toast.error(errMsg(error));
+      return;
+    }
     toast.success("Acquisto registrato");
     refresh();
     onOpenChange(false);
@@ -219,7 +304,14 @@ export function PurchaseDialog({ open, onOpenChange, clientId: fixedClient }: Pr
               />
             </Field>
             <Field label="Importo (€)">
-              <Input required type="number" min="0.01" step="0.01" value={amount} onChange={(e) => setAmount(e.target.value)} />
+              <Input
+                required
+                type="number"
+                min="0.01"
+                step="0.01"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+              />
             </Field>
             <Field label="Data">
               <Input required type="date" value={date} onChange={(e) => setDate(e.target.value)} />
@@ -229,7 +321,11 @@ export function PurchaseDialog({ open, onOpenChange, clientId: fixedClient }: Pr
             <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} />
           </Field>
           {clientId && <Preview before={before} delta={-total} />}
-          {clientId && insufficient && <p className="text-sm font-medium text-destructive">Saldo insufficiente per questo acquisto.</p>}
+          {clientId && insufficient && (
+            <p className="text-sm font-medium text-destructive">
+              Saldo insufficiente per questo acquisto.
+            </p>
+          )}
           <DialogFooter>
             <Button type="submit" disabled={busy || !clientId || insufficient || total <= 0}>
               Conferma acquisto

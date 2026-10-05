@@ -16,7 +16,10 @@ export const Route = createFileRoute("/prenotazioni")({
       { title: "Prenotazioni — Mana Flask" },
       { name: "description", content: "Gestisci prenotazioni, stato di preparazione e pagamenti." },
       { property: "og:title", content: "Prenotazioni — Mana Flask" },
-      { property: "og:description", content: "Gestisci prenotazioni, stato di preparazione e pagamenti." },
+      {
+        property: "og:description",
+        content: "Gestisci prenotazioni, stato di preparazione e pagamenti.",
+      },
     ],
   }),
   component: BookingsPage,
@@ -53,7 +56,11 @@ function BookingsPage() {
         }
       />
       <div className="mb-4 grid grid-cols-2 gap-2 lg:grid-cols-4">
-        <select className={selectClass} value={f.event} onChange={(e) => setF({ ...f, event: e.target.value })}>
+        <select
+          className={selectClass}
+          value={f.event}
+          onChange={(e) => setF({ ...f, event: e.target.value })}
+        >
           <option value="">Tutti gli eventi</option>
           {events.map((e) => (
             <option key={e.id} value={e.id}>
@@ -61,7 +68,11 @@ function BookingsPage() {
             </option>
           ))}
         </select>
-        <select className={selectClass} value={f.client} onChange={(e) => setF({ ...f, client: e.target.value })}>
+        <select
+          className={selectClass}
+          value={f.client}
+          onChange={(e) => setF({ ...f, client: e.target.value })}
+        >
           <option value="">Tutti i clienti</option>
           {clients.map((c) => (
             <option key={c.id} value={c.id}>
@@ -69,7 +80,11 @@ function BookingsPage() {
             </option>
           ))}
         </select>
-        <select className={selectClass} value={f.status} onChange={(e) => setF({ ...f, status: e.target.value })}>
+        <select
+          className={selectClass}
+          value={f.status}
+          onChange={(e) => setF({ ...f, status: e.target.value })}
+        >
           <option value="">Tutti gli stati</option>
           {Object.entries(BOOKING_STATUS).map(([k, v]) => (
             <option key={k} value={k}>
@@ -77,7 +92,11 @@ function BookingsPage() {
             </option>
           ))}
         </select>
-        <select className={selectClass} value={f.payment} onChange={(e) => setF({ ...f, payment: e.target.value })}>
+        <select
+          className={selectClass}
+          value={f.payment}
+          onChange={(e) => setF({ ...f, payment: e.target.value })}
+        >
           <option value="">Tutti i pagamenti</option>
           <option value="pagato">🟢 PAGATO</option>
           <option value="non_pagato">🔴 NON PAGATO</option>
@@ -86,7 +105,12 @@ function BookingsPage() {
       <Section title={`${filtered.length} prenotazioni`}>
         <BookingsTable bookings={filtered} />
       </Section>
-      <BookingDialog open={open} onOpenChange={setOpen} defaultEventId={f.event || undefined} defaultClientId={f.client || undefined} />
+      <BookingDialog
+        open={open}
+        onOpenChange={setOpen}
+        defaultEventId={f.event || undefined}
+        defaultClientId={f.client || undefined}
+      />
     </div>
   );
 }

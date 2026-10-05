@@ -1,5 +1,13 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, Pencil, Plus, ShoppingBag, SlidersHorizontal, Trash2, Wallet } from "lucide-react";
+import {
+  ArrowLeft,
+  Pencil,
+  Plus,
+  ShoppingBag,
+  SlidersHorizontal,
+  Trash2,
+  Wallet,
+} from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/AppShell";
@@ -11,16 +19,30 @@ import { ClientDialog } from "@/components/forms/SimpleDialogs";
 import { Empty, Section, StatCard } from "@/components/Status";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import { balancesByClient, errMsg, useBookings, useClients, useMovements, usePurchases, useRefresh } from "@/lib/data";
+import {
+  balancesByClient,
+  errMsg,
+  useBookings,
+  useClients,
+  useMovements,
+  usePurchases,
+  useRefresh,
+} from "@/lib/data";
 import { euro, fmtDate } from "@/lib/format";
 
 export const Route = createFileRoute("/clienti/$id")({
   head: () => ({
     meta: [
       { title: "Scheda cliente — Mana Flask" },
-      { name: "description", content: "Prenotazioni, saldo negozio e storico acquisti del cliente." },
+      {
+        name: "description",
+        content: "Prenotazioni, saldo negozio e storico acquisti del cliente.",
+      },
       { property: "og:title", content: "Scheda cliente — Mana Flask" },
-      { property: "og:description", content: "Prenotazioni, saldo negozio e storico acquisti del cliente." },
+      {
+        property: "og:description",
+        content: "Prenotazioni, saldo negozio e storico acquisti del cliente.",
+      },
     ],
   }),
   component: ClientDetail,
@@ -34,29 +56,41 @@ function ClientDetail() {
   const { data: allBookings = [] } = useBookings();
   const { data: allMovements = [] } = useMovements();
   const { data: allPurchases = [] } = usePurchases();
-  const [dlg, setDlg] = useState<null | "edit" | "booking" | "topup" | "correction" | "purchase">(null);
+  const [dlg, setDlg] = useState<null | "edit" | "booking" | "topup" | "correction" | "purchase">(
+    null,
+  );
   const close = (o: boolean) => !o && setDlg(null);
 
   const client = clients?.find((c) => c.id === id);
   const bookings = allBookings.filter((b) => b.client_id === id);
   const movements = allMovements.filter((m) => m.client_id === id);
   const purchases = allPurchases.filter((p) => p.client_id === id);
-  const bal = useMemo(() => balancesByClient(movements).get(id) ?? { balance: 0, loaded: 0, used: 0 }, [movements, id]);
+  const bal = useMemo(
+    () => balancesByClient(movements).get(id) ?? { balance: 0, loaded: 0, used: 0 },
+    [movements, id],
+  );
 
   if (isLoading) return null;
   if (!client) return <Empty>Cliente non trovato</Empty>;
 
   const remove = async () => {
-    if (!confirm("Eliminare il cliente? Possibile solo se non ha prenotazioni né movimenti.")) return;
+    if (!confirm("Eliminare il cliente? Possibile solo se non ha prenotazioni né movimenti."))
+      return;
     const { error } = await supabase.from("clients").delete().eq("id", id);
-    if (error) return toast.error(errMsg(error));
+    if (error) {
+      toast.error(errMsg(error));
+      return;
+    }
     refresh();
     navigate({ to: "/clienti" });
   };
 
   return (
     <div className="mx-auto max-w-7xl">
-      <Link to="/clienti" className="mb-3 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
+      <Link
+        to="/clienti"
+        className="mb-3 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+      >
         <ArrowLeft className="h-4 w-4" /> Clienti
       </Link>
       <PageHeader
@@ -74,7 +108,12 @@ function ClientDetail() {
       />
 
       <div className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
-        <StatCard label="Saldo disponibile" value={euro(bal.balance)} tone="action" icon={<Wallet className="h-4 w-4" />} />
+        <StatCard
+          label="Saldo disponibile"
+          value={euro(bal.balance)}
+          tone="action"
+          icon={<Wallet className="h-4 w-4" />}
+        />
         <StatCard label="Totale caricato" value={euro(bal.loaded)} tone="success" />
         <StatCard label="Totale utilizzato" value={euro(bal.used)} tone="danger" />
       </div>
@@ -133,7 +172,12 @@ function ClientDetail() {
       <ClientDialog open={dlg === "edit"} onOpenChange={close} initial={client} />
       <BookingDialog open={dlg === "booking"} onOpenChange={close} defaultClientId={id} />
       <TopUpDialog open={dlg === "topup"} onOpenChange={close} clientId={id} />
-      <TopUpDialog open={dlg === "correction"} onOpenChange={close} clientId={id} mode="correzione" />
+      <TopUpDialog
+        open={dlg === "correction"}
+        onOpenChange={close}
+        clientId={id}
+        mode="correzione"
+      />
       <PurchaseDialog open={dlg === "purchase"} onOpenChange={close} clientId={id} />
     </div>
   );

@@ -12,16 +12,16 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
-import { errMsg, useEvents, useProducts, useRefresh, type Booking } from "@/lib/data";
+import { errMsg, useRefresh, type Booking } from "@/lib/data";
 import {
   BOOKING_STATUS,
   euro,
-  fmtDate,
   type BookingStatus,
   type PaymentStatus,
 } from "@/lib/format";
 import { Field, selectClass } from "./SimpleDialogs";
 import { ClientSelect } from "./ClientSelect";
+import { EventSelect, ProductSelect } from "./EntitySelect";
 
 type Line = { product_id: string; quantity: number; unit_price: number };
 
@@ -38,8 +38,6 @@ export function BookingDialog({
   defaultEventId?: string | undefined;
   defaultClientId?: string | undefined;
 }) {
-  const { data: events = [] } = useEvents();
-  const { data: products = [] } = useProducts();
   const refresh = useRefresh();
   const [clientId, setClientId] = useState("");
   const [eventId, setEventId] = useState("");
@@ -127,19 +125,7 @@ export function BookingDialog({
               <ClientSelect value={clientId} onChange={setClientId} />
             </Field>
             <Field label="Evento">
-              <select
-                required
-                className={selectClass}
-                value={eventId}
-                onChange={(e) => setEventId(e.target.value)}
-              >
-                <option value="">Seleziona…</option>
-                {events.map((ev) => (
-                  <option key={ev.id} value={ev.id}>
-                    {ev.name} — {fmtDate(ev.event_date)}
-                  </option>
-                ))}
-              </select>
+              <EventSelect value={eventId} onChange={setEventId} />
             </Field>
           </div>
 
@@ -150,21 +136,13 @@ export function BookingDialog({
                 key={i}
                 className="grid grid-cols-[1fr_auto] gap-2 rounded-lg border p-2 sm:grid-cols-[1fr_80px_110px_100px_auto] sm:items-center sm:border-0 sm:p-0"
               >
-                <select
-                  className={`${selectClass} col-span-2 sm:col-span-1`}
+                <ProductSelect
+                  className="col-span-2 sm:col-span-1"
                   value={l.product_id}
-                  onChange={(e) => {
-                    const p = products.find((x) => x.id === e.target.value);
-                    setLine(i, { product_id: e.target.value, unit_price: p ? Number(p.price) : 0 });
+                  onChange={(id, product) => {
+                    setLine(i, { product_id: id, unit_price: product ? Number(product.price) : 0 });
                   }}
-                >
-                  <option value="">Prodotto…</option>
-                  {products.map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {p.name} ({euro(p.price)})
-                    </option>
-                  ))}
-                </select>
+                />
                 <Input
                   type="number"
                   min={1}

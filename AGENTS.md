@@ -16,3 +16,4 @@
 - Shared data hooks live in src/lib/data.ts; mutations call `useRefresh()` to invalidate all queries for simplicity.
 - Uploaded company logos are referenced through CDN asset pointers; the favicon is a small local raster derived from the same brand asset to support browser icon loading.
 - All editable client selectors use the shared ClientSelect with inline creation and automatic selection, keeping booking and balance workflows consistent.
+- Editable event and product selectors use shared controls with inline creation; creation dialogs refresh queries before selecting saved entities and stop nested submit propagation to preserve parent drafts.

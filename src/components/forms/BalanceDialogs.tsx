@@ -22,6 +22,7 @@ import { euro } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { Field, selectClass } from "./SimpleDialogs";
 import { ClientSelect } from "./ClientSelect";
+import { ProductSelect } from "./EntitySelect";
 
 type Props = { open: boolean; onOpenChange: (o: boolean) => void; clientId?: string };
 
@@ -244,23 +245,13 @@ export function PurchaseDialog({ open, onOpenChange, clientId: fixedClient }: Pr
             <ClientSelect value={clientId} onChange={setClientId} fixed={!!fixedClient} />
           </Field>
           <Field label="Prodotto">
-            <select
-              required
-              className={selectClass}
+            <ProductSelect
               value={productId}
-              onChange={(e) => {
-                setProductId(e.target.value);
-                const p = products.find((x) => x.id === e.target.value);
-                if (p) setAmount((Number(p.price) * quantity).toFixed(2));
+              onChange={(id, product) => {
+                setProductId(id);
+                setAmount(product ? (Number(product.price) * quantity).toFixed(2) : "");
               }}
-            >
-              <option value="">Seleziona…</option>
-              {products.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name} ({euro(p.price)})
-                </option>
-              ))}
-            </select>
+            />
           </Field>
           <div className="grid gap-4 sm:grid-cols-3">
             <Field label="Quantità">

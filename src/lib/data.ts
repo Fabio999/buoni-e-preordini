@@ -25,6 +25,7 @@ function unwrap<T>(res: { data: T | null; error: { message: string } | null }): 
 export const useClients = () =>
   useQuery({
     queryKey: ["clients"],
+    refetchInterval: 10000,
     queryFn: async () =>
       unwrap(await supabase.from("clients").select("*").order("last_name").order("first_name")),
   });
@@ -120,7 +121,8 @@ export function balancesByClient(movements: Movement[] | undefined) {
 }
 
 export function errMsg(e: unknown) {
-  const msg = e instanceof Error ? e.message : String(e);
+  const msg = e instanceof Error ? e.message :
+    typeof e === "object" && e !== null && "message" in e ? String(e.message) : String(e);
   if (msg.includes("clients_unique_name"))
     return "Esiste già un cliente con questo nome e cognome.";
   if (msg.includes("violates foreign key"))

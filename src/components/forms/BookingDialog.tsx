@@ -56,7 +56,7 @@ export function BookingDialog({
     setNotes(initial?.notes ?? "");
     setLines(
       initial?.booking_items.map((i) => ({
-        product_id: i.product_id,
+        product_id: i.product_id ?? "",
         quantity: i.quantity,
         unit_price: Number(i.unit_price),
       })) ?? [{ product_id: "", quantity: 1, unit_price: 0 }],

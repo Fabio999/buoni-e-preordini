@@ -28,7 +28,7 @@ export function MovementsTable({
   const remove = async (m: Movement) => {
     if (!confirm("Eliminare questo movimento? Il saldo verrà ricalcolato.")) return;
     const { error } = await supabase.rpc("delete_balance_movement", { _id: m.id });
-    if (error) return toast.error(errMsg(error));
+    if (error) { toast.error(errMsg(error)); return; }
     toast.success("Movimento eliminato");
     refresh();
   };
@@ -116,7 +116,7 @@ function MovementEditDialog({ movement, onClose }: { movement: Movement | null; 
     e.stopPropagation();
     if (!movement) return;
     const value = Number(amount.replace(",", "."));
-    if (!value) return toast.error("Importo non valido");
+    if (!value) { toast.error("Importo non valido"); return; }
     const signed =
       movement.type === "ricarica"
         ? Math.abs(value)
@@ -132,7 +132,7 @@ function MovementEditDialog({ movement, onClose }: { movement: Movement | null; 
       _description: description,
     });
     setBusy(false);
-    if (error) return toast.error(errMsg(error));
+    if (error) { toast.error(errMsg(error)); return; }
     toast.success("Movimento aggiornato");
     refresh();
     setLastId(null);

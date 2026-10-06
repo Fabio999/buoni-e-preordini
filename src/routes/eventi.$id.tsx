@@ -72,7 +72,7 @@ function EventDetail() {
   if (!event) return <Empty>Evento non trovato</Empty>;
 
   const remove = async () => {
-    if (!confirm("Eliminare l'evento? Possibile solo se non ha prenotazioni.")) return;
+    if (!confirm("Eliminare l'evento? Verranno eliminate anche le sue prenotazioni e la checklist.")) return;
     const { error } = await supabase.from("events").delete().eq("id", id);
     if (error) {
       toast.error(errMsg(error));
@@ -168,8 +168,8 @@ function Preparation({ bookings }: { bookings: Booking[] }) {
     >();
     for (const b of bookings) {
       for (const i of b.booking_items) {
-        const r = map.get(i.product_id) ?? {
-          name: i.products?.name ?? "?",
+        const r = map.get(i.product_id ?? i.product_name) ?? {
+          name: i.products?.name ?? (i.product_name || "?"),
           category: i.products?.category ?? "",
           total: 0,
           ready: 0,
@@ -178,7 +178,7 @@ function Preparation({ bookings }: { bookings: Booking[] }) {
         r.total += i.quantity;
         if (b.status === "da_preparare") r.toPrepare += i.quantity;
         else r.ready += i.quantity;
-        map.set(i.product_id, r);
+        map.set(i.product_id ?? i.product_name, r);
       }
     }
     return [...map.values()].sort((a, b) => a.name.localeCompare(b.name));
@@ -270,6 +270,13 @@ function Checklist({ eventId }: { eventId: string }) {
     await supabase.from("checklist_items").update({ done }).eq("id", id);
     refresh();
   };
+  const rename = async (id: string, current: string) => {
+    const next = prompt("Modifica voce", current)?.trim();
+    if (!next || next === current) return;
+    const { error } = await supabase.from("checklist_items").update({ label: next }).eq("id", id);
+    if (error) toast.error(errMsg(error));
+    refresh();
+  };
   const remove = async (id: string) => {
     await supabase.from("checklist_items").delete().eq("id", id);
     refresh();
@@ -324,6 +331,14 @@ function Checklist({ eventId }: { eventId: string }) {
                   <Badge variant={i.done ? "success" : "action"}>
                     {i.done ? "Preparato" : "Da preparare"}
                   </Badge>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    onClick={() => rename(i.id, i.label)}
+                    aria-label="Modifica voce"
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </Button>
                   <Button
                     size="icon"
                     variant="ghost"

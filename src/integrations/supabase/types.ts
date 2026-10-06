@@ -69,21 +69,24 @@ export type Database = {
         Row: {
           booking_id: string
           id: string
-          product_id: string
+          product_id: string | null
+          product_name: string
           quantity: number
           unit_price: number
         }
         Insert: {
           booking_id: string
           id?: string
-          product_id: string
+          product_id?: string | null
+          product_name?: string
           quantity?: number
           unit_price: number
         }
         Update: {
           booking_id?: string
           id?: string
-          product_id?: string
+          product_id?: string | null
+          product_name?: string
           quantity?: number
           unit_price?: number
         }
@@ -334,6 +337,8 @@ export type Database = {
         Returns: string
       }
       client_balance: { Args: { _client: string }; Returns: number }
+      delete_balance_movement: { Args: { _id: string }; Returns: undefined }
+      recompute_client_ledger: { Args: { _client: string }; Returns: undefined }
       register_purchase: {
         Args: {
           _amount: number
@@ -345,6 +350,10 @@ export type Database = {
           _quantity: number
         }
         Returns: string
+      }
+      update_balance_movement: {
+        Args: { _amount: number; _description: string; _id: string }
+        Returns: undefined
       }
     }
     Enums: {

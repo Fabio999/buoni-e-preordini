@@ -83,7 +83,7 @@ export function ClientDialog({ open, onOpenChange, initial, onSaved }: DialogPro
 }
 
 export function ProductDialog({ open, onOpenChange, initial, onSaved }: Omit<DialogProps<Product>, "onSaved"> & { onSaved?: (id: string, product: Product) => void }) {
-  const [f, setF] = useState({ name: "", price: "", category: "", sku: "" });
+  const [f, setF] = useState({ name: "", price: "", category: "", sku: "", game: "", product_type: "" });
   const refresh = useRefresh();
   useEffect(() => {
     if (open)
@@ -92,6 +92,8 @@ export function ProductDialog({ open, onOpenChange, initial, onSaved }: Omit<Dia
         price: initial ? String(initial.price) : "",
         category: initial?.category ?? "",
         sku: initial?.sku ?? "",
+        game: initial?.game ?? "",
+        product_type: initial?.product_type ?? "",
       });
   }, [open, initial]);
   const submit = async (e: FormEvent) => {
@@ -102,6 +104,8 @@ export function ProductDialog({ open, onOpenChange, initial, onSaved }: Omit<Dia
       price: Number(f.price),
       category: f.category.trim(),
       sku: f.sku.trim() || null,
+      game: f.game.trim(),
+      product_type: f.product_type.trim(),
     };
     const res = initial
       ? await supabase.from("products").update(row).eq("id", initial.id).select("*").single()
@@ -125,6 +129,24 @@ export function ProductDialog({ open, onOpenChange, initial, onSaved }: Omit<Dia
           <Field label="Nome">
             <Input required aria-label="Nome prodotto" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} />
           </Field>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field label="Gioco">
+              <Input
+                value={f.game}
+                aria-label="Gioco"
+                onChange={(e) => setF({ ...f, game: e.target.value })}
+                placeholder="Es. Magic, Riftbound, Pokémon"
+              />
+            </Field>
+            <Field label="Tipo di prodotto">
+              <Input
+                value={f.product_type}
+                aria-label="Tipo di prodotto"
+                onChange={(e) => setF({ ...f, product_type: e.target.value })}
+                placeholder="Es. Structure, Box, Vault"
+              />
+            </Field>
+          </div>
           <div className="grid gap-4 sm:grid-cols-3">
             <Field label="Prezzo (€)">
               <Input

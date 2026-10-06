@@ -54,7 +54,7 @@ export function ClientDialog({ open, onOpenChange, initial, onSaved }: DialogPro
       return;
     }
     toast.success(initial ? "Cliente aggiornato" : "Cliente creato");
-    refresh();
+    await refresh();
     onSaved?.(res.data.id);
     onOpenChange(false);
   };
@@ -82,7 +82,7 @@ export function ClientDialog({ open, onOpenChange, initial, onSaved }: DialogPro
   );
 }
 
-export function ProductDialog({ open, onOpenChange, initial }: DialogProps<Product>) {
+export function ProductDialog({ open, onOpenChange, initial, onSaved }: Omit<DialogProps<Product>, "onSaved"> & { onSaved?: (id: string, product: Product) => void }) {
   const [f, setF] = useState({ name: "", price: "", category: "", sku: "" });
   const refresh = useRefresh();
   useEffect(() => {
@@ -96,6 +96,7 @@ export function ProductDialog({ open, onOpenChange, initial }: DialogProps<Produ
   }, [open, initial]);
   const submit = async (e: FormEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     const row = {
       name: f.name.trim(),
       price: Number(f.price),
@@ -103,14 +104,15 @@ export function ProductDialog({ open, onOpenChange, initial }: DialogProps<Produ
       sku: f.sku.trim() || null,
     };
     const res = initial
-      ? await supabase.from("products").update(row).eq("id", initial.id)
-      : await supabase.from("products").insert(row);
+      ? await supabase.from("products").update(row).eq("id", initial.id).select("*").single()
+      : await supabase.from("products").insert(row).select("*").single();
     if (res.error) {
       toast.error(errMsg(res.error));
       return;
     }
     toast.success("Prodotto salvato");
-    refresh();
+    await refresh();
+    onSaved?.(res.data.id, res.data);
     onOpenChange(false);
   };
   return (
@@ -121,7 +123,7 @@ export function ProductDialog({ open, onOpenChange, initial }: DialogProps<Produ
         </DialogHeader>
         <form onSubmit={submit} className="space-y-4">
           <Field label="Nome">
-            <Input required value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} />
+            <Input required aria-label="Nome prodotto" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} />
           </Field>
           <div className="grid gap-4 sm:grid-cols-3">
             <Field label="Prezzo (€)">
@@ -131,6 +133,7 @@ export function ProductDialog({ open, onOpenChange, initial }: DialogProps<Produ
                 min="0"
                 step="0.01"
                 value={f.price}
+                aria-label="Prezzo (€)"
                 onChange={(e) => setF({ ...f, price: e.target.value })}
               />
             </Field>
@@ -178,6 +181,7 @@ export function EventDialog({ open, onOpenChange, initial, onSaved }: DialogProp
   }, [open, initial]);
   const submit = async (e: FormEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     const res = initial
       ? await supabase.from("events").update(f).eq("id", initial.id).select("id").single()
       : await supabase.from("events").insert(f).select("id").single();
@@ -186,7 +190,7 @@ export function EventDialog({ open, onOpenChange, initial, onSaved }: DialogProp
       return;
     }
     toast.success("Evento salvato");
-    refresh();
+    await refresh();
     onSaved?.(res.data.id);
     onOpenChange(false);
   };
@@ -198,13 +202,14 @@ export function EventDialog({ open, onOpenChange, initial, onSaved }: DialogProp
         </DialogHeader>
         <form onSubmit={submit} className="space-y-4">
           <Field label="Nome evento">
-            <Input required value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} />
+            <Input required aria-label="Nome evento" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} />
           </Field>
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Data">
               <Input
                 required
                 type="date"
+                aria-label="Data evento"
                 value={f.event_date}
                 onChange={(e) => setF({ ...f, event_date: e.target.value })}
               />

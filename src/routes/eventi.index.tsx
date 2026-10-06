@@ -12,6 +12,8 @@ import { EVENT_STATUS, fmtDate } from "@/lib/format";
 export const Route = createFileRoute("/eventi/")({
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
       { title: "Eventi — Mana Flask" },
       { name: "description", content: "Crea e gestisci gli eventi di Mana Flask." },
       { property: "og:title", content: "Eventi — Mana Flask" },

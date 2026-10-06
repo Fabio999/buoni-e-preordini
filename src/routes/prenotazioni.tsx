@@ -13,6 +13,8 @@ import { BOOKING_STATUS, fmtDate } from "@/lib/format";
 export const Route = createFileRoute("/prenotazioni")({
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
       { title: "Prenotazioni — Mana Flask" },
       { name: "description", content: "Gestisci prenotazioni, stato di preparazione e pagamenti." },
       { property: "og:title", content: "Prenotazioni — Mana Flask" },

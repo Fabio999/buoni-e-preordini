@@ -15,6 +15,8 @@ import { euro } from "@/lib/format";
 export const Route = createFileRoute("/prodotti")({
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
       { title: "Prodotti — Mana Flask" },
       { name: "description", content: "Catalogo prodotti e oggetti prenotabili di Mana Flask." },
       { property: "og:title", content: "Prodotti — Mana Flask" },

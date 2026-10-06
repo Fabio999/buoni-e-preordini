@@ -34,7 +34,7 @@ export function EventSelect({ value, onChange }: { value: string; onChange: (id:
   </>;
 }
 
-export function ProductSelect({ value, onChange, className }: {
+export function ProductSelect({ value, onChange, className = "" }: {
   value: string; onChange: (id: string, product?: Product) => void; className?: string;
 }) {
   const { data: products = [] } = useProducts();

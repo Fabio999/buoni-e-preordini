@@ -76,7 +76,7 @@ function ClientDetail() {
   if (!client) return <Empty>Cliente non trovato</Empty>;
 
   const remove = async () => {
-    if (!confirm("Eliminare il cliente? Possibile solo se non ha prenotazioni né movimenti."))
+    if (!confirm("Eliminare il cliente? Verranno eliminati anche prenotazioni, acquisti e movimenti di saldo."))
       return;
     const { error } = await supabase.from("clients").delete().eq("id", id);
     if (error) {

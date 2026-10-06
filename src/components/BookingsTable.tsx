@@ -73,7 +73,7 @@ function StatusSelect({ b, onChange }: { b: Booking; onChange: (s: BookingStatus
 }
 
 const itemsText = (b: Booking) =>
-  b.booking_items.map((i) => `${i.quantity}× ${i.products?.name ?? "?"}`).join(", ");
+  b.booking_items.map((i) => `${i.quantity}× ${i.products?.name ?? (i.product_name || "?")}`).join(", ");
 
 export function BookingsTable({
   bookings,

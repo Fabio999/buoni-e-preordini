@@ -13,6 +13,8 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/clienti/")({
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
       { title: "Clienti — Mana Flask" },
       { name: "description", content: "Anagrafica clienti di Mana Flask." },
       { property: "og:title", content: "Clienti — Mana Flask" },

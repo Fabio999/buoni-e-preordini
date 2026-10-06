@@ -28,6 +28,8 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/eventi/$id")({
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
       { title: "Dettaglio evento — Mana Flask" },
       {
         name: "description",

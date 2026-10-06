@@ -25,6 +25,8 @@ import {
 } from "@/components/ui/sidebar";
 import { supabase } from "@/integrations/supabase/client";
 import { GlobalSearch } from "./GlobalSearch";
+import logoAsset from "@/assets/mana-flask-logo.png.asset.json";
+import iconAsset from "@/assets/mana-flask-icon.jpg.asset.json";
 
 const items = [
   { title: "Dashboard", url: "/", icon: LayoutDashboard },
@@ -42,13 +44,9 @@ function AppSidebar() {
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader>
-        <div className="flex items-center gap-2 px-2 py-3">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-sidebar-primary font-display text-sm font-bold text-sidebar-primary-foreground">
-            MF
-          </div>
-          <div className="font-display text-base font-semibold text-sidebar-accent-foreground group-data-[collapsible=icon]:hidden">
-            Mana Flask
-          </div>
+        <div className="flex items-center justify-center px-2 py-3 group-data-[collapsible=icon]:px-0">
+          <img src={logoAsset.url} alt="Mana Flask" className="h-28 w-full object-contain group-data-[collapsible=icon]:hidden" />
+          <img src={iconAsset.url} alt="Mana Flask" className="hidden h-8 w-8 shrink-0 rounded-md object-contain group-data-[collapsible=icon]:block" />
         </div>
       </SidebarHeader>
       <SidebarContent>

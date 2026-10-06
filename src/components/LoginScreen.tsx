@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
+import logoAsset from "@/assets/mana-flask-logo.png.asset.json";
 
 export function LoginScreen() {
   const [mode, setMode] = useState<"login" | "signup">("login");
@@ -32,14 +33,10 @@ export function LoginScreen() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-sidebar p-4">
       <div className="w-full max-w-sm rounded-xl bg-card p-8 shadow-xl">
-        <div className="mb-6 flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-md bg-primary font-display font-bold text-primary-foreground">
-            MF
-          </div>
-          <div>
-            <h1 className="text-xl font-semibold">Mana Flask</h1>
-            <p className="text-sm text-muted-foreground">Gestionale</p>
-          </div>
+        <div className="mb-6 flex flex-col items-center gap-3">
+          <h1 className="sr-only">Mana Flask</h1>
+          <img src={logoAsset.url} alt="Mana Flask" className="h-36 w-44 object-contain" />
+          <p className="text-sm text-muted-foreground">Gestionale</p>
         </div>
         <form onSubmit={submit} className="space-y-4">
           <div className="space-y-1.5">

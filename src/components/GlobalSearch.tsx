@@ -21,7 +21,9 @@ export function GlobalSearch() {
         .slice(0, 5),
       events: (events ?? []).filter((e) => e.name.toLowerCase().includes(t)).slice(0, 5),
       products: (products ?? [])
-        .filter((p) => `${p.name} ${p.sku ?? ""}`.toLowerCase().includes(t))
+        .filter((p) =>
+          `${p.name} ${p.sku ?? ""} ${p.game} ${p.product_type}`.toLowerCase().includes(t),
+        )
         .slice(0, 5),
     };
   }, [q, clients, events, products]);

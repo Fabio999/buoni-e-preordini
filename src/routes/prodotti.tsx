@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { errMsg, useProducts, useRefresh, type Product } from "@/lib/data";
 import { euro } from "@/lib/format";
+import { matchesText } from "@/lib/search";
 
 export const Route = createFileRoute("/prodotti")({
   head: () => ({
@@ -35,9 +36,8 @@ function ProductsPage() {
   const [q, setQ] = useState("");
   const [editing, setEditing] = useState<Product | null>(null);
   const [open, setOpen] = useState(false);
-  const t = q.trim().toLowerCase();
   const filtered = products.filter((p) =>
-    `${p.name} ${p.category} ${p.sku ?? ""}`.toLowerCase().includes(t),
+    matchesText(`${p.name} ${p.category} ${p.sku ?? ""} ${p.game} ${p.product_type}`, q),
   );
 
   const remove = async (p: Product) => {
@@ -69,7 +69,7 @@ function ProductsPage() {
         <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
           className="pl-9"
-          placeholder="Cerca prodotto, categoria, SKU"
+          placeholder="Cerca nome, gioco, tipo, categoria, SKU"
           value={q}
           onChange={(e) => setQ(e.target.value)}
         />
@@ -82,6 +82,8 @@ function ProductsPage() {
               <div className="min-w-0">
                 <div className="font-medium">{p.name}</div>
                 <div className="mt-0.5 flex flex-wrap gap-2 text-xs text-muted-foreground">
+                  {p.game && <Badge variant="info">{p.game}</Badge>}
+                  {p.product_type && <Badge variant="info">{p.product_type}</Badge>}
                   {p.category && <Badge variant="info">{p.category}</Badge>}
                   {p.sku && <span>SKU {p.sku}</span>}
                 </div>

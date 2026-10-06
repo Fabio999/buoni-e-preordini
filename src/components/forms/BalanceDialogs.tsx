@@ -14,7 +14,6 @@ import { supabase } from "@/integrations/supabase/client";
 import {
   balancesByClient,
   errMsg,
-  useClients,
   useMovements,
   useProducts,
   useRefresh,
@@ -22,6 +21,7 @@ import {
 import { euro } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { Field, selectClass } from "./SimpleDialogs";
+import { ClientSelect } from "./ClientSelect";
 
 type Props = { open: boolean; onOpenChange: (o: boolean) => void; clientId?: string };
 
@@ -30,34 +30,6 @@ function useBalance(clientId: string) {
   return useMemo(
     () => balancesByClient(movements).get(clientId)?.balance ?? 0,
     [movements, clientId],
-  );
-}
-
-function ClientSelect({
-  value,
-  onChange,
-  fixed,
-}: {
-  value: string;
-  onChange: (v: string) => void;
-  fixed?: boolean;
-}) {
-  const { data: clients = [] } = useClients();
-  return (
-    <select
-      required
-      disabled={fixed}
-      className={selectClass}
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-    >
-      <option value="">Seleziona…</option>
-      {clients.map((c) => (
-        <option key={c.id} value={c.id}>
-          {c.last_name} {c.first_name}
-        </option>
-      ))}
-    </select>
   );
 }
 

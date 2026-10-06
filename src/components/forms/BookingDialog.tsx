@@ -12,7 +12,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
-import { errMsg, useClients, useEvents, useProducts, useRefresh, type Booking } from "@/lib/data";
+import { errMsg, useEvents, useProducts, useRefresh, type Booking } from "@/lib/data";
 import {
   BOOKING_STATUS,
   euro,
@@ -20,7 +20,8 @@ import {
   type BookingStatus,
   type PaymentStatus,
 } from "@/lib/format";
-import { ClientDialog, Field, selectClass } from "./SimpleDialogs";
+import { Field, selectClass } from "./SimpleDialogs";
+import { ClientSelect } from "./ClientSelect";
 
 type Line = { product_id: string; quantity: number; unit_price: number };
 
@@ -37,7 +38,6 @@ export function BookingDialog({
   defaultEventId?: string | undefined;
   defaultClientId?: string | undefined;
 }) {
-  const { data: clients = [] } = useClients();
   const { data: events = [] } = useEvents();
   const { data: products = [] } = useProducts();
   const refresh = useRefresh();
@@ -48,7 +48,6 @@ export function BookingDialog({
   const [notes, setNotes] = useState("");
   const [lines, setLines] = useState<Line[]>([]);
   const [busy, setBusy] = useState(false);
-  const [newClient, setNewClient] = useState(false);
 
   useEffect(() => {
     if (!open) return;
@@ -101,9 +100,10 @@ export function BookingDialog({
         if (r.error) throw r.error;
         id = r.data.id;
       }
+      if (!id) throw new Error("Prenotazione non creata");
       const ins = await supabase
         .from("booking_items")
-        .insert(valid.map((l) => ({ ...l, booking_id: id! })));
+        .insert(valid.map((l) => ({ ...l, booking_id: id })));
       if (ins.error) throw ins.error;
       toast.success(initial ? "Prenotazione aggiornata" : "Prenotazione creata");
       refresh();
@@ -124,30 +124,7 @@ export function BookingDialog({
         <form onSubmit={submit} className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Cliente">
-              <div className="flex gap-2">
-                <select
-                  required
-                  className={selectClass}
-                  value={clientId}
-                  onChange={(e) => setClientId(e.target.value)}
-                >
-                  <option value="">Seleziona…</option>
-                  {clients.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.last_name} {c.first_name}
-                    </option>
-                  ))}
-                </select>
-                <Button
-                  type="button"
-                  size="icon"
-                  variant="outline"
-                  onClick={() => setNewClient(true)}
-                  title="Nuovo cliente"
-                >
-                  <Plus className="h-4 w-4" />
-                </Button>
-              </div>
+              <ClientSelect value={clientId} onChange={setClientId} />
             </Field>
             <Field label="Evento">
               <select
@@ -273,11 +250,6 @@ export function BookingDialog({
             </Button>
           </DialogFooter>
         </form>
-        <ClientDialog
-          open={newClient}
-          onOpenChange={setNewClient}
-          onSaved={(id) => setClientId(id)}
-        />
       </DialogContent>
     </Dialog>
   );

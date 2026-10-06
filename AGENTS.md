@@ -15,3 +15,4 @@
 - Booking totals are derived from booking_items (quantity × unit_price), never stored, to avoid duplication.
 - Shared data hooks live in src/lib/data.ts; mutations call `useRefresh()` to invalidate all queries for simplicity.
 - Uploaded company logos are referenced through CDN asset pointers; the favicon is a small local raster derived from the same brand asset to support browser icon loading.
+- All editable client selectors use the shared ClientSelect with inline creation and automatic selection, keeping booking and balance workflows consistent.

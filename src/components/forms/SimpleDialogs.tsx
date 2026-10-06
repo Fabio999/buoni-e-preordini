@@ -44,6 +44,7 @@ export function ClientDialog({ open, onOpenChange, initial, onSaved }: DialogPro
   }, [open, initial]);
   const submit = async (e: FormEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     const row = { first_name: first.trim(), last_name: last.trim() };
     const res = initial
       ? await supabase.from("clients").update(row).eq("id", initial.id).select("id").single()
@@ -66,10 +67,10 @@ export function ClientDialog({ open, onOpenChange, initial, onSaved }: DialogPro
         <form onSubmit={submit} className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Nome">
-              <Input required value={first} onChange={(e) => setFirst(e.target.value)} autoFocus />
+              <Input required aria-label="Nome" value={first} onChange={(e) => setFirst(e.target.value)} autoFocus />
             </Field>
             <Field label="Cognome">
-              <Input required value={last} onChange={(e) => setLast(e.target.value)} />
+              <Input required aria-label="Cognome" value={last} onChange={(e) => setLast(e.target.value)} />
             </Field>
           </div>
           <DialogFooter>

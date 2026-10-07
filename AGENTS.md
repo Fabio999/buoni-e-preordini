@@ -18,3 +18,4 @@
 - All editable client selectors use the shared ClientSelect with inline creation and automatic selection, keeping booking and balance workflows consistent.
 - Editable event and product selectors use shared controls with inline creation; creation dialogs refresh queries before selecting saved entities and stop nested submit propagation to preserve parent drafts.
 - Text search in lists goes through the shared matcher in src/lib/search.ts (case- and accent-insensitive, every word of the query must match, reversed name order accepted) so every section searches the same way.
+- Product stock is adjusted only by DB triggers on booking_items and purchases (keeps quantities consistent with edits/deletes).

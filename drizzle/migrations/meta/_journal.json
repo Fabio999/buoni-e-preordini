@@ -15,6 +15,13 @@
       "when": 1791247189216,
       "tag": "0001_editable_deletable_all",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791350399928,
+      "tag": "0002_product_stock",
+      "breakpoints": true
     }
   ]
 }

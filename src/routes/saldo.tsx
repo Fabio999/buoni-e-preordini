@@ -36,7 +36,6 @@ export const Route = createFileRoute("/saldo")({
 function BalancePage() {
   const { data: clients = [] } = useClients();
   const { data: movements = [] } = useMovements();
-  const [filter, setFilter] = useState<"all" | "available" | "empty">("all");
   const [dlg, setDlg] = useState<null | "topup" | "purchase" | "correction">(null);
   const close = (o: boolean) => !o && setDlg(null);
 
@@ -44,9 +43,7 @@ function BalancePage() {
   const clientMap = useMemo(() => new Map(clients.map((c) => [c.id, c])), [clients]);
   const rows = clients
     .map((c) => ({ c, b: balances.get(c.id) ?? { balance: 0, loaded: 0, used: 0 } }))
-    .filter((r) =>
-      filter === "available" ? r.b.balance > 0 : filter === "empty" ? r.b.balance <= 0 : true,
-    )
+    .filter((r) => r.b.balance !== 0)
     .sort((a, b) => b.b.balance - a.b.balance);
   const all = [...balances.values()];
   const refresh = useRefresh();
@@ -140,35 +137,9 @@ function BalancePage() {
           <TabsTrigger value="movimenti">Tutti i movimenti</TabsTrigger>
         </TabsList>
         <TabsContent value="clienti">
-          <Section
-            title="Saldi clienti"
-            actions={
-              <div className="flex gap-1 rounded-lg bg-muted p-1 text-xs font-medium">
-                {(
-                  [
-                    ["all", "Tutti"],
-                    ["available", "Con saldo"],
-                    ["empty", "Saldo esaurito"],
-                  ] as const
-                ).map(([k, l]) => (
-                  <button
-                    key={k}
-                    onClick={() => setFilter(k)}
-                    className={cn(
-                      "rounded-md px-3 py-1.5",
-                      filter === k
-                        ? "bg-primary text-primary-foreground"
-                        : "text-muted-foreground hover:text-foreground",
-                    )}
-                  >
-                    {l}
-                  </button>
-                ))}
-              </div>
-            }
-          >
+          <Section title="Saldi clienti">
             {!rows.length ? (
-              <Empty>Nessun cliente</Empty>
+              <Empty>Nessun cliente con saldo attivo</Empty>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full min-w-[520px] text-sm">

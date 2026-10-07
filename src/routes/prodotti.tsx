@@ -89,6 +89,7 @@ function ProductsPage() {
                 </div>
               </div>
               <div className="flex items-center gap-1">
+                <Badge variant={p.stock > 0 ? "success" : "danger"} className="mr-2">{p.stock} pz</Badge>
                 <span className="mr-2 font-display font-semibold">{euro(p.price)}</span>
                 <Button
                   size="icon"

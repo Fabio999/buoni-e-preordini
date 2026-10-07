@@ -83,7 +83,7 @@ export function ClientDialog({ open, onOpenChange, initial, onSaved }: DialogPro
 }
 
 export function ProductDialog({ open, onOpenChange, initial, onSaved }: Omit<DialogProps<Product>, "onSaved"> & { onSaved?: (id: string, product: Product) => void }) {
-  const [f, setF] = useState({ name: "", price: "", category: "", sku: "", game: "", product_type: "" });
+  const [f, setF] = useState({ name: "", price: "", category: "", sku: "", game: "", product_type: "", stock: "" });
   const refresh = useRefresh();
   useEffect(() => {
     if (open)
@@ -94,6 +94,7 @@ export function ProductDialog({ open, onOpenChange, initial, onSaved }: Omit<Dia
         sku: initial?.sku ?? "",
         game: initial?.game ?? "",
         product_type: initial?.product_type ?? "",
+        stock: initial ? String(initial.stock) : "0",
       });
   }, [open, initial]);
   const submit = async (e: FormEvent) => {
@@ -106,6 +107,7 @@ export function ProductDialog({ open, onOpenChange, initial, onSaved }: Omit<Dia
       sku: f.sku.trim() || null,
       game: f.game.trim(),
       product_type: f.product_type.trim(),
+      stock: Math.trunc(Number(f.stock) || 0),
     };
     const res = initial
       ? await supabase.from("products").update(row).eq("id", initial.id).select("*").single()
@@ -147,6 +149,15 @@ export function ProductDialog({ open, onOpenChange, initial, onSaved }: Omit<Dia
               />
             </Field>
           </div>
+          <Field label="Quantità disponibile">
+            <Input
+              type="number"
+              step="1"
+              aria-label="Quantità disponibile"
+              value={f.stock}
+              onChange={(e) => setF({ ...f, stock: e.target.value })}
+            />
+          </Field>
           <div className="grid gap-4 sm:grid-cols-3">
             <Field label="Prezzo (€)">
               <Input

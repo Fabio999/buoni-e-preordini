@@ -325,6 +325,50 @@ export type Database = {
           },
         ]
       }
+      stock_movements: {
+        Row: {
+          booking_id: string | null
+          created_at: string
+          delta: number
+          id: string
+          label: string
+          product_id: string
+          purchase_id: string | null
+          source: string
+          stock_after: number
+        }
+        Insert: {
+          booking_id?: string | null
+          created_at?: string
+          delta: number
+          id?: string
+          label?: string
+          product_id: string
+          purchase_id?: string | null
+          source: string
+          stock_after: number
+        }
+        Update: {
+          booking_id?: string | null
+          created_at?: string
+          delta?: number
+          id?: string
+          label?: string
+          product_id?: string
+          purchase_id?: string | null
+          source?: string
+          stock_after?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_movements_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -341,6 +385,17 @@ export type Database = {
       }
       client_balance: { Args: { _client: string }; Returns: number }
       delete_balance_movement: { Args: { _id: string }; Returns: undefined }
+      log_stock: {
+        Args: {
+          _booking: string
+          _delta: number
+          _label: string
+          _product: string
+          _purchase: string
+          _source: string
+        }
+        Returns: undefined
+      }
       recompute_client_ledger: { Args: { _client: string }; Returns: undefined }
       register_purchase: {
         Args: {

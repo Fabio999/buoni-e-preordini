@@ -1,8 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Pencil, Plus, Search, Trash2 } from "lucide-react";
+import { History, Pencil, Plus, Search, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/AppShell";
+import { StockHistoryDialog } from "@/components/StockHistoryDialog";
 import { ProductDialog } from "@/components/forms/SimpleDialogs";
 import { Empty, Section } from "@/components/Status";
 import { Badge } from "@/components/ui/badge";
@@ -36,6 +37,7 @@ function ProductsPage() {
   const [q, setQ] = useState("");
   const [editing, setEditing] = useState<Product | null>(null);
   const [open, setOpen] = useState(false);
+  const [history, setHistory] = useState<Product | null>(null);
   const filtered = products.filter((p) =>
     matchesText(`${p.name} ${p.category} ${p.sku ?? ""} ${p.game} ${p.product_type}`, q),
   );
@@ -91,6 +93,9 @@ function ProductsPage() {
               <div className="flex items-center gap-1">
                 <Badge variant={p.stock > 0 ? "success" : "danger"} className="mr-2">{p.stock} pz</Badge>
                 <span className="mr-2 font-display font-semibold">{euro(p.price)}</span>
+                <Button size="icon" variant="ghost" onClick={() => setHistory(p)} aria-label="Storico quantità">
+                  <History className="h-4 w-4" />
+                </Button>
                 <Button
                   size="icon"
                   variant="ghost"
@@ -110,6 +115,7 @@ function ProductsPage() {
           ))}
         </ul>
       </Section>
+      <StockHistoryDialog product={history} onOpenChange={(o) => !o && setHistory(null)} />
       <ProductDialog open={open} onOpenChange={setOpen} initial={editing} />
     </div>
   );

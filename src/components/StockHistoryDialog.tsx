@@ -49,6 +49,7 @@ export function StockHistoryDialog({
                 <div className="text-xs text-muted-foreground">
                   {fmtDateTime(m.created_at)}
                   {m.label && <> · {m.label}</>}
+                  {m.operator_name && <> · da {m.operator_name}</>}
                   {m.booking_id && m.source === "prenotazione" && (
                     <> · <Link to="/prenotazioni" className="text-primary underline">vedi prenotazioni</Link></>
                   )}

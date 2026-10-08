@@ -16,6 +16,7 @@ import { AuthProvider, useAuth } from "@/lib/auth";
 import { AppShell } from "@/components/AppShell";
 import { LoginScreen } from "@/components/LoginScreen";
 import { Toaster } from "@/components/ui/sonner";
+import { OperatorGate } from "@/lib/operator";
 
 function NotFoundComponent() {
   return (
@@ -131,9 +132,11 @@ function Gate() {
     );
   if (!session) return <LoginScreen />;
   return (
-    <AppShell>
-      <Outlet />
-    </AppShell>
+    <OperatorGate userId={session.user.id}>
+      <AppShell>
+        <Outlet />
+      </AppShell>
+    </OperatorGate>
   );
 }
 

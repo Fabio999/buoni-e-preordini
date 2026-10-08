@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AmministrazioneRouteImport } from './routes/amministrazione'
 import { Route as PrenotazioniRouteImport } from './routes/prenotazioni'
 import { Route as ProdottiRouteImport } from './routes/prodotti'
 import { Route as SaldoRouteImport } from './routes/saldo'
@@ -21,6 +22,11 @@ import { Route as EventiIdRouteImport } from './routes/eventi.$id'
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AmministrazioneRoute = AmministrazioneRouteImport.update({
+  id: '/amministrazione',
+  path: '/amministrazione',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PrenotazioniRoute = PrenotazioniRouteImport.update({
@@ -61,6 +67,7 @@ const EventiIdRoute = EventiIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/amministrazione': typeof AmministrazioneRoute
   '/prenotazioni': typeof PrenotazioniRoute
   '/prodotti': typeof ProdottiRoute
   '/saldo': typeof SaldoRoute
@@ -71,6 +78,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/amministrazione': typeof AmministrazioneRoute
   '/prenotazioni': typeof PrenotazioniRoute
   '/prodotti': typeof ProdottiRoute
   '/saldo': typeof SaldoRoute
@@ -82,6 +90,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/amministrazione': typeof AmministrazioneRoute
   '/prenotazioni': typeof PrenotazioniRoute
   '/prodotti': typeof ProdottiRoute
   '/saldo': typeof SaldoRoute
@@ -94,6 +103,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/amministrazione'
     | '/prenotazioni'
     | '/prodotti'
     | '/saldo'
@@ -104,6 +114,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/amministrazione'
     | '/prenotazioni'
     | '/prodotti'
     | '/saldo'
@@ -114,6 +125,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/amministrazione'
     | '/prenotazioni'
     | '/prodotti'
     | '/saldo'
@@ -125,6 +137,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AmministrazioneRoute: typeof AmministrazioneRoute
   PrenotazioniRoute: typeof PrenotazioniRoute
   ProdottiRoute: typeof ProdottiRoute
   SaldoRoute: typeof SaldoRoute
@@ -141,6 +154,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/amministrazione': {
+      id: '/amministrazione'
+      path: '/amministrazione'
+      fullPath: '/amministrazione'
+      preLoaderRoute: typeof AmministrazioneRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/prenotazioni': {
@@ -197,6 +217,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AmministrazioneRoute: AmministrazioneRoute,
   PrenotazioniRoute: PrenotazioniRoute,
   ProdottiRoute: ProdottiRoute,
   SaldoRoute: SaldoRoute,

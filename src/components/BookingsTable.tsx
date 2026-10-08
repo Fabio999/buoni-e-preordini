@@ -109,6 +109,7 @@ export function BookingsTable({
               <tr key={b.id} className="border-b last:border-0 hover:bg-muted/40">
                 <td className="py-2.5 pr-3">
                   <PaymentPill status={b.payment_status} onClick={() => a.togglePayment(b)} />
+                  {b.operator_name && <div className="mt-1 text-xs text-muted-foreground">da {b.operator_name}</div>}
                 </td>
                 {showClient && (
                   <td className="py-2.5 pr-3 font-medium">

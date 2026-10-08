@@ -129,3 +129,15 @@ export function errMsg(e: unknown) {
     return "Elemento collegato ad altri dati: non può essere eliminato.";
   return msg;
 }
+
+export function useIsAdmin() {
+  return useQuery({
+    queryKey: ["is-admin"],
+    queryFn: async () => {
+      const { data: u } = await supabase.auth.getUser();
+      if (!u.user) return false;
+      const { data } = await supabase.rpc("has_role", { _user_id: u.user.id, _role: "admin" });
+      return !!data;
+    },
+  });
+}

@@ -5,6 +5,8 @@ import {
   LayoutDashboard,
   LogOut,
   Package,
+  ShieldCheck,
+  UserRound,
   Users,
   Wallet,
 } from "lucide-react";
@@ -23,7 +25,8 @@ import {
   SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { supabase } from "@/integrations/supabase/client";
+import { signOutOperator, useOperator } from "@/lib/operator";
+import { useIsAdmin } from "@/lib/data";
 import { GlobalSearch } from "./GlobalSearch";
 import logoAsset from "@/assets/mana-flask-logo.png.asset.json";
 import iconAsset from "@/assets/mana-flask-icon.jpg.asset.json";
@@ -40,6 +43,11 @@ const items = [
 function AppSidebar() {
   const path = useRouterState({ select: (r) => r.location.pathname });
   const { setOpenMobile } = useSidebar();
+  const { data: isAdmin } = useIsAdmin();
+  const operator = useOperator();
+  const all = isAdmin
+    ? [...items, { title: "Amministrazione", url: "/amministrazione", icon: ShieldCheck } as const]
+    : items;
   const isActive = (url: string) => (url === "/" ? path === "/" : path.startsWith(url));
   return (
     <Sidebar collapsible="icon">
@@ -53,7 +61,7 @@ function AppSidebar() {
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu>
-              {items.map((item) => (
+              {all.map((item) => (
                 <SidebarMenuItem key={item.url}>
                   <SidebarMenuButton asChild isActive={isActive(item.url)} tooltip={item.title}>
                     <Link to={item.url} onClick={() => setOpenMobile(false)}>
@@ -70,7 +78,13 @@ function AppSidebar() {
       <SidebarFooter>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton tooltip="Esci" onClick={() => supabase.auth.signOut()}>
+            <SidebarMenuButton tooltip={operator} className="pointer-events-none">
+              <UserRound className="h-4 w-4" />
+              <span className="truncate">{operator}</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton tooltip="Esci" onClick={() => signOutOperator()}>
               <LogOut className="h-4 w-4" />
               <span>Esci</span>
             </SidebarMenuButton>

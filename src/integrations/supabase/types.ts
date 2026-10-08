@@ -23,6 +23,7 @@ export type Database = {
           created_at: string
           description: string
           id: string
+          operator_name: string
           purchase_id: string | null
           type: Database["public"]["Enums"]["movement_type"]
         }
@@ -34,6 +35,7 @@ export type Database = {
           created_at?: string
           description?: string
           id?: string
+          operator_name?: string
           purchase_id?: string | null
           type: Database["public"]["Enums"]["movement_type"]
         }
@@ -45,6 +47,7 @@ export type Database = {
           created_at?: string
           description?: string
           id?: string
+          operator_name?: string
           purchase_id?: string | null
           type?: Database["public"]["Enums"]["movement_type"]
         }
@@ -114,6 +117,7 @@ export type Database = {
           event_id: string
           id: string
           notes: string
+          operator_name: string
           payment_status: Database["public"]["Enums"]["payment_status"]
           status: Database["public"]["Enums"]["booking_status"]
         }
@@ -123,6 +127,7 @@ export type Database = {
           event_id: string
           id?: string
           notes?: string
+          operator_name?: string
           payment_status?: Database["public"]["Enums"]["payment_status"]
           status?: Database["public"]["Enums"]["booking_status"]
         }
@@ -132,6 +137,7 @@ export type Database = {
           event_id?: string
           id?: string
           notes?: string
+          operator_name?: string
           payment_status?: Database["public"]["Enums"]["payment_status"]
           status?: Database["public"]["Enums"]["booking_status"]
         }
@@ -238,6 +244,24 @@ export type Database = {
         }
         Relationships: []
       }
+      operator_sessions: {
+        Row: {
+          operator_name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          operator_name?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          operator_name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       products: {
         Row: {
           category: string
@@ -281,6 +305,7 @@ export type Database = {
           created_at: string
           id: string
           notes: string
+          operator_name: string
           product_id: string | null
           product_name: string
           purchase_date: string
@@ -292,6 +317,7 @@ export type Database = {
           created_at?: string
           id?: string
           notes?: string
+          operator_name?: string
           product_id?: string | null
           product_name: string
           purchase_date?: string
@@ -303,6 +329,7 @@ export type Database = {
           created_at?: string
           id?: string
           notes?: string
+          operator_name?: string
           product_id?: string | null
           product_name?: string
           purchase_date?: string
@@ -332,6 +359,7 @@ export type Database = {
           delta: number
           id: string
           label: string
+          operator_name: string
           product_id: string
           purchase_id: string | null
           source: string
@@ -343,6 +371,7 @@ export type Database = {
           delta: number
           id?: string
           label?: string
+          operator_name?: string
           product_id: string
           purchase_id?: string | null
           source: string
@@ -354,6 +383,7 @@ export type Database = {
           delta?: number
           id?: string
           label?: string
+          operator_name?: string
           product_id?: string
           purchase_id?: string | null
           source?: string
@@ -368,6 +398,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
       }
     }
     Views: {
@@ -384,7 +432,15 @@ export type Database = {
         Returns: string
       }
       client_balance: { Args: { _client: string }; Returns: number }
+      current_operator: { Args: never; Returns: string }
       delete_balance_movement: { Args: { _id: string }; Returns: undefined }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
       log_stock: {
         Args: {
           _booking: string
@@ -415,6 +471,7 @@ export type Database = {
       }
     }
     Enums: {
+      app_role: "admin"
       booking_status: "da_preparare" | "pronta" | "consegnata" | "annullata"
       event_status: "programmato" | "in_preparazione" | "concluso"
       movement_type: "ricarica" | "acquisto" | "correzione"
@@ -546,6 +603,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      app_role: ["admin"],
       booking_status: ["da_preparare", "pronta", "consegnata", "annullata"],
       event_status: ["programmato", "in_preparazione", "concluso"],
       movement_type: ["ricarica", "acquisto", "correzione"],

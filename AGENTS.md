@@ -20,3 +20,5 @@
 - Text search in lists goes through the shared matcher in src/lib/search.ts (case- and accent-insensitive, every word of the query must match, reversed name order accepted) so every section searches the same way.
 - Product stock is adjusted only by DB triggers on booking_items and purchases (keeps quantities consistent with edits/deletes).
 - Stock changes are logged to stock_movements by triggers (log_stock for bookings/purchases, products trigger for manual edits); the table is read-only for the app.
+- Admin = `admin` row in user_roles checked with has_role; account management goes through server functions in src/lib/admin.functions.ts that verify the role before using the admin client (keeps passwords/users server-side).
+- The working operator's name is stored per signed-in user in operator_sessions and stamped by the `operator_name` column default (current_operator()) on bookings, purchases, balance and stock movements, so no RPC needs an extra parameter.

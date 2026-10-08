@@ -68,7 +68,10 @@ export function MovementsTable({
                     {t.label}
                   </Badge>
                 </td>
-                <td className="py-2.5 pr-3">{m.description}</td>
+                <td className="py-2.5 pr-3">
+                  {m.description}
+                  {m.operator_name && <div className="text-xs text-muted-foreground">da {m.operator_name}</div>}
+                </td>
                 <td
                   className={cn(
                     "whitespace-nowrap py-2.5 pr-3 text-right font-semibold",

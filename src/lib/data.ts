@@ -96,8 +96,16 @@ export const useRefresh = () => {
   return () => qc.invalidateQueries();
 };
 
-export const bookingTotal = (b: Pick<Booking, "booking_items">) =>
+export const bookingSubtotal = (b: Pick<Booking, "booking_items">) =>
   b.booking_items.reduce((s, i) => s + Number(i.unit_price) * i.quantity, 0);
+
+/** Final total = items subtotal minus the booking discount (in euro). */
+export const bookingTotal = (b: Pick<Booking, "booking_items"> & { discount?: number | null }) =>
+  Math.max(0, bookingSubtotal(b) - Number(b.discount ?? 0));
+
+/** Discount percentage from subtotal and discount amount, rounded to 2 decimals. */
+export const discountPercent = (subtotal: number, discount: number) =>
+  subtotal > 0 ? Math.round((discount / subtotal) * 10000) / 100 : 0;
 
 /** Latest balance per client, derived from the movement ledger. */
 export function balancesByClient(movements: Movement[] | undefined) {

@@ -4,7 +4,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import { bookingTotal, errMsg, useRefresh, type Booking } from "@/lib/data";
+import { bookingSubtotal, bookingTotal, discountPercent, errMsg, useRefresh, type Booking } from "@/lib/data";
 import { BOOKING_STATUS, euro, fmtDate, fullName, type BookingStatus } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { BookingDialog } from "./forms/BookingDialog";
@@ -145,7 +145,14 @@ export function BookingsTable({
                   </td>
                 )}
                 <td className="max-w-xs py-2.5 pr-3 text-muted-foreground">{itemsText(b)}</td>
-                <td className="py-2.5 pr-3 text-right font-semibold">{euro(bookingTotal(b))}</td>
+                <td className="py-2.5 pr-3 text-right font-semibold">
+                  {euro(bookingTotal(b))}
+                  {Number(b.discount) > 0 && (
+                    <span className="block text-xs font-normal text-muted-foreground">
+                      sconto {discountPercent(bookingSubtotal(b), Number(b.discount))}%
+                    </span>
+                  )}
+                </td>
                 <td className="py-2.5 pr-3">
                   <StatusSelect b={b} onChange={(s) => a.setStatus(b, s)} />
                 </td>

@@ -2,7 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState, type FormEvent } from "react";
-import { Pencil, Plus, Trash2 } from "lucide-react";
+import { Pencil, Plus, Trash2, Users } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/AppShell";
 import { Button } from "@/components/ui/button";
@@ -42,6 +43,7 @@ function Accounts() {
   const qc = useQueryClient();
   const { data = [] } = useQuery({ queryKey: ["accounts"], queryFn: () => list() });
   const [editing, setEditing] = useState<Account | "new" | null>(null);
+  const [names, setNames] = useState<Account | null>(null);
 
   async function remove(a: Account) {
     if (!confirm(`Eliminare l'accesso ${a.email}?`)) return;
@@ -79,6 +81,9 @@ function Accounts() {
                 </div>
               </div>
               <div className="flex gap-1">
+                <Button size="sm" variant="outline" aria-label="Nomi operatori" onClick={() => setNames(a)}>
+                  <Users className="h-4 w-4" /> Nomi
+                </Button>
                 <Button size="icon" variant="ghost" aria-label="Modifica accesso" onClick={() => setEditing(a)}>
                   <Pencil className="h-4 w-4" />
                 </Button>
@@ -92,6 +97,7 @@ function Accounts() {
           ))}
         </ul>
       </div>
+      {names && <NamesDialog account={names} onClose={() => setNames(null)} />}
       {editing && <AccountDialog account={editing === "new" ? null : editing} onClose={() => setEditing(null)} />}
     </div>
   );
@@ -137,6 +143,72 @@ function AccountDialog({ account, onClose }: { account: Account | null; onClose:
             <Input id="acc-pw" type="text" value={password} onChange={(e) => setPassword(e.target.value)} required={!account} minLength={6} />
           </div>
           <Button type="submit" className="w-full" disabled={busy}>Salva</Button>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function NamesDialog({ account, onClose }: { account: Account; onClose: () => void }) {
+  const qc = useQueryClient();
+  const key = ["account-operators", account.id];
+  const { data = [] } = useQuery({
+    queryKey: key,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("account_operators")
+        .select("*")
+        .eq("user_id", account.id)
+        .order("last_name");
+      if (error) throw error;
+      return data;
+    },
+  });
+  const [first, setFirst] = useState("");
+  const [last, setLast] = useState("");
+
+  async function add(e: FormEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!first.trim() || !last.trim()) return;
+    const { error } = await supabase
+      .from("account_operators")
+      .insert({ user_id: account.id, first_name: first.trim(), last_name: last.trim() });
+    if (error) return toast.error(error.message);
+    setFirst("");
+    setLast("");
+    qc.invalidateQueries({ queryKey: key });
+  }
+  async function remove(id: string) {
+    const { error } = await supabase.from("account_operators").delete().eq("id", id);
+    if (error) return toast.error(error.message);
+    qc.invalidateQueries({ queryKey: key });
+  }
+
+  return (
+    <Dialog open onOpenChange={(o) => !o && onClose()}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Chi lavora con {account.email}</DialogTitle>
+        </DialogHeader>
+        <p className="text-sm text-muted-foreground">
+          All'accesso basterà toccare il proprio nome invece di scriverlo.
+        </p>
+        <ul className="divide-y rounded-lg border">
+          {!data.length && <li className="px-3 py-2 text-sm text-muted-foreground">Nessun nome inserito</li>}
+          {data.map((o) => (
+            <li key={o.id} className="flex items-center justify-between px-3 py-2 text-sm">
+              {o.first_name} {o.last_name}
+              <Button size="icon" variant="ghost" aria-label="Elimina nome" onClick={() => remove(o.id)}>
+                <Trash2 className="h-4 w-4 text-destructive" />
+              </Button>
+            </li>
+          ))}
+        </ul>
+        <form onSubmit={add} className="grid grid-cols-[1fr_1fr_auto] gap-2">
+          <Input aria-label="Nome" placeholder="Nome" value={first} onChange={(e) => setFirst(e.target.value)} />
+          <Input aria-label="Cognome" placeholder="Cognome" value={last} onChange={(e) => setLast(e.target.value)} />
+          <Button type="submit"><Plus className="h-4 w-4" /> Aggiungi</Button>
         </form>
       </DialogContent>
     </Dialog>

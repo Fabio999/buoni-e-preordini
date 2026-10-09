@@ -12,7 +12,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
-import { errMsg, useRefresh, type Booking } from "@/lib/data";
+import { discountPercent, errMsg, useRefresh, type Booking } from "@/lib/data";
 import {
   BOOKING_STATUS,
   euro,
@@ -45,6 +45,7 @@ export function BookingDialog({
   const [payment, setPayment] = useState<PaymentStatus>("non_pagato");
   const [notes, setNotes] = useState("");
   const [lines, setLines] = useState<Line[]>([]);
+  const [discount, setDiscount] = useState(0);
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
@@ -54,6 +55,7 @@ export function BookingDialog({
     setStatus(initial?.status ?? "da_preparare");
     setPayment(initial?.payment_status ?? "non_pagato");
     setNotes(initial?.notes ?? "");
+    setDiscount(Number(initial?.discount ?? 0));
     setLines(
       initial?.booking_items.map((i) => ({
         product_id: i.product_id ?? "",
@@ -63,7 +65,11 @@ export function BookingDialog({
     );
   }, [open, initial, defaultEventId, defaultClientId]);
 
-  const total = lines.reduce((s, l) => s + l.quantity * l.unit_price, 0);
+  const subtotal = lines.reduce((s, l) => s + l.quantity * l.unit_price, 0);
+  const disc = Math.min(discount, subtotal);
+  const total = Math.max(0, subtotal - disc);
+  const pct = discountPercent(subtotal, disc);
+  const round2 = (n: number) => Math.round(n * 100) / 100;
   const setLine = (i: number, patch: Partial<Line>) =>
     setLines((ls) => ls.map((l, j) => (j === i ? { ...l, ...patch } : l)));
 
@@ -86,6 +92,7 @@ export function BookingDialog({
         status,
         payment_status: payment,
         notes,
+        discount: round2(disc),
       };
       let id = initial?.id;
       if (id) {
@@ -189,9 +196,46 @@ export function BookingDialog({
             </Button>
           </div>
 
-          <div className="flex items-center justify-between rounded-lg bg-secondary px-4 py-3 text-secondary-foreground">
-            <span className="text-sm font-medium">Totale</span>
-            <span className="font-display text-xl font-semibold">{euro(total)}</span>
+          <div className="space-y-3 rounded-lg bg-secondary px-4 py-3 text-secondary-foreground">
+            <div className="flex items-center justify-between text-sm">
+              <span>Totale prodotti</span>
+              <span className="font-semibold">{euro(subtotal)}</span>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <Field label="Sconto %">
+                <Input
+                  type="number"
+                  min={0}
+                  max={100}
+                  step="0.01"
+                  aria-label="Sconto percentuale"
+                  value={pct}
+                  onChange={(e) => {
+                    const p = Math.min(100, Math.max(0, Number(e.target.value)));
+                    setDiscount(round2((subtotal * p) / 100));
+                  }}
+                />
+              </Field>
+              <Field label="Totale da pagare (€)">
+                <Input
+                  type="number"
+                  min={0}
+                  step="0.01"
+                  aria-label="Totale da pagare"
+                  value={round2(total)}
+                  onChange={(e) => {
+                    const t = Math.min(subtotal, Math.max(0, Number(e.target.value)));
+                    setDiscount(round2(subtotal - t));
+                  }}
+                />
+              </Field>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium">
+                Totale{disc > 0 && ` (sconto ${pct}% · −${euro(disc)})`}
+              </span>
+              <span className="font-display text-xl font-semibold">{euro(total)}</span>
+            </div>
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">

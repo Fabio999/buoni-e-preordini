@@ -300,6 +300,7 @@ export type Database = {
           product_type: string
           sku: string | null
           stock: number
+          track_stock: boolean
         }
         Insert: {
           category?: string
@@ -311,6 +312,7 @@ export type Database = {
           product_type?: string
           sku?: string | null
           stock?: number
+          track_stock?: boolean
         }
         Update: {
           category?: string
@@ -322,6 +324,7 @@ export type Database = {
           product_type?: string
           sku?: string | null
           stock?: number
+          track_stock?: boolean
         }
         Relationships: []
       }

@@ -83,7 +83,7 @@ export function ClientDialog({ open, onOpenChange, initial, onSaved }: DialogPro
 }
 
 export function ProductDialog({ open, onOpenChange, initial, onSaved }: Omit<DialogProps<Product>, "onSaved"> & { onSaved?: (id: string, product: Product) => void }) {
-  const [f, setF] = useState({ name: "", price: "", category: "", sku: "", game: "", product_type: "", stock: "" });
+  const [f, setF] = useState({ name: "", price: "", category: "", sku: "", game: "", product_type: "", stock: "", track: true });
   const refresh = useRefresh();
   useEffect(() => {
     if (open)
@@ -95,6 +95,7 @@ export function ProductDialog({ open, onOpenChange, initial, onSaved }: Omit<Dia
         game: initial?.game ?? "",
         product_type: initial?.product_type ?? "",
         stock: initial ? String(initial.stock) : "0",
+        track: initial?.track_stock ?? true,
       });
   }, [open, initial]);
   const submit = async (e: FormEvent) => {
@@ -108,6 +109,7 @@ export function ProductDialog({ open, onOpenChange, initial, onSaved }: Omit<Dia
       game: f.game.trim(),
       product_type: f.product_type.trim(),
       stock: Math.trunc(Number(f.stock) || 0),
+      track_stock: f.track,
     };
     const res = initial
       ? await supabase.from("products").update(row).eq("id", initial.id).select("*").single()
@@ -149,7 +151,16 @@ export function ProductDialog({ open, onOpenChange, initial, onSaved }: Omit<Dia
               />
             </Field>
           </div>
-          <Field label="Quantità disponibile">
+          <label className="flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={!f.track}
+              onChange={(e) => setF({ ...f, track: !e.target.checked })}
+              className="h-4 w-4 accent-primary"
+            />
+            Non a magazzino (es. carte singole sfuse): la quantità non viene scalata
+          </label>
+          {f.track && <Field label="Quantità disponibile">
             <Input
               type="number"
               step="1"
@@ -157,7 +168,7 @@ export function ProductDialog({ open, onOpenChange, initial, onSaved }: Omit<Dia
               value={f.stock}
               onChange={(e) => setF({ ...f, stock: e.target.value })}
             />
-          </Field>
+          </Field>}
           <div className="grid gap-4 sm:grid-cols-3">
             <Field label="Prezzo (€)">
               <Input

@@ -91,7 +91,11 @@ function ProductsPage() {
                 </div>
               </div>
               <div className="flex items-center gap-1">
-                <Badge variant={p.stock > 0 ? "success" : "danger"} className="mr-2">{p.stock} pz</Badge>
+                {p.track_stock ? (
+                  <Badge variant={p.stock > 0 ? "success" : "danger"} className="mr-2">{p.stock} pz</Badge>
+                ) : (
+                  <Badge variant="neutral" className="mr-2">Non a magazzino</Badge>
+                )}
                 <span className="mr-2 font-display font-semibold">{euro(p.price)}</span>
                 <Button size="icon" variant="ghost" onClick={() => setHistory(p)} aria-label="Storico quantità">
                   <History className="h-4 w-4" />

@@ -14,6 +14,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      account_operators: {
+        Row: {
+          created_at: string
+          first_name: string
+          id: string
+          last_name: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          first_name: string
+          id?: string
+          last_name: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          first_name?: string
+          id?: string
+          last_name?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       balance_movements: {
         Row: {
           amount: number

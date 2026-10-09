@@ -174,14 +174,14 @@ function NamesDialog({ account, onClose }: { account: Account; onClose: () => vo
     const { error } = await supabase
       .from("account_operators")
       .insert({ user_id: account.id, first_name: first.trim(), last_name: last.trim() });
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     setFirst("");
     setLast("");
     qc.invalidateQueries({ queryKey: key });
   }
   async function remove(id: string) {
     const { error } = await supabase.from("account_operators").delete().eq("id", id);
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     qc.invalidateQueries({ queryKey: key });
   }
 

@@ -50,6 +50,13 @@
       "when": 1791548399231,
       "tag": "0006_account_operators",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1791548657010,
+      "tag": "0007_product_track_stock",
+      "breakpoints": true
     }
   ]
 }

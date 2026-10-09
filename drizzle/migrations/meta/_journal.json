@@ -43,6 +43,13 @@
       "when": 1791547976826,
       "tag": "0005_booking_discount",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1791548399231,
+      "tag": "0006_account_operators",
+      "breakpoints": true
     }
   ]
 }

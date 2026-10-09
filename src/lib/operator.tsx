@@ -25,6 +25,8 @@ export function OperatorGate({ userId, children }: { userId: string; children: R
   const [first, setFirst] = useState("");
   const [last, setLast] = useState("");
   const [busy, setBusy] = useState(false);
+  const [saved, setSaved] = useState<{ id: string; first_name: string; last_name: string }[]>([]);
+  const [manual, setManual] = useState(false);
 
   useEffect(() => {
     const stored = localStorage.getItem(key(userId));
@@ -32,13 +34,24 @@ export function OperatorGate({ userId, children }: { userId: string; children: R
       setName(stored);
       void supabase.from("operator_sessions").upsert({ user_id: userId, operator_name: stored });
     }
-    setReady(true);
+    supabase
+      .from("account_operators")
+      .select("id, first_name, last_name")
+      .eq("user_id", userId)
+      .order("first_name")
+      .then(({ data }) => {
+        setSaved(data ?? []);
+        setReady(true);
+      });
   }, [userId]);
 
   async function submit(e: FormEvent) {
     e.preventDefault();
-    const full = `${first.trim()} ${last.trim()}`.trim();
     if (!first.trim() || !last.trim()) return;
+    await choose(`${first.trim()} ${last.trim()}`);
+  }
+
+  async function choose(full: string) {
     setBusy(true);
     const { error } = await supabase
       .from("operator_sessions")
@@ -59,6 +72,19 @@ export function OperatorGate({ userId, children }: { userId: string; children: R
           <h1 className="text-lg font-semibold">Chi sta lavorando?</h1>
           <p className="text-sm text-muted-foreground">Il tuo nome verrà registrato sulle operazioni.</p>
         </div>
+        {saved.length > 0 && !manual ? (
+          <div className="space-y-2">
+            {saved.map((o) => (
+              <Button key={o.id} type="button" variant="outline" className="w-full" disabled={busy}
+                onClick={() => choose(`${o.first_name} ${o.last_name}`)}>
+                {o.first_name} {o.last_name}
+              </Button>
+            ))}
+            <button type="button" onClick={() => setManual(true)} className="w-full text-sm text-primary hover:underline">
+              Non sono in elenco
+            </button>
+          </div>
+        ) : (<>
         <div className="space-y-1">
           <Label htmlFor="op-first">Nome</Label>
           <Input id="op-first" value={first} onChange={(e) => setFirst(e.target.value)} required autoFocus />
@@ -68,6 +94,7 @@ export function OperatorGate({ userId, children }: { userId: string; children: R
           <Input id="op-last" value={last} onChange={(e) => setLast(e.target.value)} required />
         </div>
         <Button type="submit" className="w-full" disabled={busy}>Inizia</Button>
+        </>)}
         <button type="button" onClick={() => signOutOperator()} className="w-full text-sm text-muted-foreground hover:text-foreground">
           Esci
         </button>

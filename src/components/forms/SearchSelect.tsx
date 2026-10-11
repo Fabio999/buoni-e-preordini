@@ -19,7 +19,7 @@ export type SearchOption = {
   /** Small text shown on the right (e.g. price or date). */
   hint?: string;
   /** Extra words that make the option findable (e.g. game, type, reversed name). */
-  keywords?: string[];
+  keywords?: (string | null)[];
 };
 
 /**
@@ -44,7 +44,7 @@ export function SearchSelect({
   options: SearchOption[];
   value: string;
   onChange: (id: string) => void;
-  onCreate?: () => void;
+  onCreate?: (() => void) | undefined;
   placeholder?: string;
   searchPlaceholder?: string;
   emptyHint?: string;
@@ -67,7 +67,14 @@ export function SearchSelect({
 
   const selected = options.find((option) => option.id === value);
   const filtered = useMemo(
-    () => options.filter((option) => matchesText(option.label, query, option.keywords ?? [])),
+    () =>
+      options.filter((option) =>
+        matchesText(
+          option.label,
+          query,
+          (option.keywords ?? []).filter((word): word is string => !!word),
+        ),
+      ),
     [options, query],
   );
   const createLabel = `Nuovo ${label.toLowerCase()}`;

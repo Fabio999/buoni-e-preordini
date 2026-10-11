@@ -111,7 +111,7 @@ function ClientDetail() {
 
       <div className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
         <StatCard
-          label="Saldo disponibile"
+          label="Buono disponibile"
           value={euro(bal.balance)}
           tone="action"
           icon={<Wallet className="h-4 w-4" />}
@@ -121,13 +121,13 @@ function ClientDetail() {
       </div>
       <div className="mb-6 flex flex-wrap gap-2">
         <Button onClick={() => setDlg("topup")}>
-          <Plus className="h-4 w-4" /> Ricarica saldo
+          <Plus className="h-4 w-4" /> Ricarica buono
         </Button>
         <Button variant="secondary" onClick={() => setDlg("purchase")} disabled={bal.balance <= 0}>
-          <ShoppingBag className="h-4 w-4" /> Registra acquisto
+          <ShoppingBag className="h-4 w-4" /> Usa buono
         </Button>
         <Button variant="outline" onClick={() => setDlg("correction")}>
-          <SlidersHorizontal className="h-4 w-4" /> Correzione
+          <SlidersHorizontal className="h-4 w-4" /> Correggi buono
         </Button>
       </div>
 

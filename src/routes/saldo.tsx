@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Pencil, Plus, ShoppingBag, SlidersHorizontal, Trash2 } from "lucide-react";
+import { Pencil, Plus, Search, ShoppingBag, SlidersHorizontal, Trash2, Ticket } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useMemo, useState } from "react";
@@ -8,10 +8,12 @@ import { MovementsTable } from "@/components/MovementsTable";
 import { PurchaseDialog, TopUpDialog } from "@/components/forms/BalanceDialogs";
 import { Empty, Section, StatCard } from "@/components/Status";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { balancesByClient, errMsg, useClients, useMovements, useRefresh } from "@/lib/data";
 import { euro } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { matchesText } from "@/lib/search";
 
 export const Route = createFileRoute("/saldo")({
   head: () => ({
@@ -37,6 +39,12 @@ function BalancePage() {
   const { data: clients = [] } = useClients();
   const { data: movements = [] } = useMovements();
   const [dlg, setDlg] = useState<null | "topup" | "purchase" | "correction">(null);
+  const [selectedClient, setSelectedClient] = useState<string | undefined>();
+  const [search, setSearch] = useState("");
+  const openDialog = (type: "topup" | "purchase" | "correction", clientId?: string) => {
+    setSelectedClient(clientId);
+    setDlg(type);
+  };
   const close = (o: boolean) => !o && setDlg(null);
 
   const balances = useMemo(() => balancesByClient(movements), [movements]);
@@ -46,6 +54,11 @@ function BalancePage() {
     .filter((r) => r.b.balance !== 0)
     .sort((a, b) => b.b.balance - a.b.balance);
   const all = [...balances.values()];
+  const visibleRows = rows.filter(({ c }) => matchesText(search, c.first_name, c.last_name));
+  const visibleMovements = movements.filter((m) => {
+    const client = clientMap.get(m.client_id);
+    return matchesText(search, client?.first_name, client?.last_name);
+  });
   const refresh = useRefresh();
 
   const editBalance = async (id: string, name: string, current: number) => {
@@ -93,67 +106,74 @@ function BalancePage() {
     <div className="mx-auto max-w-7xl">
       <PageHeader
         title="Saldo Negozio"
-        subtitle="Il saldo è calcolato solo dai movimenti registrati."
+        subtitle="Buoni negozio"
         actions={
           <>
-            <Button onClick={() => setDlg("topup")}>
-              <Plus className="h-4 w-4" /> Ricarica
+            <Button onClick={() => openDialog("topup")}>
+              <Plus className="h-4 w-4" /> Ricarica buono
             </Button>
-            <Button variant="secondary" onClick={() => setDlg("purchase")}>
-              <ShoppingBag className="h-4 w-4" /> Acquisto
+            <Button variant="secondary" onClick={() => openDialog("purchase")}>
+              <ShoppingBag className="h-4 w-4" /> Usa buono
             </Button>
-            <Button variant="outline" onClick={() => setDlg("correction")}>
-              <SlidersHorizontal className="h-4 w-4" /> Correzione
+            <Button variant="outline" onClick={() => openDialog("correction")}>
+              <SlidersHorizontal className="h-4 w-4" /> Correggi buono
             </Button>
           </>
         }
       />
       <div className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
         <StatCard
-          label="Clienti con saldo"
+          label="Clienti con buono attivo"
           value={all.filter((b) => b.balance > 0).length}
           tone="info"
         />
         <StatCard
-          label="Saldo disponibile"
+          label="Buoni disponibili"
           value={euro(all.reduce((s, b) => s + b.balance, 0))}
           tone="action"
+          icon={<Ticket className="h-4 w-4" />}
         />
         <StatCard
-          label="Totale caricato"
+          label="Totale aggiunto"
           value={euro(all.reduce((s, b) => s + b.loaded, 0))}
           tone="success"
         />
         <StatCard
-          label="Totale utilizzato"
+          label="Speso con buoni"
           value={euro(all.reduce((s, b) => s + b.used, 0))}
           tone="danger"
         />
       </div>
 
       <Tabs defaultValue="clienti">
-        <TabsList className="mb-4">
-          <TabsTrigger value="clienti">Clienti</TabsTrigger>
-          <TabsTrigger value="movimenti">Tutti i movimenti</TabsTrigger>
-        </TabsList>
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+          <TabsList>
+            <TabsTrigger value="clienti">Buoni attivi</TabsTrigger>
+            <TabsTrigger value="movimenti">Storico movimenti</TabsTrigger>
+          </TabsList>
+          <div className="relative w-full sm:w-72">
+            <Search className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+            <Input aria-label="Cerca cliente nei buoni" placeholder="Cerca nome o cognome…" className="pl-9" value={search} onChange={(e) => setSearch(e.target.value)} />
+          </div>
+        </div>
         <TabsContent value="clienti">
-          <Section title="Saldi clienti">
-            {!rows.length ? (
-              <Empty>Nessun cliente con saldo attivo</Empty>
+          <Section title={`Buoni attivi (${visibleRows.length})`}>
+            {!visibleRows.length ? (
+              <Empty>{search ? "Nessun cliente trovato" : "Nessun buono disponibile"}</Empty>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full min-w-[520px] text-sm">
                   <thead>
                     <tr className="border-b text-left text-xs uppercase tracking-wide text-muted-foreground">
                       <th className="py-2 pr-3 font-semibold">Cliente</th>
-                      <th className="py-2 pr-3 text-right font-semibold">Caricato</th>
-                      <th className="py-2 pr-3 text-right font-semibold">Utilizzato</th>
-                      <th className="py-2 pr-3 text-right font-semibold">Disponibile</th>
+                      <th className="py-2 pr-3 text-right font-semibold">Buono disponibile</th>
+                      <th className="py-2 pr-3 text-right font-semibold">Totale aggiunto</th>
+                      <th className="py-2 pr-3 text-right font-semibold">Speso</th>
                       <th className="py-2" />
                     </tr>
                   </thead>
                   <tbody>
-                    {rows.map(({ c, b }) => (
+                    {visibleRows.map(({ c, b }) => (
                       <tr key={c.id} className="border-b last:border-0 hover:bg-muted/40">
                         <td className="py-2.5 pr-3 font-medium">
                           <Link
@@ -164,8 +184,6 @@ function BalancePage() {
                             {c.first_name} {c.last_name}
                           </Link>
                         </td>
-                        <td className="py-2.5 pr-3 text-right text-success">{euro(b.loaded)}</td>
-                        <td className="py-2.5 pr-3 text-right text-destructive">{euro(b.used)}</td>
                         <td
                           className={cn(
                             "py-2.5 pr-3 text-right font-display font-semibold",
@@ -174,11 +192,20 @@ function BalancePage() {
                         >
                           {euro(b.balance)}
                         </td>
+                        <td className="py-2.5 pr-3 text-right text-muted-foreground">{euro(b.loaded)}</td>
+                        <td className="py-2.5 pr-3 text-right text-muted-foreground">{euro(b.used)}</td>
                         <td className="whitespace-nowrap py-1 text-right">
+                          <Button size="icon" variant="ghost" title={`Ricarica buono di ${c.first_name} ${c.last_name}`} aria-label={`Ricarica buono di ${c.first_name} ${c.last_name}`} onClick={() => openDialog("topup", c.id)}>
+                            <Plus className="h-4 w-4" />
+                          </Button>
+                          <Button size="icon" variant="ghost" title={`Usa buono di ${c.first_name} ${c.last_name}`} aria-label={`Usa buono di ${c.first_name} ${c.last_name}`} onClick={() => openDialog("purchase", c.id)}>
+                            <ShoppingBag className="h-4 w-4" />
+                          </Button>
                           <Button
                             size="icon"
                             variant="ghost"
                             aria-label="Modifica credito"
+                            title="Modifica credito"
                             onClick={() => editBalance(c.id, `${c.first_name} ${c.last_name}`, b.balance)}
                           >
                             <Pencil className="h-4 w-4" />
@@ -187,6 +214,7 @@ function BalancePage() {
                             size="icon"
                             variant="ghost"
                             aria-label="Elimina credito"
+                            title="Elimina credito"
                             onClick={() => deleteCredit(c.id, `${c.first_name} ${c.last_name}`)}
                           >
                             <Trash2 className="h-4 w-4" />
@@ -202,14 +230,14 @@ function BalancePage() {
         </TabsContent>
         <TabsContent value="movimenti">
           <Section title="Storico movimenti">
-            <MovementsTable movements={movements} clients={clientMap} />
+            <MovementsTable movements={visibleMovements} clients={clientMap} />
           </Section>
         </TabsContent>
       </Tabs>
 
-      <TopUpDialog open={dlg === "topup"} onOpenChange={close} />
-      <TopUpDialog open={dlg === "correction"} onOpenChange={close} mode="correzione" />
-      <PurchaseDialog open={dlg === "purchase"} onOpenChange={close} />
+      <TopUpDialog open={dlg === "topup"} onOpenChange={close} clientId={selectedClient} />
+      <TopUpDialog open={dlg === "correction"} onOpenChange={close} mode="correzione" clientId={selectedClient} />
+      <PurchaseDialog open={dlg === "purchase"} onOpenChange={close} clientId={selectedClient} />
     </div>
   );
 }

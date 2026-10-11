@@ -1,49 +1,72 @@
-import { Plus } from "lucide-react";
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
 import { useEvents, useProducts, type Product } from "@/lib/data";
 import { euro, fmtDate } from "@/lib/format";
-import { EventDialog, ProductDialog, selectClass } from "./SimpleDialogs";
-
-function SelectControl({ label, value, onChange, onCreate, children, className = "" }: {
-  label: string; value: string; onChange: (id: string) => void;
-  onCreate: () => void; children: React.ReactNode; className?: string;
-}) {
-  return <div className={`flex min-w-0 gap-2 ${className}`}>
-    <select required aria-label={label} className={selectClass} value={value}
-      onChange={(e) => e.target.value === "new-entity" ? onCreate() : onChange(e.target.value)}>
-      <option value="">Seleziona…</option>
-      <option value="new-entity">＋ Nuovo {label.toLowerCase()}</option>
-      {children}
-    </select>
-    <Button type="button" variant="outline" size="icon" className="shrink-0"
-      title={`Nuovo ${label.toLowerCase()}`} aria-label={`Nuovo ${label.toLowerCase()}`} onClick={onCreate}>
-      <Plus className="h-4 w-4" />
-    </Button>
-  </div>;
-}
+import { EventDialog, ProductDialog } from "./SimpleDialogs";
+import { SearchSelect, type SearchOption } from "./SearchSelect";
 
 export function EventSelect({ value, onChange }: { value: string; onChange: (id: string) => void }) {
   const { data: events = [] } = useEvents();
   const [creating, setCreating] = useState(false);
-  return <>
-    <SelectControl label="Evento" value={value} onChange={onChange} onCreate={() => setCreating(true)}>
-      {events.map((event) => <option key={event.id} value={event.id}>{event.name} — {fmtDate(event.event_date)}</option>)}
-    </SelectControl>
-    <EventDialog open={creating} onOpenChange={setCreating} onSaved={onChange} />
-  </>;
+
+  const options: SearchOption[] = events.map((event) => ({
+    id: event.id,
+    label: event.name,
+    hint: fmtDate(event.event_date),
+    keywords: [event.location],
+  }));
+
+  return (
+    <>
+      <SearchSelect
+        label="Evento"
+        value={value}
+        onChange={onChange}
+        options={options}
+        onCreate={() => setCreating(true)}
+        searchPlaceholder="Cerca per nome evento o luogo…"
+        emptyHint="Nessun evento trovato: crealo con ＋."
+      />
+      <EventDialog open={creating} onOpenChange={setCreating} onSaved={onChange} />
+    </>
+  );
 }
 
-export function ProductSelect({ value, onChange, className = "" }: {
-  value: string; onChange: (id: string, product?: Product) => void; className?: string;
+export function ProductSelect({
+  value,
+  onChange,
+  className = "",
+}: {
+  value: string;
+  onChange: (id: string, product?: Product) => void;
+  className?: string;
 }) {
   const { data: products = [] } = useProducts();
   const [creating, setCreating] = useState(false);
-  return <>
-    <SelectControl label="Prodotto" value={value} className={className} onCreate={() => setCreating(true)}
-      onChange={(id) => onChange(id, products.find((p) => p.id === id))}>
-      {products.map((product) => <option key={product.id} value={product.id}>{product.name} ({euro(product.price)})</option>)}
-    </SelectControl>
-    <ProductDialog open={creating} onOpenChange={setCreating} onSaved={(id, product) => onChange(id, product)} />
-  </>;
+
+  const options: SearchOption[] = products.map((product) => ({
+    id: product.id,
+    label: product.name,
+    hint: euro(product.price),
+    keywords: [product.game, product.product_type, product.category, product.sku],
+  }));
+
+  return (
+    <>
+      <SearchSelect
+        label="Prodotto"
+        className={className}
+        value={value}
+        onChange={(id) => onChange(id, products.find((p) => p.id === id))}
+        options={options}
+        onCreate={() => setCreating(true)}
+        searchPlaceholder="Cerca per nome, gioco o tipo…"
+        emptyHint="Nessun prodotto trovato: crealo con ＋."
+      />
+      <ProductDialog
+        open={creating}
+        onOpenChange={setCreating}
+        onSaved={(id, product) => onChange(id, product)}
+      />
+    </>
+  );
 }

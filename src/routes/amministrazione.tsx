@@ -18,6 +18,8 @@ import { fmtDateTime } from "@/lib/format";
 export const Route = createFileRoute("/amministrazione")({
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
       { title: "Amministrazione — Mana Flask" },
       { name: "description", content: "Gestione degli accessi al gestionale Mana Flask." },
       { property: "og:title", content: "Amministrazione — Mana Flask" },

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { ArrowRight, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -24,7 +25,7 @@ import { Field, selectClass } from "./SimpleDialogs";
 import { ClientSelect } from "./ClientSelect";
 import { ProductSelect } from "./EntitySelect";
 
-type Props = { open: boolean; onOpenChange: (o: boolean) => void; clientId?: string };
+type Props = { open: boolean; onOpenChange: (o: boolean) => void; clientId?: string | undefined };
 
 function useBalance(clientId: string) {
   const { data: movements } = useMovements();
@@ -34,17 +35,17 @@ function useBalance(clientId: string) {
   );
 }
 
-function Preview({ before, delta }: { before: number; delta: number }) {
+function Preview({ before, delta, kind = "ricarica" }: { before: number; delta: number; kind?: "ricarica" | "correzione" | "acquisto" }) {
   const after = before + delta;
   return (
-    <div className="grid grid-cols-3 gap-2 rounded-lg border bg-muted/50 p-3 text-center">
+    <div aria-live="polite" className="grid grid-cols-1 gap-3 rounded-lg border bg-muted/50 p-4 sm:grid-cols-3 sm:text-center">
       <div>
-        <div className="text-xs text-muted-foreground">Saldo disponibile</div>
+        <div className="text-xs text-muted-foreground">Buono attuale</div>
         <div className="font-display text-lg font-semibold">{euro(before)}</div>
       </div>
       <div>
         <div className="text-xs text-muted-foreground">
-          {delta < 0 ? "Totale acquisto" : "Variazione"}
+          {kind === "acquisto" ? "Da scalare" : kind === "ricarica" ? "Ricarica" : "Correzione"}
         </div>
         <div
           className={cn(
@@ -57,7 +58,7 @@ function Preview({ before, delta }: { before: number; delta: number }) {
         </div>
       </div>
       <div>
-        <div className="text-xs text-muted-foreground">Saldo dopo</div>
+        <div className="text-xs text-muted-foreground">Buono dopo l’operazione</div>
         <div
           className={cn(
             "font-display text-lg font-semibold",
@@ -116,22 +117,22 @@ export function TopUpDialog({
       toast.error(errMsg(error));
       return;
     }
-    toast.success(mode === "ricarica" ? "Saldo ricaricato" : "Correzione registrata");
+    toast.success(mode === "ricarica" ? `Buono ricaricato di ${euro(delta)}` : "Correzione registrata");
     refresh();
     onOpenChange(false);
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="max-h-[92vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{mode === "ricarica" ? "Ricarica saldo" : "Correzione saldo"}</DialogTitle>
+          <DialogTitle>{mode === "ricarica" ? "Ricarica buono negozio" : "Correggi buono negozio"}</DialogTitle>
         </DialogHeader>
         <form onSubmit={submit} className="space-y-4">
           <Field label="Cliente">
             <ClientSelect value={clientId} onChange={setClientId} fixed={!!fixedClient} />
           </Field>
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className={cn("grid gap-4", mode === "correzione" && "sm:grid-cols-2")}>
             {mode === "correzione" && (
               <Field label="Tipo">
                 <select
@@ -144,8 +145,9 @@ export function TopUpDialog({
                 </select>
               </Field>
             )}
-            <Field label="Importo (€)">
+            <Field label={mode === "ricarica" ? "Importo da aggiungere (€)" : "Importo della correzione (€)"}>
               <Input
+                aria-label={mode === "ricarica" ? "Importo da aggiungere" : "Importo della correzione"}
                 required
                 type="number"
                 min="0.01"
@@ -154,10 +156,21 @@ export function TopUpDialog({
                 onChange={(e) => setAmount(e.target.value)}
                 autoFocus
               />
+              {mode === "ricarica" && (
+                <div className="mt-2 grid grid-cols-4 gap-2">
+                  {[10, 20, 50, 100].map((value) => (
+                    <Button key={value} type="button" size="sm" variant={Number(amount) === value ? "secondary" : "outline"}
+                      aria-pressed={Number(amount) === value} onClick={() => setAmount(String(value))}>
+                      {value} €
+                    </Button>
+                  ))}
+                </div>
+              )}
             </Field>
           </div>
-          <Field label="Descrizione">
+          <Field label="Descrizione (facoltativa)">
             <Input
+              aria-label="Descrizione"
               value={desc}
               onChange={(e) => setDesc(e.target.value)}
               placeholder={
@@ -165,10 +178,12 @@ export function TopUpDialog({
               }
             />
           </Field>
-          {clientId && <Preview before={before} delta={delta} />}
+          {clientId && <Preview before={before} delta={delta} kind={mode} />}
           <DialogFooter>
-            <Button type="submit" disabled={busy || !clientId}>
-              Conferma
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={busy}>Annulla</Button>
+            <Button type="submit" disabled={busy || !clientId || !delta || before + delta < 0}>
+              <Plus className="h-4 w-4" />
+              {busy ? "Salvataggio…" : mode === "ricarica" ? "Conferma ricarica" : "Conferma correzione"}
             </Button>
           </DialogFooter>
         </form>
@@ -238,7 +253,7 @@ export function PurchaseDialog({ open, onOpenChange, clientId: fixedClient }: Pr
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[92vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Registra acquisto con saldo</DialogTitle>
+          <DialogTitle>Usa buono per un acquisto</DialogTitle>
         </DialogHeader>
         <form onSubmit={submit} className="space-y-4">
           <Field label="Cliente">
@@ -283,15 +298,16 @@ export function PurchaseDialog({ open, onOpenChange, clientId: fixedClient }: Pr
           <Field label="Note (opzionali)">
             <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} />
           </Field>
-          {clientId && <Preview before={before} delta={-total} />}
+          {clientId && <Preview before={before} delta={-total} kind="acquisto" />}
           {clientId && insufficient && (
             <p className="text-sm font-medium text-destructive">
-              Saldo insufficiente per questo acquisto.
+              Il buono non copre questo acquisto. Mancano {euro(total - before)}.
             </p>
           )}
           <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={busy}>Annulla</Button>
             <Button type="submit" disabled={busy || !clientId || insufficient || total <= 0}>
-              Conferma acquisto
+              <ArrowRight className="h-4 w-4" /> {busy ? "Salvataggio…" : "Conferma utilizzo buono"}
             </Button>
           </DialogFooter>
         </form>

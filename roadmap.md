@@ -1,6 +1,6 @@
 # Roadmap
 
-- [ ] Semplificare ricarica buoni e saldo negozio, mantenendo importi e storico; verificare le finestre e la pagina.
+- [x] Semplificare ricarica buoni e saldo negozio, mantenendo importi e storico; verificare le finestre e la pagina.
 
 - [x] Creare l'account di primo accesso info@manaflask.it con password 123456 e verificare che l'accesso funzioni
 - [x] Rimuovere l'account di prova creato durante i test (prova@manaflask.it)

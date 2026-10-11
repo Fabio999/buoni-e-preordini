@@ -25,7 +25,7 @@ import { Field, selectClass } from "./SimpleDialogs";
 import { ClientSelect } from "./ClientSelect";
 import { ProductSelect } from "./EntitySelect";
 
-type Props = { open: boolean; onOpenChange: (o: boolean) => void; clientId?: string };
+type Props = { open: boolean; onOpenChange: (o: boolean) => void; clientId?: string | undefined };
 
 function useBalance(clientId: string) {
   const { data: movements } = useMovements();

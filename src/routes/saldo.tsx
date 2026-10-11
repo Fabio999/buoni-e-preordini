@@ -54,10 +54,10 @@ function BalancePage() {
     .filter((r) => r.b.balance !== 0)
     .sort((a, b) => b.b.balance - a.b.balance);
   const all = [...balances.values()];
-  const visibleRows = rows.filter(({ c }) => matchesText(search, c.first_name, c.last_name));
+  const visibleRows = rows.filter(({ c }) => matchesText(`${c.first_name} ${c.last_name}`, search));
   const visibleMovements = movements.filter((m) => {
     const client = clientMap.get(m.client_id);
-    return matchesText(search, client?.first_name, client?.last_name);
+    return matchesText(`${client?.first_name ?? ""} ${client?.last_name ?? ""}`, search);
   });
   const refresh = useRefresh();
 

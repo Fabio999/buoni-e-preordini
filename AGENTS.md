@@ -22,4 +22,4 @@
 - Stock changes are logged to stock_movements by triggers (log_stock for bookings/purchases, products trigger for manual edits); the table is read-only for the app.
 - Admin = `admin` row in user_roles checked with has_role; account management goes through server functions in src/lib/admin.functions.ts that verify the role before using the admin client (keeps passwords/users server-side).
 - The working operator's name is stored per signed-in user in operator_sessions and stamped by the `operator_name` column default (current_operator()) on bookings, purchases, balance and stock movements, so no RPC needs an extra parameter.
-- Buoni offline: ricariche/acquisti salvati sul dispositivo e inviati al ritorno della rete (src/lib/offline.ts); dati letti raramente (staleTime 5 min, niente polling) per ridurre l'uso del backend.
+- Buoni offline: ricariche/acquisti salvati sul dispositivo e inviati al ritorno della rete (src/lib/offline.tsx); dati letti raramente (staleTime 5 min, niente polling) per ridurre l'uso del backend.

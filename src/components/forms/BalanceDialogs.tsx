@@ -24,15 +24,32 @@ import { cn } from "@/lib/utils";
 import { Field, selectClass } from "./SimpleDialogs";
 import { ClientSelect } from "./ClientSelect";
 import { ProductSelect } from "./EntitySelect";
+import { enqueue, isNetworkError, isOffline, pendingDelta, useQueue } from "@/lib/offline";
 
 type Props = { open: boolean; onOpenChange: (o: boolean) => void; clientId?: string | undefined };
 
 function useBalance(clientId: string) {
   const { data: movements } = useMovements();
+  const queue = useQueue();
   return useMemo(
-    () => balancesByClient(movements).get(clientId)?.balance ?? 0,
-    [movements, clientId],
+    () => (balancesByClient(movements).get(clientId)?.balance ?? 0) + pendingDelta(queue, clientId),
+    [movements, clientId, queue],
   );
+}
+
+/** Runs the voucher RPC; when there is no connection the operation is queued and sent later. */
+async function runOrQueue(
+  kind: "add_balance_movement" | "register_purchase",
+  client: string,
+  delta: number,
+  args: Record<string, unknown>,
+): Promise<{ error: { message: string } | null; queued: boolean }> {
+  if (!isOffline()) {
+    const { error } = await supabase.rpc(kind, args as never);
+    if (!isNetworkError(error)) return { error, queued: false };
+  }
+  enqueue({ kind, client, delta, args });
+  return { error: null, queued: true };
 }
 
 function Preview({ before, delta, kind = "ricarica" }: { before: number; delta: number; kind?: "ricarica" | "correzione" | "acquisto" }) {
@@ -106,7 +123,7 @@ export function TopUpDialog({
       return;
     }
     setBusy(true);
-    const { error } = await supabase.rpc("add_balance_movement", {
+    const { error, queued } = await runOrQueue("add_balance_movement", clientId, delta, {
       _client: clientId,
       _type: mode,
       _amount: delta,
@@ -117,7 +134,8 @@ export function TopUpDialog({
       toast.error(errMsg(error));
       return;
     }
-    toast.success(mode === "ricarica" ? `Buono ricaricato di ${euro(delta)}` : "Correzione registrata");
+    if (queued) toast.success("Senza connessione: operazione salvata, verrà inviata appena torna internet");
+    else toast.success(mode === "ricarica" ? `Buono ricaricato di ${euro(delta)}` : "Correzione registrata");
     refresh();
     onOpenChange(false);
   };
@@ -230,7 +248,7 @@ export function PurchaseDialog({ open, onOpenChange, clientId: fixedClient }: Pr
       return;
     }
     setBusy(true);
-    const { error } = await supabase.rpc("register_purchase", {
+    const { error, queued } = await runOrQueue("register_purchase", clientId, -total, {
       _client: clientId,
       _product: product.id,
       _product_name: product.name,
@@ -244,7 +262,7 @@ export function PurchaseDialog({ open, onOpenChange, clientId: fixedClient }: Pr
       toast.error(errMsg(error));
       return;
     }
-    toast.success("Acquisto registrato");
+    toast.success(queued ? "Senza connessione: acquisto salvato, verrà inviato appena torna internet" : "Acquisto registrato");
     refresh();
     onOpenChange(false);
   };

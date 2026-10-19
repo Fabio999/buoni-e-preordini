@@ -17,6 +17,7 @@ import { AppShell } from "@/components/AppShell";
 import { LoginScreen } from "@/components/LoginScreen";
 import { Toaster } from "@/components/ui/sonner";
 import { OperatorGate } from "@/lib/operator";
+import { OfflineSync } from "@/lib/offline";
 
 function NotFoundComponent() {
   return (
@@ -136,6 +137,7 @@ function Gate() {
       <AppShell>
         <Outlet />
       </AppShell>
+      <OfflineSync />
     </OperatorGate>
   );
 }

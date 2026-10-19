@@ -3,7 +3,12 @@ import { createRouter } from "@tanstack/react-router";
 import { routeTree } from "./routeTree.gen";
 
 export const getRouter = () => {
-  const queryClient = new QueryClient();
+  // Fetch rarely: data is refreshed explicitly after each save (keeps backend usage minimal).
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: { staleTime: 5 * 60_000, refetchOnWindowFocus: false, retry: 1, networkMode: "offlineFirst" },
+    },
+  });
 
   const router = createRouter({
     routeTree,

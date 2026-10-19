@@ -25,7 +25,6 @@ function unwrap<T>(res: { data: T | null; error: { message: string } | null }): 
 export const useClients = () =>
   useQuery({
     queryKey: ["clients"],
-    refetchInterval: 10000,
     queryFn: async () =>
       unwrap(await supabase.from("clients").select("*").order("last_name").order("first_name")),
   });

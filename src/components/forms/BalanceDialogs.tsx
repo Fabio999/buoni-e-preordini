@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
-import { ArrowRight, Plus } from "lucide-react";
+import { ArrowRight, Plus, ShoppingBag } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,6 +15,7 @@ import { supabase } from "@/integrations/supabase/client";
 import {
   balancesByClient,
   errMsg,
+  saleSplit,
   useMovements,
   useProducts,
   useRefresh,
@@ -39,7 +40,7 @@ function useBalance(clientId: string) {
 
 /** Runs the voucher RPC; when there is no connection the operation is queued and sent later. */
 async function runOrQueue(
-  kind: "add_balance_movement" | "register_purchase",
+  kind: "add_balance_movement" | "register_purchase" | "register_sale",
   client: string,
   delta: number,
   args: Record<string, unknown>,

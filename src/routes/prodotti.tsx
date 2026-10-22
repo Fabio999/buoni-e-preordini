@@ -1,9 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { History, Pencil, Plus, Search, Trash2 } from "lucide-react";
+import { History, Pencil, Plus, Search, ShoppingBag, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/AppShell";
 import { StockHistoryDialog } from "@/components/StockHistoryDialog";
+import { SaleDialog } from "@/components/forms/BalanceDialogs";
 import { ProductDialog } from "@/components/forms/SimpleDialogs";
 import { Empty, Section } from "@/components/Status";
 import { Badge } from "@/components/ui/badge";
@@ -38,6 +39,7 @@ function ProductsPage() {
   const [editing, setEditing] = useState<Product | null>(null);
   const [open, setOpen] = useState(false);
   const [history, setHistory] = useState<Product | null>(null);
+  const [selling, setSelling] = useState<Product | null>(null);
   const filtered = products.filter((p) =>
     matchesText(`${p.name} ${p.category} ${p.sku ?? ""} ${p.game} ${p.product_type}`, q),
   );
@@ -97,6 +99,9 @@ function ProductsPage() {
                   <Badge variant="neutral" className="mr-2">Non a magazzino</Badge>
                 )}
                 <span className="mr-2 font-display font-semibold">{euro(p.price)}</span>
+                <Button size="icon" variant="ghost" onClick={() => setSelling(p)} aria-label="Vendi">
+                  <ShoppingBag className="h-4 w-4" />
+                </Button>
                 <Button size="icon" variant="ghost" onClick={() => setHistory(p)} aria-label="Storico quantità">
                   <History className="h-4 w-4" />
                 </Button>
@@ -121,6 +126,11 @@ function ProductsPage() {
       </Section>
       <StockHistoryDialog product={history} onOpenChange={(o) => !o && setHistory(null)} />
       <ProductDialog open={open} onOpenChange={setOpen} initial={editing} />
+      <SaleDialog
+        open={!!selling}
+        onOpenChange={(o) => !o && setSelling(null)}
+        productId={selling?.id}
+      />
     </div>
   );
 }

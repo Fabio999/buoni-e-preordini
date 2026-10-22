@@ -14,7 +14,7 @@ import { PageHeader } from "@/components/AppShell";
 import { BookingsTable } from "@/components/BookingsTable";
 import { MovementsTable } from "@/components/MovementsTable";
 import { BookingDialog } from "@/components/forms/BookingDialog";
-import { PurchaseDialog, TopUpDialog } from "@/components/forms/BalanceDialogs";
+import { PurchaseDialog, SaleDialog, TopUpDialog } from "@/components/forms/BalanceDialogs";
 import { ClientDialog } from "@/components/forms/SimpleDialogs";
 import { Empty, Section, StatCard } from "@/components/Status";
 import { Button } from "@/components/ui/button";
@@ -58,9 +58,9 @@ function ClientDetail() {
   const { data: allBookings = [] } = useBookings();
   const { data: allMovements = [] } = useMovements();
   const { data: allPurchases = [] } = usePurchases();
-  const [dlg, setDlg] = useState<null | "edit" | "booking" | "topup" | "correction" | "purchase">(
-    null,
-  );
+  const [dlg, setDlg] = useState<
+    null | "edit" | "booking" | "topup" | "correction" | "purchase" | "sale"
+  >(null);
   const close = (o: boolean) => !o && setDlg(null);
 
   const client = clients?.find((c) => c.id === id);
@@ -71,6 +71,13 @@ function ClientDetail() {
     () => balancesByClient(movements).get(id) ?? { balance: 0, loaded: 0, used: 0 },
     [movements, id],
   );
+  // How much of each purchase was paid with the buono (rest was cash).
+  const buonoByPurchase = useMemo(() => {
+    const m = new Map<string, number>();
+    for (const mv of movements)
+      if (mv.purchase_id) m.set(mv.purchase_id, (m.get(mv.purchase_id) ?? 0) - Number(mv.amount));
+    return m;
+  }, [movements]);
 
   if (isLoading) return null;
   if (!client) return <Empty>Cliente non trovato</Empty>;
@@ -123,8 +130,11 @@ function ClientDetail() {
         <Button onClick={() => setDlg("topup")}>
           <Plus className="h-4 w-4" /> Ricarica buono
         </Button>
-        <Button variant="secondary" onClick={() => setDlg("purchase")} disabled={bal.balance <= 0}>
-          <ShoppingBag className="h-4 w-4" /> Usa buono
+        <Button variant="secondary" onClick={() => setDlg("sale")}>
+          <ShoppingBag className="h-4 w-4" /> Vendita
+        </Button>
+        <Button variant="outline" onClick={() => setDlg("purchase")} disabled={bal.balance <= 0}>
+          <Wallet className="h-4 w-4" /> Usa buono
         </Button>
         <Button variant="outline" onClick={() => setDlg("correction")}>
           <SlidersHorizontal className="h-4 w-4" /> Correggi buono
@@ -143,25 +153,33 @@ function ClientDetail() {
           <BookingsTable bookings={bookings} hide={["client"]} />
         </Section>
 
-        <Section title="Storico acquisti con saldo">
+        <Section title="Storico acquisti">
           {!purchases.length ? (
             <Empty>Nessun acquisto</Empty>
           ) : (
             <ul className="divide-y">
-              {purchases.map((p) => (
-                <li key={p.id} className="flex items-center justify-between gap-3 py-2.5 text-sm">
-                  <div>
-                    <div className="font-medium">
-                      {p.quantity}× {p.product_name}
+              {purchases.map((p) => {
+                const buono = buonoByPurchase.get(p.id) ?? 0;
+                return (
+                  <li key={p.id} className="flex items-center justify-between gap-3 py-2.5 text-sm">
+                    <div>
+                      <div className="font-medium">
+                        {p.quantity}× {p.product_name}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        {fmtDate(p.purchase_date)}
+                        {p.notes && ` · ${p.notes}`}
+                      </div>
                     </div>
-                    <div className="text-xs text-muted-foreground">
-                      {fmtDate(p.purchase_date)}
-                      {p.notes && ` · ${p.notes}`}
+                    <div className="text-right">
+                      <div className="font-semibold">{euro(p.amount)}</div>
+                      {buono > 0 && (
+                        <div className="text-xs text-destructive">−{euro(buono)} dal buono</div>
+                      )}
                     </div>
-                  </div>
-                  <div className="font-semibold text-destructive">−{euro(p.amount)}</div>
-                </li>
-              ))}
+                  </li>
+                );
+              })}
             </ul>
           )}
         </Section>
@@ -181,6 +199,7 @@ function ClientDetail() {
         mode="correzione"
       />
       <PurchaseDialog open={dlg === "purchase"} onOpenChange={close} clientId={id} />
+      <SaleDialog open={dlg === "sale"} onOpenChange={close} clientId={id} />
     </div>
   );
 }

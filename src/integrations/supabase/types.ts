@@ -495,6 +495,19 @@ export type Database = {
         }
         Returns: string
       }
+      register_sale: {
+        Args: {
+          _amount: number
+          _buono_used: number
+          _client: string
+          _date: string
+          _notes: string
+          _product: string
+          _product_name: string
+          _quantity: number
+        }
+        Returns: string
+      }
       update_balance_movement: {
         Args: { _amount: number; _description: string; _id: string }
         Returns: undefined

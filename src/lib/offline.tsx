@@ -6,7 +6,8 @@ import { supabase } from "@/integrations/supabase/client";
 /** Voucher operations saved while offline, sent in order when the connection returns. */
 export type QueuedOp =
   | { id: string; kind: "add_balance_movement"; client: string; delta: number; args: Record<string, unknown> }
-  | { id: string; kind: "register_purchase"; client: string; delta: number; args: Record<string, unknown> };
+  | { id: string; kind: "register_purchase"; client: string; delta: number; args: Record<string, unknown> }
+  | { id: string; kind: "register_sale"; client: string; delta: number; args: Record<string, unknown> };
 
 const KEY = "mf-offline-queue";
 const listeners = new Set<() => void>();

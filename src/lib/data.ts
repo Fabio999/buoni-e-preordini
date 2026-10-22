@@ -106,6 +106,15 @@ export const bookingTotal = (b: Pick<Booking, "booking_items"> & { discount?: nu
 export const discountPercent = (subtotal: number, discount: number) =>
   subtotal > 0 ? Math.round((discount / subtotal) * 10000) / 100 : 0;
 
+/**
+ * Splits a sale between buono and cash: the buono used is capped at the sale
+ * total and at the available balance, so the buono can never go negative.
+ */
+export function saleSplit(total: number, buono: number, requested: number) {
+  const used = Math.min(Math.max(0, requested), Math.max(0, total), Math.max(0, buono));
+  return { used, toPay: Math.max(0, total) - used, remaining: Math.max(0, buono) - used };
+}
+
 /** Latest balance per client, derived from the movement ledger. */
 export function balancesByClient(movements: Movement[] | undefined) {
   const map = new Map<string, { balance: number; loaded: number; used: number }>();

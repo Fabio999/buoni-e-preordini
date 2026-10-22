@@ -355,6 +355,7 @@ export function SaleDialog({
   const [date, setDate] = useState("");
   const [notes, setNotes] = useState("");
   const [busy, setBusy] = useState(false);
+  const [prefilled, setPrefilled] = useState(false);
   const refresh = useRefresh();
   const before = useBalance(clientId);
 
@@ -365,6 +366,7 @@ export function SaleDialog({
       setQuantity(1);
       setAmount("");
       setUseBuono(true);
+      setPrefilled(false);
       setDate(new Date().toISOString().slice(0, 10));
       setNotes("");
     }
@@ -372,6 +374,14 @@ export function SaleDialog({
 
   const product = products.find((p) => p.id === productId);
   const total = Number(amount) || 0;
+
+  // Pre-fill the price once when the dialog opens with a product already chosen.
+  useEffect(() => {
+    if (!prefilled && product && fixedProduct) {
+      setAmount((Number(product.price) * quantity).toFixed(2));
+      setPrefilled(true);
+    }
+  }, [prefilled, product, fixedProduct, quantity]);
 
   // Pre-fill the buono field with the most useful amount: all that is needed.
   useEffect(() => {

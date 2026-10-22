@@ -334,3 +334,202 @@ export function PurchaseDialog({ open, onOpenChange, clientId: fixedClient }: Pr
     </Dialog>
   );
 }
+
+/**
+ * Product sale with optional buono discount: one confirmation registers the
+ * sale and the buono movement together, and the buono can never go negative.
+ */
+export function SaleDialog({
+  open,
+  onOpenChange,
+  clientId: fixedClient,
+  productId: fixedProduct,
+}: Props & { productId?: string | undefined }) {
+  const { data: products = [] } = useProducts();
+  const [clientId, setClientId] = useState("");
+  const [productId, setProductId] = useState("");
+  const [quantity, setQuantity] = useState(1);
+  const [amount, setAmount] = useState("");
+  const [useBuono, setUseBuono] = useState(true);
+  const [buonoAmount, setBuonoAmount] = useState("");
+  const [date, setDate] = useState("");
+  const [notes, setNotes] = useState("");
+  const [busy, setBusy] = useState(false);
+  const refresh = useRefresh();
+  const before = useBalance(clientId);
+
+  useEffect(() => {
+    if (open) {
+      setClientId(fixedClient ?? "");
+      setProductId(fixedProduct ?? "");
+      setQuantity(1);
+      setAmount("");
+      setUseBuono(true);
+      setDate(new Date().toISOString().slice(0, 10));
+      setNotes("");
+    }
+  }, [open, fixedClient, fixedProduct]);
+
+  const product = products.find((p) => p.id === productId);
+  const total = Number(amount) || 0;
+
+  // Pre-fill the buono field with the most useful amount: all that is needed.
+  useEffect(() => {
+    if (useBuono) setBuonoAmount(Math.min(Math.max(0, before), total).toFixed(2));
+  }, [useBuono, before, total, clientId, productId, quantity]);
+
+  const split = saleSplit(total, before, useBuono ? Number(buonoAmount) || 0 : 0);
+
+  const submit = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!clientId || !product) {
+      toast.error("Seleziona cliente e prodotto");
+      return;
+    }
+    if (total <= 0) {
+      toast.error("Inserisci un importo");
+      return;
+    }
+    setBusy(true);
+    const { error, queued } = await runOrQueue("register_sale", clientId, -split.used, {
+      _client: clientId,
+      _product: product.id,
+      _product_name: product.name,
+      _quantity: quantity,
+      _amount: total,
+      _buono_used: split.used,
+      _date: date,
+      _notes: notes,
+    });
+    setBusy(false);
+    if (error) {
+      toast.error(errMsg(error));
+      return;
+    }
+    toast.success(
+      queued
+        ? "Senza connessione: vendita salvata, verrà inviata appena torna internet"
+        : split.used > 0
+          ? `Vendita registrata: ${euro(split.used)} scalati dal buono`
+          : "Vendita registrata",
+    );
+    refresh();
+    onOpenChange(false);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-h-[92vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Vendita prodotto</DialogTitle>
+        </DialogHeader>
+        <form onSubmit={submit} className="space-y-4">
+          <Field label="Cliente">
+            <ClientSelect value={clientId} onChange={setClientId} fixed={!!fixedClient} />
+          </Field>
+          <Field label="Prodotto">
+            <ProductSelect
+              value={productId}
+              onChange={(id, p) => {
+                setProductId(id);
+                setAmount(p ? (Number(p.price) * quantity).toFixed(2) : "");
+              }}
+            />
+          </Field>
+          <div className="grid gap-4 sm:grid-cols-3">
+            <Field label="Quantità">
+              <Input
+                type="number"
+                min={1}
+                value={quantity}
+                onChange={(e) => {
+                  const q = Math.max(1, Number(e.target.value));
+                  setQuantity(q);
+                  if (product) setAmount((Number(product.price) * q).toFixed(2));
+                }}
+              />
+            </Field>
+            <Field label="Prezzo totale (€)">
+              <Input
+                required
+                type="number"
+                min="0.01"
+                step="0.01"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+              />
+            </Field>
+            <Field label="Data">
+              <Input required type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+            </Field>
+          </div>
+
+          {clientId && (
+            <div className="space-y-3 rounded-lg border p-3">
+              <label className="flex items-center gap-2 text-sm font-medium">
+                <input
+                  type="checkbox"
+                  className="h-4 w-4 accent-primary"
+                  checked={useBuono && before > 0}
+                  disabled={before <= 0}
+                  onChange={(e) => setUseBuono(e.target.checked)}
+                />
+                Usa il buono del cliente
+                <span className="font-normal text-muted-foreground">
+                  {before > 0 ? `(disponibili ${euro(before)})` : "(nessun buono disponibile)"}
+                </span>
+              </label>
+              {useBuono && before > 0 && (
+                <Field label="Buono da usare (€)">
+                  <Input
+                    type="number"
+                    min={0}
+                    step="0.01"
+                    value={buonoAmount}
+                    onChange={(e) => setBuonoAmount(e.target.value)}
+                    aria-label="Buono da usare"
+                  />
+                </Field>
+              )}
+            </div>
+          )}
+
+          <Field label="Note (opzionali)">
+            <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} />
+          </Field>
+
+          {clientId && total > 0 && (
+            <div
+              aria-live="polite"
+              className="space-y-2 rounded-lg bg-secondary px-4 py-3 text-secondary-foreground"
+            >
+              <div className="flex items-center justify-between text-sm">
+                <span>Prezzo prodotto</span>
+                <span className="font-semibold">{euro(total)}</span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span>Buono usato</span>
+                <span className="font-semibold text-destructive">−{euro(split.used)}</span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span>Buono rimanente</span>
+                <span className="font-semibold">{euro(split.remaining)}</span>
+              </div>
+              <div className="flex items-center justify-between border-t pt-2">
+                <span className="text-sm font-medium">Da pagare</span>
+                <span className="font-display text-xl font-semibold">{euro(split.toPay)}</span>
+              </div>
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={busy}>Annulla</Button>
+            <Button type="submit" disabled={busy || !clientId || !product || total <= 0}>
+              <ShoppingBag className="h-4 w-4" /> {busy ? "Salvataggio…" : "Conferma vendita"}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}

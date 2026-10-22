@@ -57,6 +57,13 @@
       "when": 1791548657010,
       "tag": "0007_product_track_stock",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1792671928597,
+      "tag": "0008_register_sale",
+      "breakpoints": true
     }
   ]
 }

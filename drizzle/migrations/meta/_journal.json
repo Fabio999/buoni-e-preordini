@@ -64,6 +64,13 @@
       "when": 1792671928597,
       "tag": "0008_register_sale",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1792675390768,
+      "tag": "0009_staff_only_access",
+      "breakpoints": true
     }
   ]
 }

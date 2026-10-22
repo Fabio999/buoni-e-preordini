@@ -40,12 +40,16 @@ export const createAccount = createServerFn({ method: "POST" })
     validate(data.email, data.password);
     if (!data.password) throw new Error("Inserisci una password");
     const admin = await assertAdmin(context);
-    const { error } = await admin.auth.admin.createUser({
+    const { data: created, error } = await admin.auth.admin.createUser({
       email: data.email.trim(),
       password: data.password,
       email_confirm: true,
     });
     if (error) throw new Error(error.message);
+    if (created.user) {
+      const { error: sErr } = await admin.from("staff_members").insert({ user_id: created.user.id });
+      if (sErr) throw new Error("Accesso creato ma non abilitato: riprova");
+    }
     return { ok: true };
   });
 

@@ -28,3 +28,5 @@
 - Buoni offline: ricariche/acquisti salvati sul dispositivo e inviati al ritorno della rete (src/lib/offline.tsx); dati letti raramente (staleTime 5 min, niente polling) per ridurre l'uso del backend.
 - Vendite con sconto buono passano dal RPC `register_sale` (un’unica conferma registra vendita + movimento buono; il buono usato è limitato a totale e saldo, mai negativo); il calcolo lato app usa `saleSplit` in src/lib/data.ts.
 - Data access requires staff membership (`staff_members` row or admin role, checked by `is_staff()` in RLS and RPCs); accounts are created only from Amministrazione, which adds the membership, so self-signups see nothing.
+
+- Task AI drafts use an authenticated staff-checked server function, bounded Responses structured output with no retries, shared exact-description templates and account-scoped local similarity suggestions; only explicit generation invokes AI, and task checklist changes use existing immutable audit snapshots.

@@ -92,6 +92,13 @@
       "when": 1792790420755,
       "tag": "0012_calendar_entry_color",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1792792716001,
+      "tag": "0013_calendar_event_reminders",
+      "breakpoints": true
     }
   ]
 }

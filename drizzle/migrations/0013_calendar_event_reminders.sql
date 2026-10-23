@@ -1,0 +1,2 @@
+ALTER TABLE public.calendar_entries ADD COLUMN reminder_minutes integer DEFAULT NULL CHECK (reminder_minutes IS NULL OR reminder_minutes >= 0), ADD COLUMN reminder_text text NOT NULL DEFAULT '';
+COMMENT ON COLUMN public.calendar_entries.reminder_minutes IS 'Optional minutes before event start for in-app reminders';

@@ -3,7 +3,7 @@ import { taskReminders } from "@/lib/task-reminders";
 import type { Task } from "@/lib/planning";
 
 const now = new Date("2026-10-23T20:00:00Z");
-const task: Task = { id: "task-1", title: "Preparare ordine", description: "", responsible: "Fabio Penocchio", due_at: "2026-10-23T20:30:00Z", starts_at: null, archived: false, status: "da_fare", priority: "normale", mandatory: true, claimed_at: null, claimed_by: "", started_at: null, started_by: "", completed_at: null, completed_by: "", created_at: now.toISOString(), updated_at: now.toISOString() };
+const task: Task = { id: "task-1", title: "Preparare ordine", description: "", checklist: [], source_description: "", responsible: "Fabio Penocchio", due_at: "2026-10-23T20:30:00Z", starts_at: null, archived: false, status: "da_fare", priority: "normale", mandatory: true, claimed_at: null, claimed_by: "", started_at: null, started_by: "", completed_at: null, completed_by: "", created_at: now.toISOString(), updated_at: now.toISOString() };
 describe("Promemoria responsabili", () => {
   it("avvisa il responsabile entro un'ora, non prima", () => {
     expect(taskReminders([task], "Fabio Penocchio", now)[0]?.late).toBe(false);

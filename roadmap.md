@@ -1,5 +1,8 @@
 # Roadmap
 
+- [x] Solo pallino per ricorrenze, finestra al passaggio del mouse e modifica al clic.
+- [x] Abilitare ripetizione e giorno fisso anche in modifica; verificare salvataggio e rimuovere le prove.
+
 - [x] Pallino a strisce del colore assegnato per eventi ricorrenti nel calendario e negli appuntamenti.
 - [x] Scelta di un giorno fisso della settimana per ricorrenze; verificare le date e il salvataggio senza lasciare prove.
 

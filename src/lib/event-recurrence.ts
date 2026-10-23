@@ -1,6 +1,12 @@
 import { addDays, addMonths, format, parseISO } from "date-fns";
 import { toInstant } from "./planning";
 import { normalizeText } from "./search";
+import type { CalendarEntry } from "./planning";
+
+export function recurrenceTargets<T extends Pick<CalendarEntry, "id" | "recurrence_series" | "starts_at" | "archived">>(events: T[], initial: T, following: boolean) {
+  if (!following || !initial.recurrence_series) return [initial];
+  return events.filter(event => event.recurrence_series === initial.recurrence_series && event.starts_at >= initial.starts_at && !event.archived).sort((a,b) => a.starts_at.localeCompare(b.starts_at));
+}
 
 export const RECURRENCE = { daily: "Ogni giorno", weekly: "Ogni settimana", fortnightly: "Ogni 2 settimane", monthly: "Ogni mese" };
 export type Frequency = keyof typeof RECURRENCE;

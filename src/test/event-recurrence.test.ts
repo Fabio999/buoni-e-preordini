@@ -1,7 +1,21 @@
 import { describe, expect, it } from "vitest";
-import { occurrenceDates, mergeGames, rememberGame, readGames, gamesKey } from "../lib/event-recurrence";
+import { occurrenceDates, recurrenceTargets, mergeGames, rememberGame, readGames, gamesKey } from "../lib/event-recurrence";
 import { wallTime } from "../lib/planning";
 describe("Ricorrenze evento", () => {
+  it("modifica una sola data oppure questa e le successive della stessa serie senza toccare il passato", () => {
+    const events = [
+      {id:"past", recurrence_series:"nexus", starts_at:"2026-10-20T18:00:00Z", archived:false},
+      {id:"current", recurrence_series:"nexus", starts_at:"2026-10-27T19:00:00Z", archived:false},
+      {id:"next", recurrence_series:"nexus", starts_at:"2026-11-03T19:00:00Z", archived:false},
+      {id:"other", recurrence_series:"magic", starts_at:"2026-11-03T19:00:00Z", archived:false},
+    ];
+    const current = events[1];
+    if (!current) throw new Error("Missing current occurrence");
+    expect(recurrenceTargets(events,current,false).map(e => e.id)).toEqual(["current"]);
+    expect(recurrenceTargets(events,current,true).map(e => e.id)).toEqual(["current","next"]);
+    const dates=occurrenceDates("2026-10-27T20:00","2026-10-28T00:30","Europe/Rome","weekly",2,4);
+    expect(dates.map(e => wallTime(e.starts_at))).toEqual(["2026-10-29T20:00","2026-11-05T20:00"]);
+  });
   it("fissa Nexus Night al martedì successivo conservando le ore serali e la fine il giorno dopo", () => {
     const rows = occurrenceDates("2026-10-23T20:00", "2026-10-24T00:30", "Europe/Rome", "weekly", 3, 2);
     expect(rows.map(r => wallTime(r.starts_at))).toEqual(["2026-10-27T20:00", "2026-11-03T20:00", "2026-11-10T20:00"]);

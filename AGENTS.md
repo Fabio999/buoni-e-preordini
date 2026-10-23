@@ -15,7 +15,7 @@
 - Event reminders use saved event advance minutes and optional text against cached events, with account/operator-scoped local acknowledgements and a white popup queued after task reminders; no periodic backend requests.
 - Calendar appointment filters compare start date/time in Europe/Rome.
 - Recurring events are inserted atomically as a finite series of individually editable occurrences; date-fns shifts wall dates before IANA-zone conversion to retain local start/end hours through DST.
-- Weekly recurrence aligns both wall dates forward to the selected weekday before generating occurrences; a shared EventDot identifies series using assigned-color stripes without extra reads.
+- Weekly recurrence aligns wall dates to the chosen weekday; EventDot-only calendar buttons show hover details. Editing defaults to one occurrence; optional following-series rescheduling uses cached members and one batch upsert preserving IDs, history and sibling details.
 - Event games are stored on events and remembered locally per account; suggestions merge remembered games with cached event/product games without additional requests.
 - Task reminders use cached tasks and account/operator/task/deadline/phase acknowledgements, without polling. Assignees use deduplicated newline-separated responsible text via task-people, preserving legacy names and per-person reminders.
 - Company planning uses separate task/calendar tables and immutable trigger-written audit rows; all transitions are attributed by the database operator session, and date alternatives are retained when confirming a final date.

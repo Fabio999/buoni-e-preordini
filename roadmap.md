@@ -1,5 +1,8 @@
 # Roadmap
 
+- [x] Aggiungere pop-up automatici al responsabile prima della scadenza e in ritardo, senza richieste aggiuntive periodiche.
+- [x] Sistemare riquadri e scritte di attività e scadenze e verificare avvisi e impaginazione.
+
 - [x] Aggiungere Task e Calendario: attività, calendario giorno/settimana/mese, responsabili, date alternative, cronologia e filtri.
 - [x] Aggiungere il riepilogo nella dashboard e verificare creazione, riapertura, cronologia, conferma data alternativa e conservazione su computer e smartphone; eliminare i dati temporanei.
 

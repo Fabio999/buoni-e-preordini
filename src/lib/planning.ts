@@ -17,7 +17,7 @@ export function alternativesOf(entry: Pick<CalendarEntry, "alternatives">): Alte
 }
 export function confirmAlternative(entry: Pick<CalendarEntry, "starts_at" | "ends_at" | "alternatives">, alternative: Alternative) {
   const dates = alternativesOf(entry);
-  if (!dates.some(a => a.starts_at === entry.starts_at && a.ends_at === entry.ends_at)) dates.push({ starts_at: entry.starts_at, ends_at: entry.ends_at });
+  if (!dates.some(a => new Date(a.starts_at).getTime() === new Date(entry.starts_at).getTime() && new Date(a.ends_at).getTime() === new Date(entry.ends_at).getTime())) dates.push({ starts_at: entry.starts_at, ends_at: entry.ends_at });
   return { starts_at: alternative.starts_at, ends_at: alternative.ends_at, confirmed: true, alternatives: dates };
 }
 export const overlaps = (a: Pick<CalendarEntry, "starts_at" | "ends_at">, b: Pick<CalendarEntry, "starts_at" | "ends_at">) => new Date(a.starts_at) < new Date(b.ends_at) && new Date(b.starts_at) < new Date(a.ends_at);

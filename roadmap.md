@@ -1,7 +1,7 @@
 # Roadmap
 
-- [ ] Ajouter « Task e Calendario » : activités, calendrier jour/semaine/mois, responsables, dates alternatives, historique et filtres.
-- [ ] Ajouter le récapitulatif des activités à la dashboard et vérifier les flux sur ordinateur et smartphone, sans laisser de données de test.
+- [x] Aggiungere Task e Calendario: attività, calendario giorno/settimana/mese, responsabili, date alternative, cronologia e filtri.
+- [x] Aggiungere il riepilogo nella dashboard e verificare creazione, riapertura, cronologia, conferma data alternativa e conservazione su computer e smartphone; eliminare i dati temporanei.
 
 - [x] Semplificare ricarica buoni e saldo negozio, mantenendo importi e storico; verificare le finestre e la pagina.
 

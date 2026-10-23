@@ -1,5 +1,7 @@
 # Roadmap
 
+- [x] Creare e ricordare categorie e giochi personalizzati nelle task; verificare riapertura e ricaricamento senza lasciare prove.
+
 - [x] Solo pallino per ricorrenze, finestra al passaggio del mouse e modifica al clic.
 - [x] Abilitare ripetizione e giorno fisso anche in modifica; verificare salvataggio e rimuovere le prove.
 

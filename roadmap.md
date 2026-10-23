@@ -1,5 +1,7 @@
 # Roadmap
 
+- [ ] Separare Task e Calendario, aggiungere gli eventi in programma nelle Task ed escludere le task dal calendario; verificare navigazione e contenuti.
+
 - [x] Aggiungere dettagli evento sempre presenti con emoji, campi modificabili e verifica del salvataggio nel calendario.
 
 - [x] Creazione task con AI Gateway su richiesta, riuso delle descrizioni simili senza nuove chiamate e checklist modificabile.

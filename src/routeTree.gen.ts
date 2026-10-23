@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AmministrazioneRouteImport } from './routes/amministrazione'
+import { Route as CalendarioRouteImport } from './routes/calendario'
 import { Route as PrenotazioniRouteImport } from './routes/prenotazioni'
 import { Route as ProdottiRouteImport } from './routes/prodotti'
 import { Route as SaldoRouteImport } from './routes/saldo'
@@ -28,6 +29,11 @@ const IndexRoute = IndexRouteImport.update({
 const AmministrazioneRoute = AmministrazioneRouteImport.update({
   id: '/amministrazione',
   path: '/amministrazione',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CalendarioRoute = CalendarioRouteImport.update({
+  id: '/calendario',
+  path: '/calendario',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PrenotazioniRoute = PrenotazioniRouteImport.update({
@@ -74,6 +80,7 @@ const EventiIdRoute = EventiIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/amministrazione': typeof AmministrazioneRoute
+  '/calendario': typeof CalendarioRoute
   '/prenotazioni': typeof PrenotazioniRoute
   '/prodotti': typeof ProdottiRoute
   '/saldo': typeof SaldoRoute
@@ -86,6 +93,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/amministrazione': typeof AmministrazioneRoute
+  '/calendario': typeof CalendarioRoute
   '/prenotazioni': typeof PrenotazioniRoute
   '/prodotti': typeof ProdottiRoute
   '/saldo': typeof SaldoRoute
@@ -99,6 +107,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/amministrazione': typeof AmministrazioneRoute
+  '/calendario': typeof CalendarioRoute
   '/prenotazioni': typeof PrenotazioniRoute
   '/prodotti': typeof ProdottiRoute
   '/saldo': typeof SaldoRoute
@@ -113,6 +122,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/amministrazione'
+    | '/calendario'
     | '/prenotazioni'
     | '/prodotti'
     | '/saldo'
@@ -125,6 +135,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/amministrazione'
+    | '/calendario'
     | '/prenotazioni'
     | '/prodotti'
     | '/saldo'
@@ -137,6 +148,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/amministrazione'
+    | '/calendario'
     | '/prenotazioni'
     | '/prodotti'
     | '/saldo'
@@ -150,6 +162,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AmministrazioneRoute: typeof AmministrazioneRoute
+  CalendarioRoute: typeof CalendarioRoute
   PrenotazioniRoute: typeof PrenotazioniRoute
   ProdottiRoute: typeof ProdottiRoute
   SaldoRoute: typeof SaldoRoute
@@ -174,6 +187,13 @@ declare module '@tanstack/react-router' {
       path: '/amministrazione'
       fullPath: '/amministrazione'
       preLoaderRoute: typeof AmministrazioneRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/calendario': {
+      id: '/calendario'
+      path: '/calendario'
+      fullPath: '/calendario'
+      preLoaderRoute: typeof CalendarioRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/prenotazioni': {
@@ -238,6 +258,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AmministrazioneRoute: AmministrazioneRoute,
+  CalendarioRoute: CalendarioRoute,
   PrenotazioniRoute: PrenotazioniRoute,
   ProdottiRoute: ProdottiRoute,
   SaldoRoute: SaldoRoute,

@@ -21,6 +21,9 @@ export function confirmAlternative(entry: Pick<CalendarEntry, "starts_at" | "end
   return { starts_at: alternative.starts_at, ends_at: alternative.ends_at, confirmed: true, alternatives: dates };
 }
 export const overlaps = (a: Pick<CalendarEntry, "starts_at" | "ends_at">, b: Pick<CalendarEntry, "starts_at" | "ends_at">) => new Date(a.starts_at) < new Date(b.ends_at) && new Date(b.starts_at) < new Date(a.ends_at);
+export function upcomingEvents<T extends Pick<CalendarEntry, "archived" | "starts_at" | "ends_at">>(events: T[], now = new Date()): T[] {
+  return events.filter(e => !e.archived && new Date(e.ends_at) >= now).sort((a,b) => new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime());
+}
 export function taskStats(tasks: Task[], now = new Date()) {
   const active = tasks.filter(t => !t.archived);
   return { total: active.length, todo: active.filter(t => t.status === "da_fare").length, progress: active.filter(t => t.status === "in_corso").length, done: active.filter(t => t.status === "completata").length, mandatory: active.filter(t => t.mandatory && t.status !== "completata").length, overdue: active.filter(t => isOverdue(t, now)).length };

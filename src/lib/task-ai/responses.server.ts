@@ -1,6 +1,7 @@
 import { createOpenAI } from "@ai-sdk/openai";
 import { streamText, Output, type ModelMessage } from "ai";
 import { taskDraftSchema } from "../task-drafts";
+import type { z } from "zod";
 
 import {
   createLovableAiGatewayRunIdFetch,
@@ -10,7 +11,7 @@ import {
 
 export function createResponsesCall(
   request: Request,
-  config: { baseURL: string; apiKey: string; model: string; onGatewayError?: (status: number, message: string) => Promise<void> },
+  config: { baseURL: string; apiKey: string; model: string; onGatewayError?: (status: number, message: string) => Promise<void>; schema?: z.ZodType; maxOutputTokens?: number },
   messages: ModelMessage[],
   instructions?: string,
 ) {
@@ -32,8 +33,8 @@ export function createResponsesCall(
   const reasoning = config.model !== "openai/chat-latest";
   const result = streamText({
     model: provider.responses(config.model),
-    output: Output.object({ schema: taskDraftSchema }),
-    maxOutputTokens: 2200,
+    output: Output.object({ schema: config.schema ?? taskDraftSchema }),
+    maxOutputTokens: config.maxOutputTokens ?? 2200,
     maxRetries: 0,
     ...(instructions ? { system: instructions } : {}),
     messages,

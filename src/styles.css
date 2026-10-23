@@ -49,6 +49,7 @@
 
 :root {
   --radius: 0.6rem;
+  --event-recurrence-stripes: repeating-linear-gradient(135deg, transparent 0 3px, var(--card) 3px 5px);
   --reminder: oklch(1 0 0);
   --reminder-foreground: oklch(0.24 0.012 255);
   --background: oklch(0.975 0.004 250);
@@ -103,6 +104,10 @@
 }
 
 /* Active sidebar entry in orange */
+.event-dot-recurring {
+  background-image: var(--event-recurrence-stripes);
+}
+
 [data-sidebar="menu-button"][data-active="true"] {
   background-color: var(--sidebar-primary);
   color: var(--sidebar-primary-foreground);

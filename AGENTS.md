@@ -39,3 +39,5 @@
 - Task AI drafts use an authenticated staff-checked server function, bounded Responses structured output with no retries, shared exact-description templates and account-scoped local similarity suggestions; only explicit generation invokes AI; the legacy checklist column is history-only.
 - Task category, game and location use dedicated columns; ordered workflow stages and a completed-prefix position are independent of the retired checklist, with shared helpers synchronizing progress and existing database status values to preserve transition attribution.
 - Date and time entry goes through the shared DateTimeField, whose hour/minute selects are always 24-hour: a native time input is locale-dependent and turned typed evening times into morning ones.
+
+- Task category/game selectors allow inline creation persisted locally per account and merge cached task values; games share the event game vocabulary to avoid duplicate requests and storage.

@@ -1,7 +1,16 @@
 import { describe, it, expect } from "vitest";
-import { isOverdue, confirmAlternative, alternativesOf, overlaps, toInstant, wallTime } from "@/lib/planning";
+import { isOverdue, confirmAlternative, alternativesOf, overlaps, toInstant, wallTime, upcomingEvents } from "@/lib/planning";
 
 describe("task e calendario", () => {
+  it("gli eventi in programma includono quelli in corso, escludono passati e archiviati e sono ordinati per inizio", () => {
+    const events = [
+      {id:"futuro",archived:false,starts_at:"2026-10-24T18:00:00Z",ends_at:"2026-10-24T22:00:00Z"},
+      {id:"passato",archived:false,starts_at:"2026-10-22T18:00:00Z",ends_at:"2026-10-22T22:00:00Z"},
+      {id:"archiviato",archived:true,starts_at:"2026-10-25T18:00:00Z",ends_at:"2026-10-25T22:00:00Z"},
+      {id:"in-corso",archived:false,starts_at:"2026-10-23T18:00:00Z",ends_at:"2026-10-24T00:30:00Z"},
+    ];
+    expect(upcomingEvents(events,new Date("2026-10-23T21:53:00Z")).map(e => e.id)).toEqual(["in-corso","futuro"]);
+  });
   it("una scadenza superata resta aperta, non completa la task", () => {
     const task = {status:"in_corso",archived:false,due_at:"2026-10-20T08:00:00Z"};
     expect(isOverdue(task,new Date("2026-10-23T10:00:00Z"))).toBe(true);

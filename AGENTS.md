@@ -10,6 +10,7 @@
 <!-- LOVABLE:END -->
 
 ## Architecture rules
+- Task and Calendar have separate content routes backed by a shared planning page; the calendar accepts events only, while Tasks show upcoming events independently of task filters to prevent mixing schedules and work queues.
 - Calendar event details are serialized as labeled lines in the existing description through the shared event-details parser/formatter, preserving legacy notes and audit history without additional data requests.
 - Task reminders run in the signed-in operator shell against cached tasks; local acknowledgements are scoped by account/operator/task/deadline/phase, with no scheduled server requests.
 - Company planning uses separate task/calendar tables and immutable trigger-written audit rows; all transitions are attributed by the database operator session, and date alternatives are retained when confirming a final date.

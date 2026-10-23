@@ -34,7 +34,8 @@ import iconAsset from "@/assets/mana-flask-icon.jpg.asset.json";
 const items = [
   { title: "Dashboard", url: "/", icon: LayoutDashboard },
   { title: "Eventi", url: "/eventi", icon: CalendarDays },
-  { title: "Task e Calendario", url: "/task-calendario", icon: ClipboardList },
+  { title: "Task", url: "/task-calendario", icon: ClipboardList },
+  { title: "Calendario", url: "/calendario", icon: CalendarDays },
   { title: "Prenotazioni", url: "/prenotazioni", icon: ClipboardList },
   { title: "Clienti", url: "/clienti", icon: Users },
   { title: "Saldo Negozio", url: "/saldo", icon: Wallet },

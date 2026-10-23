@@ -194,7 +194,10 @@ export type Database = {
           created_at: string
           description: string
           ends_at: string
+          game: string
           id: string
+          recurrence_frequency: string | null
+          recurrence_series: string | null
           reminder_minutes: number | null
           reminder_text: string
           responsible_names: string[]
@@ -212,7 +215,10 @@ export type Database = {
           created_at?: string
           description?: string
           ends_at: string
+          game?: string
           id?: string
+          recurrence_frequency?: string | null
+          recurrence_series?: string | null
           reminder_minutes?: number | null
           reminder_text?: string
           responsible_names?: string[]
@@ -230,7 +236,10 @@ export type Database = {
           created_at?: string
           description?: string
           ends_at?: string
+          game?: string
           id?: string
+          recurrence_frequency?: string | null
+          recurrence_series?: string | null
           reminder_minutes?: number | null
           reminder_text?: string
           responsible_names?: string[]

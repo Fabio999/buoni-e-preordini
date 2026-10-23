@@ -1,5 +1,8 @@
 # Roadmap
 
+- [ ] Rimuovere gli eventi dalle Task e mantenere ricerca e filtri nel Calendario.
+- [ ] Creare eventi ricorrenti e ricordare i giochi inseriti; verificare salvataggio e rimuovere le prove.
+
 - [x] Ricerca e filtri indipendenti per nome, data, orario e colore negli eventi in programma.
 - [x] Promemoria evento configurabile con testo e pop-up bianco; verificare salvataggio e avviso.
 

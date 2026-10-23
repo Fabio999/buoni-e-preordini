@@ -1,0 +1,3 @@
+ALTER TABLE public.calendar_entries ADD COLUMN game text NOT NULL DEFAULT '', ADD COLUMN recurrence_series uuid DEFAULT NULL, ADD COLUMN recurrence_frequency text DEFAULT NULL;
+CREATE INDEX calendar_entries_recurrence_series_idx ON public.calendar_entries(recurrence_series) WHERE recurrence_series IS NOT NULL;
+COMMENT ON COLUMN public.calendar_entries.recurrence_series IS 'Groups explicitly generated occurrences; each occurrence remains individually editable';

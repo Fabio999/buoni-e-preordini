@@ -1,0 +1,12 @@
+import { describe, expect, it } from "vitest";
+import { eventReminders, filterUpcomingEvents, emptyEventFilters } from "../lib/event-reminders";
+import type { CalendarEntry } from "../lib/planning";
+const event = { id: "event", title: "Pokémon serale", starts_at: "2026-10-23T18:00:00Z", ends_at: "2026-10-23T22:30:00Z", color: "blu", archived: false, responsible_names: ["Mario Rossi"], reminder_minutes: 30, reminder_text: "Prepara il materiale" } as CalendarEntry;
+describe("Eventi in programma", () => {
+  it("cerca per nome senza distinguere gli accenti", () => { expect(filterUpcomingEvents([event], { ...emptyEventFilters, q: "pokemon" })).toHaveLength(1); expect(filterUpcomingEvents([event], { ...emptyEventFilters, q: "magic" })).toHaveLength(0); });
+  it("filtra la data di inizio italiana anche quando termina il giorno dopo", () => { expect(filterUpcomingEvents([event], { ...emptyEventFilters, from: "2026-10-24" })).toHaveLength(0); expect(filterUpcomingEvents([event], { ...emptyEventFilters, to: "2026-10-23" })).toHaveLength(1); });
+  it("filtra gli orari serali in formato 24 ore", () => { expect(filterUpcomingEvents([event], { ...emptyEventFilters, hourFrom: "20:00", hourTo: "23:00" })).toHaveLength(1); expect(filterUpcomingEvents([event], { ...emptyEventFilters, hourTo: "08:00" })).toHaveLength(0); });
+  it("filtra il colore", () => { expect(filterUpcomingEvents([event], { ...emptyEventFilters, color: "rosso" })).toHaveLength(0); expect(filterUpcomingEvents([event], { ...emptyEventFilters, color: "blu" })).toHaveLength(1); });
+  it("avvisa esattamente all'anticipo impostato", () => { expect(eventReminders([event], "Mario Rossi", new Date("2026-10-23T17:29:59Z"))).toHaveLength(0); expect(eventReminders([event], "Mario Rossi", new Date("2026-10-23T17:30:00Z"))[0]?.event.reminder_text).toBe("Prepara il materiale"); });
+  it("non avvisa se disattivato, archiviato, terminato o assegnato ad altri", () => { expect(eventReminders([{ ...event, reminder_minutes: null }], "Mario Rossi", new Date(event.starts_at))).toHaveLength(0); expect(eventReminders([{ ...event, archived: true }], "Mario Rossi", new Date(event.starts_at))).toHaveLength(0); expect(eventReminders([event], "Luca Bianchi", new Date(event.starts_at))).toHaveLength(0); expect(eventReminders([event], "Mario Rossi", new Date("2026-10-24T00:00:00Z"))).toHaveLength(0); });
+});

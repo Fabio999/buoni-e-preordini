@@ -11,9 +11,11 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AmministrazioneRouteImport } from './routes/amministrazione'
+import { Route as CalendarioRouteImport } from './routes/calendario'
 import { Route as PrenotazioniRouteImport } from './routes/prenotazioni'
 import { Route as ProdottiRouteImport } from './routes/prodotti'
 import { Route as SaldoRouteImport } from './routes/saldo'
+import { Route as TaskCalendarioRouteImport } from './routes/task-calendario'
 import { Route as ClientiIndexRouteImport } from './routes/clienti.index'
 import { Route as ClientiIdRouteImport } from './routes/clienti.$id'
 import { Route as EventiIndexRouteImport } from './routes/eventi.index'
@@ -29,6 +31,11 @@ const AmministrazioneRoute = AmministrazioneRouteImport.update({
   path: '/amministrazione',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CalendarioRoute = CalendarioRouteImport.update({
+  id: '/calendario',
+  path: '/calendario',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PrenotazioniRoute = PrenotazioniRouteImport.update({
   id: '/prenotazioni',
   path: '/prenotazioni',
@@ -42,6 +49,11 @@ const ProdottiRoute = ProdottiRouteImport.update({
 const SaldoRoute = SaldoRouteImport.update({
   id: '/saldo',
   path: '/saldo',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TaskCalendarioRoute = TaskCalendarioRouteImport.update({
+  id: '/task-calendario',
+  path: '/task-calendario',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ClientiIndexRoute = ClientiIndexRouteImport.update({
@@ -68,9 +80,11 @@ const EventiIdRoute = EventiIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/amministrazione': typeof AmministrazioneRoute
+  '/calendario': typeof CalendarioRoute
   '/prenotazioni': typeof PrenotazioniRoute
   '/prodotti': typeof ProdottiRoute
   '/saldo': typeof SaldoRoute
+  '/task-calendario': typeof TaskCalendarioRoute
   '/clienti/$id': typeof ClientiIdRoute
   '/eventi/$id': typeof EventiIdRoute
   '/clienti/': typeof ClientiIndexRoute
@@ -79,9 +93,11 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/amministrazione': typeof AmministrazioneRoute
+  '/calendario': typeof CalendarioRoute
   '/prenotazioni': typeof PrenotazioniRoute
   '/prodotti': typeof ProdottiRoute
   '/saldo': typeof SaldoRoute
+  '/task-calendario': typeof TaskCalendarioRoute
   '/clienti/$id': typeof ClientiIdRoute
   '/eventi/$id': typeof EventiIdRoute
   '/clienti': typeof ClientiIndexRoute
@@ -91,9 +107,11 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/amministrazione': typeof AmministrazioneRoute
+  '/calendario': typeof CalendarioRoute
   '/prenotazioni': typeof PrenotazioniRoute
   '/prodotti': typeof ProdottiRoute
   '/saldo': typeof SaldoRoute
+  '/task-calendario': typeof TaskCalendarioRoute
   '/clienti/$id': typeof ClientiIdRoute
   '/eventi/$id': typeof EventiIdRoute
   '/clienti/': typeof ClientiIndexRoute
@@ -104,9 +122,11 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/amministrazione'
+    | '/calendario'
     | '/prenotazioni'
     | '/prodotti'
     | '/saldo'
+    | '/task-calendario'
     | '/clienti/$id'
     | '/eventi/$id'
     | '/clienti/'
@@ -115,9 +135,11 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/amministrazione'
+    | '/calendario'
     | '/prenotazioni'
     | '/prodotti'
     | '/saldo'
+    | '/task-calendario'
     | '/clienti/$id'
     | '/eventi/$id'
     | '/clienti'
@@ -126,9 +148,11 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/amministrazione'
+    | '/calendario'
     | '/prenotazioni'
     | '/prodotti'
     | '/saldo'
+    | '/task-calendario'
     | '/clienti/$id'
     | '/eventi/$id'
     | '/clienti/'
@@ -138,9 +162,11 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AmministrazioneRoute: typeof AmministrazioneRoute
+  CalendarioRoute: typeof CalendarioRoute
   PrenotazioniRoute: typeof PrenotazioniRoute
   ProdottiRoute: typeof ProdottiRoute
   SaldoRoute: typeof SaldoRoute
+  TaskCalendarioRoute: typeof TaskCalendarioRoute
   ClientiIdRoute: typeof ClientiIdRoute
   EventiIdRoute: typeof EventiIdRoute
   ClientiIndexRoute: typeof ClientiIndexRoute
@@ -163,6 +189,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AmministrazioneRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/calendario': {
+      id: '/calendario'
+      path: '/calendario'
+      fullPath: '/calendario'
+      preLoaderRoute: typeof CalendarioRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/prenotazioni': {
       id: '/prenotazioni'
       path: '/prenotazioni'
@@ -182,6 +215,13 @@ declare module '@tanstack/react-router' {
       path: '/saldo'
       fullPath: '/saldo'
       preLoaderRoute: typeof SaldoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/task-calendario': {
+      id: '/task-calendario'
+      path: '/task-calendario'
+      fullPath: '/task-calendario'
+      preLoaderRoute: typeof TaskCalendarioRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/clienti/': {
@@ -218,9 +258,11 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AmministrazioneRoute: AmministrazioneRoute,
+  CalendarioRoute: CalendarioRoute,
   PrenotazioniRoute: PrenotazioniRoute,
   ProdottiRoute: ProdottiRoute,
   SaldoRoute: SaldoRoute,
+  TaskCalendarioRoute: TaskCalendarioRoute,
   ClientiIdRoute: ClientiIdRoute,
   EventiIdRoute: EventiIdRoute,
   ClientiIndexRoute: ClientiIndexRoute,

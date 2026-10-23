@@ -1,6 +1,6 @@
 # Roadmap
 
-- [ ] Aggiungere dettagli evento sempre presenti con emoji, campi modificabili e verifica del salvataggio nel calendario.
+- [x] Aggiungere dettagli evento sempre presenti con emoji, campi modificabili e verifica del salvataggio nel calendario.
 
 - [x] Creazione task con AI Gateway su richiesta, riuso delle descrizioni simili senza nuove chiamate e checklist modificabile.
 - [x] Task in elenco con menu a tendina, verifiche di salvataggio, riuso e cronologia.

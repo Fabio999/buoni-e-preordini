@@ -189,6 +189,7 @@ export type Database = {
         Row: {
           alternatives: Json
           archived: boolean
+          color: string
           confirmed: boolean
           created_at: string
           description: string
@@ -204,6 +205,7 @@ export type Database = {
         Insert: {
           alternatives?: Json
           archived?: boolean
+          color?: string
           confirmed?: boolean
           created_at?: string
           description?: string
@@ -219,6 +221,7 @@ export type Database = {
         Update: {
           alternatives?: Json
           archived?: boolean
+          color?: string
           confirmed?: boolean
           created_at?: string
           description?: string

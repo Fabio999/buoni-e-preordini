@@ -25,3 +25,12 @@ export function taskStats(tasks: Task[], now = new Date()) {
   const active = tasks.filter(t => !t.archived);
   return { total: active.length, todo: active.filter(t => t.status === "da_fare").length, progress: active.filter(t => t.status === "in_corso").length, done: active.filter(t => t.status === "completata").length, mandatory: active.filter(t => t.mandatory && t.status !== "completata").length, overdue: active.filter(t => isOverdue(t, now)).length };
 }
+
+export const EVENT_COLORS = [
+  { value: "blu", label: "Blu", dot: "bg-info", chip: "border-info bg-info/10 text-info" },
+  { value: "arancione", label: "Arancione", dot: "bg-primary", chip: "border-primary bg-primary/10 text-primary" },
+  { value: "verde", label: "Verde", dot: "bg-success", chip: "border-success bg-success/10 text-success" },
+  { value: "rosso", label: "Rosso", dot: "bg-destructive", chip: "border-destructive bg-destructive/10 text-destructive" },
+  { value: "grigio", label: "Grigio", dot: "bg-muted-foreground", chip: "border-muted-foreground bg-muted text-foreground" },
+] as const;
+export function eventColor(value: string | null | undefined) { return EVENT_COLORS.find(c => c.value === value) ?? EVENT_COLORS[0]; }

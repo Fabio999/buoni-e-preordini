@@ -1,4 +1,5 @@
 import { normalizeText } from "@/lib/search";
+import { taskPeople } from "@/lib/task-people";
 import { wallTime, type Task } from "@/lib/planning";
 
 export type Reminder = { task: Task; late: boolean; key: string };
@@ -6,7 +7,7 @@ export function taskReminders(tasks: Task[], operator: string, now = new Date())
   const name = normalizeText(operator.trim());
   if (!name) return [];
   return tasks.flatMap(task => {
-    if (task.archived || task.status === "completata" || !task.due_at || normalizeText(task.responsible.trim()) !== name) return [];
+    if (task.archived || task.status === "completata" || !task.due_at || !taskPeople(task.responsible).some(person => normalizeText(person) === name)) return [];
     const time = new Date(task.due_at).getTime() - now.getTime();
     if (!Number.isFinite(time) || time > 60 * 60_000) return [];
     const late = time < 0;

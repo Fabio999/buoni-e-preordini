@@ -5,6 +5,12 @@ import type { Task } from "@/lib/planning";
 const now = new Date("2026-10-23T20:00:00Z");
 const task: Task = { id: "task-1", title: "Preparare ordine", description: "", checklist: [], source_description: "", responsible: "Fabio Penocchio", due_at: "2026-10-23T20:30:00Z", starts_at: null, archived: false, status: "da_fare", priority: "normale", mandatory: true, claimed_at: null, claimed_by: "", started_at: null, started_by: "", completed_at: null, completed_by: "", created_at: now.toISOString(), updated_at: now.toISOString() };
 describe("Promemoria responsabili", () => {
+  it("avvisa ciascuna persona assegnata alla stessa task", () => {
+    const shared = { ...task, responsible: "Fabio Penocchio\nGiulia Bianchi" };
+    expect(taskReminders([shared], "Fabio Penocchio", now)).toHaveLength(1);
+    expect(taskReminders([shared], "Giulia Bianchi", now)).toHaveLength(1);
+    expect(taskReminders([shared], "Luca Rossi", now)).toHaveLength(0);
+  });
   it("avvisa il responsabile entro un'ora, non prima", () => {
     expect(taskReminders([task], "Fabio Penocchio", now)[0]?.late).toBe(false);
     expect(taskReminders([{ ...task, due_at: "2026-10-23T21:01:00Z" }], "Fabio Penocchio", now)).toEqual([]);

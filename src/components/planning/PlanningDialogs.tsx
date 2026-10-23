@@ -3,6 +3,8 @@ import { Plus, Trash2, Sparkles } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { generateEventDescription } from "@/lib/task-ai.functions";
 import { EventGameField } from "./EventGameField";
+import { TaskPeopleField } from "./TaskPeopleField";
+import { formatTaskPeople } from "@/lib/task-people";
 import { occurrenceDates, RECURRENCE, rememberGame } from "@/lib/event-recurrence";
 import { useAuth } from "@/lib/auth";
 import { EVENT_COLORS } from "@/lib/planning";
@@ -38,7 +40,7 @@ export function TaskDialog({ open, onOpenChange, initial, onSaved, draft }: Prop
   async function save(e: FormEvent) {
     e.preventDefault(); e.stopPropagation(); setBusy(true);
     try {
-      const row = { title: f.title.trim(), description: f.description, starts_at: toInstant(f.starts), due_at: toInstant(f.due), priority: f.priority, mandatory: f.mandatory, responsible: f.responsible.trim(), status: f.status, checklist: f.checklist.filter(s => s.text.trim()).map(s => ({...s,text:s.text.trim()})), source_description:f.source_description };
+      const row = { title: f.title.trim(), description: f.description, starts_at: toInstant(f.starts), due_at: toInstant(f.due), priority: f.priority, mandatory: f.mandatory, responsible: formatTaskPeople(f.responsible), status: f.status, checklist: f.checklist.filter(s => s.text.trim()).map(s => ({...s,text:s.text.trim()})), source_description:f.source_description };
       const res = initial ? await supabase.from("company_tasks").update(row).eq("id", initial.id).select("id").single() : await supabase.from("company_tasks").insert(row).select("id").single();
       if (res.error) throw res.error;
       await refresh(); toast.success("Task salvata"); onOpenChange(false); onSaved?.(res.data.id);
@@ -50,7 +52,7 @@ export function TaskDialog({ open, onOpenChange, initial, onSaved, draft }: Prop
       {f.source_description && <Field label="Descrizione originale"><Textarea aria-label="Descrizione originale" value={f.source_description} onChange={e => setF({...f,source_description:e.target.value})}/></Field>}
       <div className="grid gap-4 sm:grid-cols-2"><DateTimeField label="Inizio previsto" value={f.starts} onChange={starts => setF({...f, starts})}/><DateTimeField label="Scadenza" value={f.due} onChange={due => setF({...f, due})}/></div>
       <div className="grid gap-4 sm:grid-cols-2"><Field label="Priorità"><select className={selectClass} aria-label="Priorità task" value={f.priority} onChange={e => setF({...f, priority: e.target.value})}>{Object.entries(PRIORITY).map(([v,l]) => <option key={v} value={v}>{l}</option>)}</select></Field><Field label="Stato"><select className={selectClass} aria-label="Stato task" value={f.status} onChange={e => setF({...f, status: e.target.value})}>{Object.entries(TASK_STATUS).map(([v,l]) => <option key={v} value={v}>{l}</option>)}</select></Field></div>
-      <Field label="Responsabile · nome e cognome"><Input list="planning-people" aria-label="Responsabile task" value={f.responsible} onChange={e => setF({...f, responsible: e.target.value})}/><PeopleSuggestions/></Field>
+      <TaskPeopleField value={f.responsible} onChange={responsible => setF({...f, responsible})}/><PeopleSuggestions/>
       <label className="flex items-center gap-2 text-sm"><input type="checkbox" className="size-4 accent-primary" checked={f.mandatory} onChange={e => setF({...f, mandatory: e.target.checked})}/>Attività obbligatoria</label>
       <DialogFooter><Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Annulla</Button><Button disabled={busy} type="submit">Salva task</Button></DialogFooter>
     </form></DialogContent></Dialog>;

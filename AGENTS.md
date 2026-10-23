@@ -16,7 +16,7 @@
 - Calendar appointment filters compare start date/time in Europe/Rome.
 - Recurring events are inserted atomically as a finite series of individually editable occurrences; date-fns shifts wall dates before IANA-zone conversion to retain local start/end hours through DST.
 - Event games are stored on events and remembered locally per account; suggestions merge remembered games with cached event/product games without additional requests.
-- Task reminders run in the signed-in operator shell against cached tasks; local acknowledgements are scoped by account/operator/task/deadline/phase, with no scheduled server requests.
+- Task reminders use cached tasks and account/operator/task/deadline/phase acknowledgements, without polling. Assignees use deduplicated newline-separated responsible text via task-people, preserving legacy names and per-person reminders.
 - Company planning uses separate task/calendar tables and immutable trigger-written audit rows; all transitions are attributed by the database operator session, and date alternatives are retained when confirming a final date.
 - Planning timestamps are stored as UTC instants, edited via explicit IANA zones with date-fns-tz, and shown in Europe/Rome in the shared calendar to keep cross-zone scheduling consistent.
 - Shop balance is a ledger: only change it via DB functions (`add_balance_movement`, `register_purchase`, `update_balance_movement`, `delete_balance_movement`, which recompute later balances); never write balances directly (keeps history consistent, prevents negatives).

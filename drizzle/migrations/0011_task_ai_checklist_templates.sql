@@ -1,0 +1,14 @@
+ALTER TABLE public.company_tasks ADD COLUMN checklist jsonb NOT NULL DEFAULT '[]'::jsonb, ADD COLUMN source_description text NOT NULL DEFAULT '';
+CREATE TABLE public.task_templates (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), source_key text NOT NULL UNIQUE, source_description text NOT NULL, draft jsonb NOT NULL, created_at timestamptz NOT NULL DEFAULT now());
+GRANT SELECT, INSERT ON public.task_templates TO authenticated;
+GRANT ALL ON public.task_templates TO service_role;
+ALTER TABLE public.task_templates ENABLE ROW LEVEL SECURITY;
+CREATE POLICY staff_read_templates ON public.task_templates FOR SELECT TO authenticated USING (public.is_staff(auth.uid()));
+CREATE POLICY staff_insert_templates ON public.task_templates FOR INSERT TO authenticated WITH CHECK (public.is_staff(auth.uid()));
+CREATE TABLE public.task_ai_blocks (user_id uuid PRIMARY KEY, reason text NOT NULL, blocked_at timestamptz NOT NULL DEFAULT now());
+GRANT SELECT, INSERT, UPDATE ON public.task_ai_blocks TO authenticated;
+GRANT ALL ON public.task_ai_blocks TO service_role;
+ALTER TABLE public.task_ai_blocks ENABLE ROW LEVEL SECURITY;
+CREATE POLICY own_read_ai_block ON public.task_ai_blocks FOR SELECT TO authenticated USING (user_id = auth.uid() AND public.is_staff(auth.uid()));
+CREATE POLICY own_insert_ai_block ON public.task_ai_blocks FOR INSERT TO authenticated WITH CHECK (user_id = auth.uid() AND public.is_staff(auth.uid()));
+CREATE POLICY own_update_ai_block ON public.task_ai_blocks FOR UPDATE TO authenticated USING (user_id = auth.uid() AND public.is_staff(auth.uid())) WITH CHECK (user_id = auth.uid() AND public.is_staff(auth.uid()));

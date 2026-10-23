@@ -300,6 +300,7 @@ export type Database = {
       company_tasks: {
         Row: {
           archived: boolean
+          checklist: Json
           claimed_at: string | null
           claimed_by: string
           completed_at: string | null
@@ -311,6 +312,7 @@ export type Database = {
           mandatory: boolean
           priority: string
           responsible: string
+          source_description: string
           started_at: string | null
           started_by: string
           starts_at: string | null
@@ -320,6 +322,7 @@ export type Database = {
         }
         Insert: {
           archived?: boolean
+          checklist?: Json
           claimed_at?: string | null
           claimed_by?: string
           completed_at?: string | null
@@ -331,6 +334,7 @@ export type Database = {
           mandatory?: boolean
           priority?: string
           responsible?: string
+          source_description?: string
           started_at?: string | null
           started_by?: string
           starts_at?: string | null
@@ -340,6 +344,7 @@ export type Database = {
         }
         Update: {
           archived?: boolean
+          checklist?: Json
           claimed_at?: string | null
           claimed_by?: string
           completed_at?: string | null
@@ -351,6 +356,7 @@ export type Database = {
           mandatory?: boolean
           priority?: string
           responsible?: string
+          source_description?: string
           started_at?: string | null
           started_by?: string
           starts_at?: string | null
@@ -598,6 +604,48 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      task_ai_blocks: {
+        Row: {
+          blocked_at: string
+          reason: string
+          user_id: string
+        }
+        Insert: {
+          blocked_at?: string
+          reason: string
+          user_id: string
+        }
+        Update: {
+          blocked_at?: string
+          reason?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      task_templates: {
+        Row: {
+          created_at: string
+          draft: Json
+          id: string
+          source_description: string
+          source_key: string
+        }
+        Insert: {
+          created_at?: string
+          draft: Json
+          id?: string
+          source_description: string
+          source_key: string
+        }
+        Update: {
+          created_at?: string
+          draft?: Json
+          id?: string
+          source_description?: string
+          source_key?: string
+        }
+        Relationships: []
       }
       user_roles: {
         Row: {

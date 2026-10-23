@@ -1,0 +1,1 @@
+COMMENT ON COLUMN public.company_tasks.checklist IS 'DEPRECATED: la checklist operativa non è più usata dall''app; la colonna resta per la cronologia esistente.';

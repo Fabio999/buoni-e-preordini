@@ -31,3 +31,4 @@
 - Data access requires staff membership (`staff_members` row or admin role, checked by `is_staff()` in RLS and RPCs); accounts are created only from Amministrazione, which adds the membership, so self-signups see nothing.
 
 - Task AI drafts use an authenticated staff-checked server function, bounded Responses structured output with no retries, shared exact-description templates and account-scoped local similarity suggestions; only explicit generation invokes AI, and task checklist changes use existing immutable audit snapshots.
+- Date and time entry goes through the shared DateTimeField, whose hour/minute selects are always 24-hour: a native time input is locale-dependent and turned typed evening times into morning ones.

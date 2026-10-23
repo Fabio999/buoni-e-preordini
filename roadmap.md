@@ -25,3 +25,4 @@
 - [x] Allineare meglio il campo data/ora nei filtri di Task e Calendario.
 - [x] Rimuovere la voce di prova "Verifica temporanea promemoria" dal calendario.
 - [x] Nel calendario mostrare solo orario e nome dell'evento; dettagli mantenuti in Appuntamenti e nella finestra evento.
+- [x] Orari serali in formato 24 ore (20-23) nel selettore data/ora; corretti i due eventi serali.

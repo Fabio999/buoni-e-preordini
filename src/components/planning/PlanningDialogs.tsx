@@ -21,6 +21,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogD
 import { Field, selectClass } from "@/components/forms/SimpleDialogs";
 import { DateTimeField } from "./DateTimeField";
 import { supabase } from "@/integrations/supabase/client";
+import type { TablesInsert } from "@/integrations/supabase/types";
 import { errMsg, useRefresh, useTasks, useCalendarEntries, usePlanningHistory } from "@/lib/data";
 import { type TaskSeed } from "@/lib/task-drafts";
 import { useOperator } from "@/lib/operator";
@@ -85,7 +86,7 @@ export function CalendarDialog({ open, onOpenChange, initial, onSaved, initialDa
         const targets = recurrenceTargets(events, initial, following);
         const dates = occurrenceDates(f.start, f.end, f.zone, recurrence, initial.recurrence_series ? targets.length : count, weekday === "" ? undefined : Number(weekday));
         const series = recurrence ? initial.recurrence_series ?? crypto.randomUUID() : null;
-        const rows = initial.recurrence_series ? targets.map((event, index) => ({...event, ...row, ...(recurrence ? dates[index] : {starts_at:event.id === initial.id ? start : event.starts_at, ends_at:event.id === initial.id ? end : event.ends_at}), id:event.id, recurrence_series:series, recurrence_frequency:recurrence || null, alternatives:event.id === initial.id ? alternatives : event.alternatives})) : dates.map((date,index) => ({...row, ...date, ...(index === 0 ? {id:initial.id} : {}), recurrence_series:series, recurrence_frequency:recurrence || null, alternatives:index === 0 ? alternatives : []}));
+        const rows: TablesInsert<"calendar_entries">[] = initial.recurrence_series ? targets.map((event, index) => ({...event, ...(event.id === initial.id ? row : {}), ...(recurrence ? dates[index] : {starts_at:event.id === initial.id ? start : event.starts_at, ends_at:event.id === initial.id ? end : event.ends_at}), id:event.id, recurrence_series:series, recurrence_frequency:recurrence || null, alternatives:event.id === initial.id ? alternatives : event.alternatives})) : dates.map((date,index) => ({...row, ...date, ...(index === 0 ? {id:initial.id} : {}), recurrence_series:series, recurrence_frequency:recurrence || null, alternatives:index === 0 ? alternatives : []}));
         const res = await supabase.from("calendar_entries").upsert(rows).select("id");
         if (res.error) throw res.error;
         savedId = initial.id;

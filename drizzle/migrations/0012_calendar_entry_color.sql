@@ -1,0 +1,1 @@
+ALTER TABLE public.calendar_entries ADD COLUMN color text NOT NULL DEFAULT 'blu' CHECK (color IN ('blu','arancione','verde','rosso','grigio'));

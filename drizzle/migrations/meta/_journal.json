@@ -99,6 +99,13 @@
       "when": 1792792716001,
       "tag": "0013_calendar_event_reminders",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1792793363355,
+      "tag": "0014_calendar_recurring_games",
+      "breakpoints": true
     }
   ]
 }

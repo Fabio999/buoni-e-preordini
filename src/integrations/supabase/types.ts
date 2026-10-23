@@ -195,6 +195,8 @@ export type Database = {
           description: string
           ends_at: string
           id: string
+          reminder_minutes: number | null
+          reminder_text: string
           responsible_names: string[]
           starts_at: string
           task_id: string | null
@@ -211,6 +213,8 @@ export type Database = {
           description?: string
           ends_at: string
           id?: string
+          reminder_minutes?: number | null
+          reminder_text?: string
           responsible_names?: string[]
           starts_at: string
           task_id?: string | null
@@ -227,6 +231,8 @@ export type Database = {
           description?: string
           ends_at?: string
           id?: string
+          reminder_minutes?: number | null
+          reminder_text?: string
           responsible_names?: string[]
           starts_at?: string
           task_id?: string | null

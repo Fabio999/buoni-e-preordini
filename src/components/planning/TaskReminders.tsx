@@ -1,3 +1,4 @@
+import { EventReminders } from "./EventReminders";
 import { useEffect, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { BellRing, AlertTriangle } from "lucide-react";
@@ -37,7 +38,7 @@ export function TaskReminders({ userId }: { userId: string }) {
     setSeen(next);
     try { localStorage.setItem(storageKey, JSON.stringify(next)); } catch { /* Still dismiss for this session. */ }
   }
-  return <Dialog open={!!reminder} onOpenChange={open => { if (!open) dismiss(); }}>
+  return <><EventReminders userId={userId} enabled={ready && !reminder}/><Dialog open={!!reminder} onOpenChange={open => { if (!open) dismiss(); }}>
     <DialogContent className="max-w-md">
       <DialogHeader>
         <DialogTitle className="flex items-center gap-2">{reminder?.late ? <AlertTriangle className="size-5 shrink-0 text-destructive" /> : <BellRing className="size-5 shrink-0 text-primary" />}{reminder?.late ? "Attività in ritardo" : "Scadenza in arrivo"}</DialogTitle>
@@ -50,5 +51,5 @@ export function TaskReminders({ userId }: { userId: string }) {
       </div>
       <div className="flex flex-wrap justify-end gap-2"><Button variant="outline" onClick={dismiss}>Ho visto</Button><Button onClick={() => { dismiss(); void navigate({ to: "/task-calendario" }); }}>Apri attività</Button></div>
     </DialogContent>
-  </Dialog>;
+  </Dialog></>;
 }

@@ -4,6 +4,8 @@ import { useServerFn } from "@tanstack/react-start";
 import { generateEventDescription } from "@/lib/task-ai.functions";
 import { EVENT_COLORS } from "@/lib/planning";
 import { cn } from "@/lib/utils";
+import { EVENT_DETAIL_FIELDS, emptyEventDetails, parseEventDescription, formatEventDescription, type EventDetails } from "@/lib/event-details";
+import { EventDetailsList } from "./EventDetailsList";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -54,15 +56,16 @@ export function TaskDialog({ open, onOpenChange, initial, onSaved, draft }: Prop
 export function CalendarDialog({ open, onOpenChange, initial, onSaved, initialDate }: Props<CalendarEntry> & { initialDate?: string | undefined }) {
   const refresh = useRefresh(); const { data: tasks = [] } = useTasks(); const operator = useOperator();
   const [busy, setBusy] = useState(false); const [createTask, setCreateTask] = useState(false); const [aiBusy, setAiBusy] = useState(false); const describe = useServerFn(generateEventDescription);
+  const [details, setDetails] = useState<EventDetails>(() => emptyEventDetails(true));
   const [f,setF] = useState({ title: "", description: "", color: "blu", start: "", end: "", zone: ZONE, names: "", task: "", confirmed: false, alternatives: [] as {start: string; end: string}[] });
-  useEffect(() => { if(open) { const day = initialDate ?? wallTime(new Date().toISOString()).slice(0,10); const zone = initial?.timezone ?? ZONE; setF({title: initial?.title ?? "", description: initial?.description ?? "", color: initial?.color ?? "blu", start: initial ? wallTime(initial.starts_at, zone) : `${day}T09:00`, end: initial ? wallTime(initial.ends_at, zone) : `${day}T10:00`, zone, names: initial?.responsible_names.join("\n") ?? operator, task: initial?.task_id ?? "", confirmed: initial?.confirmed ?? false, alternatives: initial ? alternativesOf(initial).map(a => ({start: wallTime(a.starts_at, zone), end: wallTime(a.ends_at, zone)})) : []}); } }, [open, initial, initialDate, operator]);
+  useEffect(() => { if(open) { const day = initialDate ?? wallTime(new Date().toISOString()).slice(0,10); const zone = initial?.timezone ?? ZONE; const parsed = parseEventDescription(initial?.description); setDetails(initial ? parsed.details : emptyEventDetails(true)); setF({title: initial?.title ?? "", description: parsed.notes, color: initial?.color ?? "blu", start: initial ? wallTime(initial.starts_at, zone) : `${day}T09:00`, end: initial ? wallTime(initial.ends_at, zone) : `${day}T10:00`, zone, names: initial?.responsible_names.join("\n") ?? operator, task: initial?.task_id ?? "", confirmed: initial?.confirmed ?? false, alternatives: initial ? alternativesOf(initial).map(a => ({start: wallTime(a.starts_at, zone), end: wallTime(a.ends_at, zone)})) : []}); } }, [open, initial, initialDate, operator]);
   async function save(e: FormEvent) {
     e.preventDefault(); e.stopPropagation(); setBusy(true);
     try {
       const start = toInstant(f.start,f.zone), end = toInstant(f.end,f.zone);
       if (!start || !end) throw new Error("Scegli data e ora di inizio e fine");
       const alternatives = f.alternatives.map(a => { const starts_at = toInstant(a.start,f.zone), ends_at = toInstant(a.end,f.zone); if(!starts_at || !ends_at) throw new Error("Completa le date alternative"); return {starts_at, ends_at}; });
-      const row = {title:f.title.trim(), description:f.description, color:f.color, starts_at:start, ends_at:end, timezone:f.zone, responsible_names:[...new Set(f.names.split(/\n|;/).map(n => n.trim()).filter(Boolean))], task_id:f.task || null, confirmed:f.confirmed, alternatives};
+      const row = {title:f.title.trim(), description:formatEventDescription(details, f.description), color:f.color, starts_at:start, ends_at:end, timezone:f.zone, responsible_names:[...new Set(f.names.split(/\n|;/).map(n => n.trim()).filter(Boolean))], task_id:f.task || null, confirmed:f.confirmed, alternatives};
       const res = initial ? await supabase.from("calendar_entries").update(row).eq("id",initial.id).select("id").single() : await supabase.from("calendar_entries").insert(row).select("id").single();
       if(res.error) throw res.error; await refresh(); toast.success("Evento salvato"); onOpenChange(false); onSaved?.(res.data.id);
     } catch(error) {toast.error(errMsg(error));} finally {setBusy(false);}
@@ -70,11 +73,13 @@ export function CalendarDialog({ open, onOpenChange, initial, onSaved, initialDa
   async function writeDescription() {
     if (f.title.trim().length < 3) { toast.error("Scrivi prima il titolo dell'evento"); return; }
     setAiBusy(true);
-    try { const res = await describe({ data: { title: f.title.trim(), notes: f.description.slice(0, 1000) } }); if (res.error || !res.description) toast.error(res.error ?? "Descrizione non disponibile"); else { const description = res.description; setF(prev => ({...prev, description})); toast.success("Descrizione scritta"); } }
+    try { const res = await describe({ data: { title: f.title.trim(), notes: formatEventDescription(details, f.description).slice(0, 1000) } }); if (res.error || !res.description) toast.error(res.error ?? "Descrizione non disponibile"); else { const parsed = parseEventDescription(res.description); setF(prev => ({...prev, description: parsed.notes})); toast.success("Descrizione scritta"); } }
     catch (error) { toast.error(errMsg(error)); } finally { setAiBusy(false); }
   }
   return <><Dialog open={open} onOpenChange={onOpenChange}><DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-2xl"><DialogHeader><DialogTitle>{initial ? "Modifica appuntamento" : "Nuovo appuntamento"}</DialogTitle></DialogHeader>
     <form className="space-y-4" onSubmit={save}><Field label="Titolo"><Input required aria-label="Titolo appuntamento" value={f.title} onChange={e => setF({...f,title:e.target.value})}/></Field><Field label="Descrizione"><div className="space-y-2"><Textarea aria-label="Descrizione appuntamento" placeholder="Facoltativo: scrivi qualche appunto e premi «Scrivi con AI»" value={f.description} onChange={e => setF({...f,description:e.target.value})}/><Button type="button" variant="outline" size="sm" disabled={aiBusy} onClick={writeDescription}><Sparkles className="size-4"/>{aiBusy ? "Sto scrivendo…" : "Scrivi con AI"}</Button></div></Field>
+      <section className="space-y-3 border-y py-4"><h3 className="font-semibold">Dettagli evento</h3><div className="grid gap-3 sm:grid-cols-2">{EVENT_DETAIL_FIELDS.map(field => <Field key={field.key} label={`${field.emoji} ${field.label}`}><Input aria-label={field.label} placeholder={field.placeholder} value={details[field.key]} onChange={e => setDetails(prev => ({...prev,[field.key]:e.target.value}))}/></Field>)}</div></section>
+      <section className="space-y-2"><h3 className="text-sm font-semibold">Riepilogo evento</h3><EventDetailsList details={details}/></section>
       <Field label="Colore"><div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Colore evento">{EVENT_COLORS.map(c => <button key={c.value} type="button" role="radio" aria-checked={f.color===c.value} aria-label={c.label} title={c.label} onClick={() => setF({...f,color:c.value})} className={cn("flex items-center gap-2 rounded-md border px-3 py-1.5 text-sm", f.color===c.value && "ring-2 ring-ring")}><span className={cn("size-4 rounded-full", c.dot)}/>{c.label}</button>)}</div></Field>
       <Field label="Fuso orario"><select aria-label="Fuso orario" className={selectClass} value={f.zone} onChange={e => { const zone = e.target.value; setF({...f, zone, start: wallTime(toInstant(f.start,f.zone),zone), end:wallTime(toInstant(f.end,f.zone),zone), alternatives:f.alternatives.map(a => ({start:wallTime(toInstant(a.start,f.zone),zone),end:wallTime(toInstant(a.end,f.zone),zone)}))}); }}>{[...new Set([ZONE,"Europe/London","America/New_York","UTC",f.zone])].map(z => <option key={z}>{z}</option>)}</select></Field>
       <div className="grid gap-4 sm:grid-cols-2"><DateTimeField required label="Inizio evento" value={f.start} onChange={start => setF({...f,start})}/><DateTimeField required label="Fine evento" value={f.end} onChange={end => setF({...f,end})}/></div>

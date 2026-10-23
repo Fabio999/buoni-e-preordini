@@ -1,5 +1,8 @@
 # Roadmap
 
+- [ ] Aggiungere categorie, gioco, dettagli, luogo e linea di fasi modificabili alle task con più persone.
+- [ ] Suddividere le task in Aperta, Work in progress e Completata; verificare salvataggio e avanzamento.
+
 - [x] Rimuovere la checklist operativa dalle task (creazione, elenco e proposta AI) e verificare a schermo.
 
 

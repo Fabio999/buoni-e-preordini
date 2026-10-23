@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { descriptionKey, similarTemplates, checklistOf } from "../lib/task-drafts";
-const template = { source_description: "Preparare tavoli e mazzi per torneo Pokémon", draft: { title: "Preparazione torneo", description: "Organizzare i tavoli", checklist: ["Preparare i tavoli", "Controllare i mazzi"] } };
+import { descriptionKey, similarTemplates, cleanDraft } from "../lib/task-drafts";
+const template = { source_description: "Preparare tavoli e mazzi per torneo Pokémon", draft: { title: "Preparazione torneo", description: "Organizzare i tavoli" } };
 describe("Riuso delle attività", () => {
   it("riconosce lo stesso lavoro senza nuove chiamate AI anche con accenti e punteggiatura diversi", () => {
     expect(descriptionKey(" PREPARARE tavoli e mazzi per torneo Pokemon! ")).toBe(descriptionKey(template.source_description));
@@ -12,7 +12,11 @@ describe("Riuso delle attività", () => {
     expect(result[0]?.exact).toBe(false);
   });
   it("non propone lavori diversi", () => { expect(similarTemplates("Contare incassi della giornata", [template])).toHaveLength(0); });
-  it("mantiene testi e completamento della checklist salvata", () => {
-    expect(checklistOf([{ text: "Preparare i tavoli", done: true }, { text: "Controllare i mazzi", done: false }])).toEqual([{ text: "Preparare i tavoli", done: true }, { text: "Controllare i mazzi", done: false }]);
+  it("ignora la checklist delle proposte salvate in passato", () => {
+    expect(cleanDraft({ title: "Preparazione torneo", description: "Organizzare i tavoli", checklist: ["Preparare i tavoli"] })).toEqual({ title: "Preparazione torneo", description: "Organizzare i tavoli" });
+  });
+  it("accetta una proposta senza checklist e rifiuta una senza titolo", () => {
+    expect(cleanDraft({ title: "Preparazione torneo", description: "Organizzare i tavoli" })).toEqual({ title: "Preparazione torneo", description: "Organizzare i tavoli" });
+    expect(() => cleanDraft({ title: "   ", description: "Organizzare i tavoli" })).toThrow("La proposta è incompleta: puoi creare la task manualmente.");
   });
 });

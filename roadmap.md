@@ -1,5 +1,8 @@
 # Roadmap
 
+- [x] Rimuovere la checklist operativa dalle task (creazione, elenco e proposta AI) e verificare a schermo.
+
+
 - [x] Rimuovere gli eventi dalle Task e mantenere ricerca e filtri nel Calendario.
 - [x] Creare eventi ricorrenti e ricordare i giochi inseriti; verificare salvataggio e rimuovere le prove.
 

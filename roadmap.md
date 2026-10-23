@@ -1,7 +1,7 @@
 # Roadmap
 
-- [ ] Creazione task con AI Gateway su richiesta, riuso delle descrizioni simili senza nuove chiamate e checklist modificabile.
-- [ ] Task in elenco con menu a tendina, verifiche di salvataggio, riuso e cronologia.
+- [x] Creazione task con AI Gateway su richiesta, riuso delle descrizioni simili senza nuove chiamate e checklist modificabile.
+- [x] Task in elenco con menu a tendina, verifiche di salvataggio, riuso e cronologia.
 
 - [x] Aggiungere pop-up automatici al responsabile prima della scadenza e in ritardo, senza richieste aggiuntive periodiche.
 - [x] Sistemare riquadri e scritte di attività e scadenze e verificare avvisi e impaginazione.

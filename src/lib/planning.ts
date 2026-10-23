@@ -4,7 +4,7 @@ import type { Tables } from "@/integrations/supabase/types";
 export type Task = Tables<"company_tasks">;
 export type CalendarEntry = Tables<"calendar_entries">;
 export type Alternative = { starts_at: string; ends_at: string };
-export const TASK_STATUS = { da_fare: "Da fare", in_corso: "In corso", completata: "Completata" };
+export const TASK_STATUS = { da_fare: "Aperta", in_corso: "Work in progress", completata: "Completata" };
 export const PRIORITY = { bassa: "Bassa", normale: "Normale", alta: "Alta", urgente: "Urgente" };
 export const ZONE = "Europe/Rome";
 export const wallTime = (iso: string | null, zone = ZONE) => iso ? formatInTimeZone(iso, zone, "yyyy-MM-dd'T'HH:mm") : "";

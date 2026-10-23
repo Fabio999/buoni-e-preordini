@@ -318,6 +318,7 @@ export type Database = {
       company_tasks: {
         Row: {
           archived: boolean
+          category: string
           checklist: Json
           claimed_at: string | null
           claimed_by: string
@@ -326,7 +327,9 @@ export type Database = {
           created_at: string
           description: string
           due_at: string | null
+          game: string
           id: string
+          location: string
           mandatory: boolean
           priority: string
           responsible: string
@@ -337,9 +340,12 @@ export type Database = {
           status: string
           title: string
           updated_at: string
+          workflow_position: number
+          workflow_stages: Json
         }
         Insert: {
           archived?: boolean
+          category?: string
           checklist?: Json
           claimed_at?: string | null
           claimed_by?: string
@@ -348,7 +354,9 @@ export type Database = {
           created_at?: string
           description?: string
           due_at?: string | null
+          game?: string
           id?: string
+          location?: string
           mandatory?: boolean
           priority?: string
           responsible?: string
@@ -359,9 +367,12 @@ export type Database = {
           status?: string
           title: string
           updated_at?: string
+          workflow_position?: number
+          workflow_stages?: Json
         }
         Update: {
           archived?: boolean
+          category?: string
           checklist?: Json
           claimed_at?: string | null
           claimed_by?: string
@@ -370,7 +381,9 @@ export type Database = {
           created_at?: string
           description?: string
           due_at?: string | null
+          game?: string
           id?: string
+          location?: string
           mandatory?: boolean
           priority?: string
           responsible?: string
@@ -381,6 +394,8 @@ export type Database = {
           status?: string
           title?: string
           updated_at?: string
+          workflow_position?: number
+          workflow_stages?: Json
         }
         Relationships: []
       }

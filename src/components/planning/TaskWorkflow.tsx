@@ -1,0 +1,13 @@
+import { Check, Plus, Trash2, RotateCcw } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
+
+export function TaskWorkflowEditor({ stages, onChange }: { stages: string[]; onChange: (stages: string[]) => void }) {
+  return <section className="space-y-3 border-y py-4"><div className="flex flex-wrap items-center justify-between gap-2"><h3 className="text-sm font-semibold">Fasi · da inizio a fine</h3><Button type="button" variant="outline" size="sm" onClick={() => onChange([...stages, ""])}><Plus className="size-4"/>Aggiungi fase</Button></div>{stages.map((stage, index) => <div key={index} className="flex items-center gap-2"><span className="w-6 shrink-0 text-center text-sm text-muted-foreground">{index + 1}</span><Input required aria-label={`Fase ${index + 1}`} value={stage} onChange={e => onChange(stages.map((s, i) => i === index ? e.target.value : s))}/><Button type="button" variant="ghost" size="icon" aria-label={`Rimuovi fase ${index + 1}`} onClick={() => onChange(stages.filter((_, i) => i !== index))}><Trash2 className="size-4"/></Button></div>)}</section>;
+}
+
+export function TaskWorkflow({ title, stages, position, disabled, onPosition }: { title: string; stages: string[]; position: number; disabled: boolean; onPosition: (position: number) => void }) {
+  if (!stages.length) return null;
+  return <div className="space-y-2"><div className="flex items-center justify-between gap-2 text-xs text-muted-foreground"><span>Inizio → Fine</span><Button variant="ghost" size="icon" className="size-7" disabled={disabled || position === 0} title="Riporta all'inizio" aria-label={`Riporta all'inizio ${title}`} onClick={() => onPosition(0)}><RotateCcw className="size-3.5"/></Button></div><ol aria-label={`Avanzamento ${title}`} className="flex items-start overflow-x-auto pb-2">{stages.map((stage, index) => <li key={index} className="relative min-w-24 flex-1 text-center"><div aria-hidden className={cn("absolute left-0 right-0 top-4 h-px", index < position ? "bg-success" : "bg-border")}/><Button variant="outline" size="icon" disabled={disabled} aria-label={`Completa fase ${stage} di ${title}`} aria-pressed={index < position} onClick={() => onPosition(index + 1)} className={cn("relative z-10 size-8 rounded-full bg-background", index < position ? "border-success bg-success text-success-foreground" : index === position ? "border-info text-info" : "text-muted-foreground")}>{index < position ? <Check className="size-4"/> : index + 1}</Button><p className={cn("mt-2 break-words px-2 text-xs font-medium", index < position ? "text-success" : "text-foreground")}>{stage}</p></li>)}</ol></div>;
+}

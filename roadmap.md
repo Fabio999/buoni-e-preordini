@@ -1,5 +1,8 @@
 # Roadmap
 
+- [ ] Ajouter « Task e Calendario » : activités, calendrier jour/semaine/mois, responsables, dates alternatives, historique et filtres.
+- [ ] Ajouter le récapitulatif des activités à la dashboard et vérifier les flux sur ordinateur et smartphone, sans laisser de données de test.
+
 - [x] Semplificare ricarica buoni e saldo negozio, mantenendo importi e storico; verificare le finestre e la pagina.
 
 - [x] Creare l'account di primo accesso info@manaflask.it con password 123456 e verificare che l'accesso funzioni

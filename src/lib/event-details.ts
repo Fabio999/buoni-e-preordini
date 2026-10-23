@@ -16,8 +16,10 @@ export function parseEventDescription(value: string | null | undefined) {
   const notes: string[] = [];
   for (const line of (value ?? "").split("\n")) {
     const match = line.match(/^\s*(?:[^\p{L}\p{N}]*)(costo\s*\/\s*prezzo|costo|prezzo|svizzera|top cut|premi|materiale|promo)\s*:\s*(.*)$/iu);
-    const key = match ? aliases[match[1].toLowerCase().replace(/\s+/g, " ")] : undefined;
-    if (key && match) details[key] = match[2].trim() === "Da definire" ? "" : match[2].trim();
+    const label = match?.[1];
+    const value = match?.[2]?.trim();
+    const key = label ? aliases[label.toLowerCase().replace(/\s+/g, " ")] : undefined;
+    if (key && value !== undefined) details[key] = value === "Da definire" ? "" : value;
     else notes.push(line);
   }
   return { details, notes: notes.join("\n").trim() };

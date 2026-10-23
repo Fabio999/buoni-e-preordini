@@ -4,6 +4,8 @@ import { useServerFn } from "@tanstack/react-start";
 import { generateEventDescription } from "@/lib/task-ai.functions";
 import { EventGameField } from "./EventGameField";
 import { TaskPeopleField } from "./TaskPeopleField";
+import { TaskWorkflowEditor } from "./TaskWorkflow";
+import { TASK_CATEGORIES, DEFAULT_TASK_STAGES, taskStages, positionForStatus } from "@/lib/task-workflow";
 import { formatTaskPeople } from "@/lib/task-people";
 import { occurrenceDates, RECURRENCE, rememberGame } from "@/lib/event-recurrence";
 import { useAuth } from "@/lib/auth";
@@ -35,19 +37,21 @@ export function TaskDialog({ open, onOpenChange, initial, onSaved, draft }: Prop
   const operator = useOperator();
   const refresh = useRefresh();
   const [busy, setBusy] = useState(false);
-  const [f, setF] = useState({ title: "", description: "", starts: "", due: "", priority: "normale", mandatory: false, responsible: "", status: "da_fare", source_description: "" });
-  useEffect(() => { if (open) setF({ title: initial?.title ?? draft?.title ?? "", description: initial?.description ?? draft?.description ?? "", starts: wallTime(initial?.starts_at ?? null), due: wallTime(initial?.due_at ?? null), priority: initial?.priority ?? "normale", mandatory: initial?.mandatory ?? false, responsible: initial?.responsible ?? operator, status: initial?.status ?? "da_fare", source_description: initial?.source_description ?? draft?.source_description ?? "" }); }, [open, initial, operator, draft]);
+  const [stages, setStages] = useState<string[]>(DEFAULT_TASK_STAGES);
+  const [f, setF] = useState({ title: "", category: "", game: "", location: "", description: "", starts: "", due: "", priority: "normale", mandatory: false, responsible: "", status: "da_fare", source_description: "" });
+  useEffect(() => { if (open) { setStages(initial ? taskStages(initial.workflow_stages) : [...DEFAULT_TASK_STAGES]); setF({ title: initial?.title ?? draft?.title ?? "", category: initial?.category ?? "", game: initial?.game ?? "", location: initial?.location ?? "", description: initial?.description ?? draft?.description ?? "", starts: wallTime(initial?.starts_at ?? null), due: wallTime(initial?.due_at ?? null), priority: initial?.priority ?? "normale", mandatory: initial?.mandatory ?? false, responsible: initial?.responsible ?? operator, status: initial?.status ?? "da_fare", source_description: initial?.source_description ?? draft?.source_description ?? "" }); } }, [open, initial, operator, draft]);
   async function save(e: FormEvent) {
     e.preventDefault(); e.stopPropagation(); setBusy(true);
     try {
-      const row = { title: f.title.trim(), description: f.description, starts_at: toInstant(f.starts), due_at: toInstant(f.due), priority: f.priority, mandatory: f.mandatory, responsible: formatTaskPeople(f.responsible), status: f.status, source_description:f.source_description };
+      const cleanStages = taskStages(stages);
+      const row = { title: f.title.trim(), category: f.category.trim(), game: f.game.trim(), location: f.location.trim(), workflow_stages: cleanStages, workflow_position: positionForStatus(cleanStages, initial?.workflow_position ?? 0, f.status), description: f.description, starts_at: toInstant(f.starts), due_at: toInstant(f.due), priority: f.priority, mandatory: f.mandatory, responsible: formatTaskPeople(f.responsible), status: f.status, source_description:f.source_description };
       const res = initial ? await supabase.from("company_tasks").update(row).eq("id", initial.id).select("id").single() : await supabase.from("company_tasks").insert(row).select("id").single();
       if (res.error) throw res.error;
       await refresh(); toast.success("Task salvata"); onOpenChange(false); onSaved?.(res.data.id);
     } catch (error) { toast.error(errMsg(error)); } finally { setBusy(false); }
   }
   return <Dialog open={open} onOpenChange={onOpenChange}><DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-xl"><DialogHeader><DialogTitle>{initial ? "Modifica task" : "Nuova task"}</DialogTitle><DialogDescription>Date e orari · Italia (Europe/Rome)</DialogDescription></DialogHeader>
-    <form onSubmit={save} className="space-y-4"><Field label="Titolo"><Input aria-label="Titolo task" required value={f.title} onChange={e => setF({...f, title: e.target.value})}/></Field><Field label="Descrizione"><Textarea aria-label="Descrizione task" value={f.description} onChange={e => setF({...f, description: e.target.value})}/></Field>
+    <form onSubmit={save} className="space-y-4"><Field label="Categoria"><select className={selectClass} aria-label="Categoria task" value={f.category} onChange={e => setF({...f, category: e.target.value})}><option value="">Scegli categoria</option>{[...new Set([...TASK_CATEGORIES, ...(f.category ? [f.category] : [])])].map(category => <option key={category}>{category}</option>)}</select></Field><Field label="Tipologie di gioco · sottotitolo"><Input aria-label="Tipologie di gioco task" placeholder="Magic, Pokémon, Riftbound…" value={f.game} onChange={e => setF({...f, game: e.target.value})}/></Field><Field label="Dettagli"><Textarea aria-label="Descrizione task" value={f.description} onChange={e => setF({...f, description: e.target.value})}/></Field><Field label="Titolo"><Input aria-label="Titolo task" required value={f.title} onChange={e => setF({...f, title: e.target.value})}/></Field><Field label="Luogo"><Input aria-label="Luogo task" value={f.location} onChange={e => setF({...f, location: e.target.value})}/></Field><TaskWorkflowEditor stages={stages} onChange={setStages}/>
       {f.source_description && <Field label="Descrizione originale"><Textarea aria-label="Descrizione originale" value={f.source_description} onChange={e => setF({...f,source_description:e.target.value})}/></Field>}
       <div className="grid gap-4 sm:grid-cols-2"><DateTimeField label="Inizio previsto" value={f.starts} onChange={starts => setF({...f, starts})}/><DateTimeField label="Scadenza" value={f.due} onChange={due => setF({...f, due})}/></div>
       <div className="grid gap-4 sm:grid-cols-2"><Field label="Priorità"><select className={selectClass} aria-label="Priorità task" value={f.priority} onChange={e => setF({...f, priority: e.target.value})}>{Object.entries(PRIORITY).map(([v,l]) => <option key={v} value={v}>{l}</option>)}</select></Field><Field label="Stato"><select className={selectClass} aria-label="Stato task" value={f.status} onChange={e => setF({...f, status: e.target.value})}>{Object.entries(TASK_STATUS).map(([v,l]) => <option key={v} value={v}>{l}</option>)}</select></Field></div>
@@ -119,7 +123,7 @@ export function CalendarDialog({ open, onOpenChange, initial, onSaved, initialDa
     </form></DialogContent></Dialog><TaskDialog open={createTask} onOpenChange={setCreateTask} onSaved={id => setF({...f,task:id})}/></>;
 }
 
-const labels: Record<string,string> = { title:"Titolo",game:"Gioco",recurrence_frequency:"Ripetizione",description:"Descrizione",source_description:"Descrizione originale",starts_at:"Inizio previsto",due_at:"Scadenza",ends_at:"Fine",priority:"Priorità",mandatory:"Obbligatorietà",responsible:"Responsabile",responsible_names:"Responsabili",status:"Stato",alternatives:"Date alternative",confirmed:"Data confermata",archived:"Archiviata",task_id:"Task collegata",timezone:"Fuso orario",reminder_minutes:"Anticipo promemoria (minuti)",reminder_text:"Testo promemoria",claimed_by:"Presa in carico da",claimed_at:"Presa in carico il",started_by:"Iniziata da",started_at:"Iniziata il",completed_by:"Completata da",completed_at:"Completata il" };
+const labels: Record<string,string> = { title:"Titolo",category:"Categoria",location:"Luogo",workflow_stages:"Fasi",workflow_position:"Fasi completate",game:"Gioco",recurrence_frequency:"Ripetizione",description:"Descrizione",source_description:"Descrizione originale",starts_at:"Inizio previsto",due_at:"Scadenza",ends_at:"Fine",priority:"Priorità",mandatory:"Obbligatorietà",responsible:"Responsabile",responsible_names:"Responsabili",status:"Stato",alternatives:"Date alternative",confirmed:"Data confermata",archived:"Archiviata",task_id:"Task collegata",timezone:"Fuso orario",reminder_minutes:"Anticipo promemoria (minuti)",reminder_text:"Testo promemoria",claimed_by:"Presa in carico da",claimed_at:"Presa in carico il",started_by:"Iniziata da",started_at:"Iniziata il",completed_by:"Completata da",completed_at:"Completata il" };
 function describeValue(key:string, value: unknown): string {
   if(value === null || value === undefined || value === "") return "—";
   if(key.endsWith("_at") && typeof value === "string") return planningDate(value);

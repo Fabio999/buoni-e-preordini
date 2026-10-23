@@ -1,22 +1,17 @@
 import { z } from "zod";
 import { normalizeText } from "./search";
 
-export const taskDraftSchema = z.object({ title: z.string(), description: z.string(), checklist: z.array(z.string()) }).strict();
+// Saved drafts may still carry a legacy "checklist" key: unknown keys are dropped when parsing.
+export const taskDraftSchema = z.object({ title: z.string(), description: z.string() });
 export type TaskDraft = z.infer<typeof taskDraftSchema>;
-export type ChecklistStep = { text: string; done: boolean };
 export type TaskSeed = TaskDraft & { source_description: string };
 export type TaskTemplate = { source_description: string; draft: TaskDraft };
 export const descriptionKey = (text: string) => normalizeText(text).replace(/[^\p{L}\p{N}\s]/gu, " ").replace(/\s+/g, " ").trim();
-export function checklistOf(value: unknown): ChecklistStep[] {
-  if (!Array.isArray(value)) return [];
-  return value.flatMap(item => item && typeof item === "object" && typeof item.text === "string" ? [{ text: item.text, done: item.done === true }] : []);
-}
 export function cleanDraft(value: unknown): TaskDraft {
   const draft = taskDraftSchema.parse(value);
   const title = draft.title.trim().slice(0, 120);
-  const checklist = draft.checklist.map(s => s.trim().slice(0, 240)).filter(Boolean).slice(0, 12);
-  if (!title || !checklist.length) throw new Error("La proposta è incompleta: puoi creare la task manualmente.");
-  return { title, description: draft.description.trim().slice(0, 1600), checklist };
+  if (!title) throw new Error("La proposta è incompleta: puoi creare la task manualmente.");
+  return { title, description: draft.description.trim().slice(0, 1600) };
 }
 export function similarTemplates(text: string, templates: TaskTemplate[]) {
   const key = descriptionKey(text);

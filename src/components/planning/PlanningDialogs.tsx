@@ -20,7 +20,7 @@ import { Field, selectClass } from "@/components/forms/SimpleDialogs";
 import { DateTimeField } from "./DateTimeField";
 import { supabase } from "@/integrations/supabase/client";
 import { errMsg, useRefresh, useTasks, usePlanningHistory } from "@/lib/data";
-import { checklistOf, type ChecklistStep, type TaskSeed } from "@/lib/task-drafts";
+import { type TaskSeed } from "@/lib/task-drafts";
 import { useOperator } from "@/lib/operator";
 import { alternativesOf, PRIORITY, TASK_STATUS, ZONE, planningDate, toInstant, wallTime, type Task, type CalendarEntry } from "@/lib/planning";
 
@@ -35,12 +35,12 @@ export function TaskDialog({ open, onOpenChange, initial, onSaved, draft }: Prop
   const operator = useOperator();
   const refresh = useRefresh();
   const [busy, setBusy] = useState(false);
-  const [f, setF] = useState({ title: "", description: "", starts: "", due: "", priority: "normale", mandatory: false, responsible: "", status: "da_fare", checklist: [] as ChecklistStep[], source_description: "" });
-  useEffect(() => { if (open) setF({ title: initial?.title ?? draft?.title ?? "", description: initial?.description ?? draft?.description ?? "", starts: wallTime(initial?.starts_at ?? null), due: wallTime(initial?.due_at ?? null), priority: initial?.priority ?? "normale", mandatory: initial?.mandatory ?? false, responsible: initial?.responsible ?? operator, status: initial?.status ?? "da_fare", checklist: initial ? checklistOf(initial.checklist) : (draft?.checklist ?? []).map(text => ({text, done:false})), source_description: initial?.source_description ?? draft?.source_description ?? "" }); }, [open, initial, operator, draft]);
+  const [f, setF] = useState({ title: "", description: "", starts: "", due: "", priority: "normale", mandatory: false, responsible: "", status: "da_fare", source_description: "" });
+  useEffect(() => { if (open) setF({ title: initial?.title ?? draft?.title ?? "", description: initial?.description ?? draft?.description ?? "", starts: wallTime(initial?.starts_at ?? null), due: wallTime(initial?.due_at ?? null), priority: initial?.priority ?? "normale", mandatory: initial?.mandatory ?? false, responsible: initial?.responsible ?? operator, status: initial?.status ?? "da_fare", source_description: initial?.source_description ?? draft?.source_description ?? "" }); }, [open, initial, operator, draft]);
   async function save(e: FormEvent) {
     e.preventDefault(); e.stopPropagation(); setBusy(true);
     try {
-      const row = { title: f.title.trim(), description: f.description, starts_at: toInstant(f.starts), due_at: toInstant(f.due), priority: f.priority, mandatory: f.mandatory, responsible: formatTaskPeople(f.responsible), status: f.status, checklist: f.checklist.filter(s => s.text.trim()).map(s => ({...s,text:s.text.trim()})), source_description:f.source_description };
+      const row = { title: f.title.trim(), description: f.description, starts_at: toInstant(f.starts), due_at: toInstant(f.due), priority: f.priority, mandatory: f.mandatory, responsible: formatTaskPeople(f.responsible), status: f.status, source_description:f.source_description };
       const res = initial ? await supabase.from("company_tasks").update(row).eq("id", initial.id).select("id").single() : await supabase.from("company_tasks").insert(row).select("id").single();
       if (res.error) throw res.error;
       await refresh(); toast.success("Task salvata"); onOpenChange(false); onSaved?.(res.data.id);
@@ -48,7 +48,6 @@ export function TaskDialog({ open, onOpenChange, initial, onSaved, draft }: Prop
   }
   return <Dialog open={open} onOpenChange={onOpenChange}><DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-xl"><DialogHeader><DialogTitle>{initial ? "Modifica task" : "Nuova task"}</DialogTitle><DialogDescription>Date e orari · Italia (Europe/Rome)</DialogDescription></DialogHeader>
     <form onSubmit={save} className="space-y-4"><Field label="Titolo"><Input aria-label="Titolo task" required value={f.title} onChange={e => setF({...f, title: e.target.value})}/></Field><Field label="Descrizione"><Textarea aria-label="Descrizione task" value={f.description} onChange={e => setF({...f, description: e.target.value})}/></Field>
-      <section className="space-y-2"><div className="flex items-center justify-between gap-2"><h3 className="text-sm font-semibold">Checklist operativa</h3><Button type="button" variant="outline" size="sm" onClick={() => setF({...f,checklist:[...f.checklist,{text:"",done:false}]})}><Plus className="size-4"/>Aggiungi voce</Button></div>{f.checklist.map((step,i) => <div key={i} className="flex items-center gap-2"><input type="checkbox" className="size-4 shrink-0 accent-primary" aria-label={`Completata voce ${i+1}`} checked={step.done} onChange={e => setF({...f,checklist:f.checklist.map((x,j) => j===i ? {...x,done:e.target.checked}:x)})}/><Input aria-label={`Voce checklist ${i+1}`} value={step.text} onChange={e => setF({...f,checklist:f.checklist.map((x,j) => j===i ? {...x,text:e.target.value}:x)})}/><Button type="button" size="icon" variant="ghost" aria-label={`Elimina voce ${i+1}`} onClick={() => setF({...f,checklist:f.checklist.filter((_,j) => j!==i)})}><Trash2 className="size-4"/></Button></div>)}</section>
       {f.source_description && <Field label="Descrizione originale"><Textarea aria-label="Descrizione originale" value={f.source_description} onChange={e => setF({...f,source_description:e.target.value})}/></Field>}
       <div className="grid gap-4 sm:grid-cols-2"><DateTimeField label="Inizio previsto" value={f.starts} onChange={starts => setF({...f, starts})}/><DateTimeField label="Scadenza" value={f.due} onChange={due => setF({...f, due})}/></div>
       <div className="grid gap-4 sm:grid-cols-2"><Field label="Priorità"><select className={selectClass} aria-label="Priorità task" value={f.priority} onChange={e => setF({...f, priority: e.target.value})}>{Object.entries(PRIORITY).map(([v,l]) => <option key={v} value={v}>{l}</option>)}</select></Field><Field label="Stato"><select className={selectClass} aria-label="Stato task" value={f.status} onChange={e => setF({...f, status: e.target.value})}>{Object.entries(TASK_STATUS).map(([v,l]) => <option key={v} value={v}>{l}</option>)}</select></Field></div>
@@ -120,10 +119,9 @@ export function CalendarDialog({ open, onOpenChange, initial, onSaved, initialDa
     </form></DialogContent></Dialog><TaskDialog open={createTask} onOpenChange={setCreateTask} onSaved={id => setF({...f,task:id})}/></>;
 }
 
-const labels: Record<string,string> = { title:"Titolo",game:"Gioco",recurrence_frequency:"Ripetizione",description:"Descrizione",checklist:"Checklist operativa",source_description:"Descrizione originale",starts_at:"Inizio previsto",due_at:"Scadenza",ends_at:"Fine",priority:"Priorità",mandatory:"Obbligatorietà",responsible:"Responsabile",responsible_names:"Responsabili",status:"Stato",alternatives:"Date alternative",confirmed:"Data confermata",archived:"Archiviata",task_id:"Task collegata",timezone:"Fuso orario",reminder_minutes:"Anticipo promemoria (minuti)",reminder_text:"Testo promemoria",claimed_by:"Presa in carico da",claimed_at:"Presa in carico il",started_by:"Iniziata da",started_at:"Iniziata il",completed_by:"Completata da",completed_at:"Completata il" };
+const labels: Record<string,string> = { title:"Titolo",game:"Gioco",recurrence_frequency:"Ripetizione",description:"Descrizione",source_description:"Descrizione originale",starts_at:"Inizio previsto",due_at:"Scadenza",ends_at:"Fine",priority:"Priorità",mandatory:"Obbligatorietà",responsible:"Responsabile",responsible_names:"Responsabili",status:"Stato",alternatives:"Date alternative",confirmed:"Data confermata",archived:"Archiviata",task_id:"Task collegata",timezone:"Fuso orario",reminder_minutes:"Anticipo promemoria (minuti)",reminder_text:"Testo promemoria",claimed_by:"Presa in carico da",claimed_at:"Presa in carico il",started_by:"Iniziata da",started_at:"Iniziata il",completed_by:"Completata da",completed_at:"Completata il" };
 function describeValue(key:string, value: unknown): string {
   if(value === null || value === undefined || value === "") return "—";
-  if(key === "checklist") return checklistOf(value).map(s => `${s.done ? "✓" : "○"} ${s.text}`).join("; ") || "—";
   if(key.endsWith("_at") && typeof value === "string") return planningDate(value);
   if(key === "status") return TASK_STATUS[value as keyof typeof TASK_STATUS] ?? String(value);
   if(key === "priority") return PRIORITY[value as keyof typeof PRIORITY] ?? String(value);

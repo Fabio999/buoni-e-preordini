@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { PageHeader } from "@/components/AppShell";
 import { Button } from "@/components/ui/button";
 import { TaskAssistant } from "@/components/planning/TaskAssistant";
-import { checklistOf, type TaskSeed } from "@/lib/task-drafts";
+import { type TaskSeed } from "@/lib/task-drafts";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -44,7 +44,6 @@ export function PlanningPage({ mode }: { mode: "tasks" | "calendar" }) {
     if(busy) return; setBusy(true);
     try {const {status, ...calendarRow}=row; const res=type==="task" ? await supabase.from("company_tasks").update({...(status === undefined ? {} : {status}),...(row.archived === undefined ? {} : {archived:row.archived})}).eq("id",id) : await supabase.from("calendar_entries").update(calendarRow).eq("id",id);if(res.error) throw res.error;await refresh();toast.success("Modifica salvata");}catch(e){toast.error(errMsg(e));}finally{setBusy(false);}
   }
-  async function toggleStep(t:Task,index:number) { if(busy) return; setBusy(true); try {const checklist=checklistOf(t.checklist).map((s,i) => i===index ? {...s,done:!s.done}:s);const {error}=await supabase.from("company_tasks").update({checklist}).eq("id",t.id);if(error) throw error;await refresh();}catch(e){toast.error(errMsg(e));}finally{setBusy(false);}}
   async function remove(){if(!deleting) return;setBusy(true);try{const res=deleting.type==="task" ? await supabase.from("company_tasks").delete().eq("id",deleting.id) : await supabase.from("calendar_entries").delete().eq("id",deleting.id);if(res.error) throw res.error;await refresh();setDeleting(null);toast.success("Elemento eliminato");}catch(e){toast.error(errMsg(e));}finally{setBusy(false);}}
   function actions(type:"task"|"evento",row:Task|CalendarEntry) { return <DropdownMenu><DropdownMenuTrigger asChild><Button variant="outline" size="sm" aria-label={`Menu ${row.title}`}>Azioni<ChevronDown className="size-4"/></Button></DropdownMenuTrigger><DropdownMenuContent align="end"><DropdownMenuItem onSelect={() => type==="task" ? openTask(row as Task) : openEvent(row as CalendarEntry)}><Pencil/>Modifica tutto</DropdownMenuItem><DropdownMenuItem onSelect={() => setHistory({type,id:row.id})}><History/>Cronologia</DropdownMenuItem><DropdownMenuItem disabled={busy} onSelect={() => update(type,row.id,{archived:!row.archived})}>{row.archived ? <RotateCcw/> : <Archive/>}{row.archived ? "Ripristina" : "Archivia"}</DropdownMenuItem><DropdownMenuSeparator/><DropdownMenuItem className="text-destructive" onSelect={() => setDeleting({type,id:row.id,title:row.title})}><Trash2/>Elimina</DropdownMenuItem></DropdownMenuContent></DropdownMenu>; }
   return <div className="mx-auto max-w-7xl space-y-6"><PageHeader title={isCalendar ? "Calendario" : "Task"} actions={isCalendar ? <Button onClick={() => openEvent(null)}><CalendarDays className="size-4"/>Nuovo evento</Button> : <><Button variant="outline" onClick={() => setAssistantOpen(true)}><Sparkles className="size-4"/>Descrivi attività</Button><Button onClick={() => openTask(null)}><Plus className="size-4"/>Nuova task</Button></>}/>{!isCalendar && <PlanningSummary showEvents={false}/>}

@@ -4,9 +4,25 @@ import { normalizeText } from "./search";
 
 export const RECURRENCE = { daily: "Ogni giorno", weekly: "Ogni settimana", fortnightly: "Ogni 2 settimane", monthly: "Ogni mese" };
 export type Frequency = keyof typeof RECURRENCE;
-export function occurrenceDates(start: string, end: string, zone: string, frequency: string, count: number) {
+export const WEEKDAYS = [
+  { value: 1, label: "Lunedì" }, { value: 2, label: "Martedì" },
+  { value: 3, label: "Mercoledì" }, { value: 4, label: "Giovedì" },
+  { value: 5, label: "Venerdì" }, { value: 6, label: "Sabato" },
+  { value: 0, label: "Domenica" },
+];
+export function alignWeekday(start: string, end: string, weekday: number) {
+  if (!Number.isInteger(weekday) || weekday < 0 || weekday > 6) throw new Error("Scegli un giorno della settimana");
+  const date = parseISO(start);
+  const days = (weekday - date.getDay() + 7) % 7;
+  return { start: format(addDays(date, days), "yyyy-MM-dd'T'HH:mm"), end: format(addDays(parseISO(end), days), "yyyy-MM-dd'T'HH:mm") };
+}
+export function occurrenceDates(start: string, end: string, zone: string, frequency: string, count: number, weekday?: number) {
   if (!Number.isInteger(count) || count < 1 || count > 52) throw new Error("Scegli da 1 a 52 appuntamenti");
   if (frequency && !(frequency in RECURRENCE)) throw new Error("Ripetizione non valida");
+  if (weekday !== undefined && (frequency === "weekly" || frequency === "fortnightly")) {
+    const aligned = alignWeekday(start, end, weekday);
+    start = aligned.start; end = aligned.end;
+  }
   const shift = (wall: string, index: number) => {
     const date = parseISO(wall);
     const next = frequency === "monthly" ? addMonths(date, index) : addDays(date, index * (frequency === "daily" ? 1 : frequency === "fortnightly" ? 14 : 7));

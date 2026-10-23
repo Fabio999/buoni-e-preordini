@@ -2,6 +2,14 @@ import { describe, expect, it } from "vitest";
 import { occurrenceDates, mergeGames, rememberGame, readGames, gamesKey } from "../lib/event-recurrence";
 import { wallTime } from "../lib/planning";
 describe("Ricorrenze evento", () => {
+  it("fissa Nexus Night al martedì successivo conservando le ore serali e la fine il giorno dopo", () => {
+    const rows = occurrenceDates("2026-10-23T20:00", "2026-10-24T00:30", "Europe/Rome", "weekly", 3, 2);
+    expect(rows.map(r => wallTime(r.starts_at))).toEqual(["2026-10-27T20:00", "2026-11-03T20:00", "2026-11-10T20:00"]);
+    expect(rows.map(r => wallTime(r.ends_at))).toEqual(["2026-10-28T00:30", "2026-11-04T00:30", "2026-11-11T00:30"]);
+  });
+  it("include il primo giorno se è già martedì e rispetta la cadenza bisettimanale", () => {
+    expect(occurrenceDates("2026-10-27T21:00", "2026-10-27T23:00", "Europe/Rome", "fortnightly", 2, 2).map(r => wallTime(r.starts_at))).toEqual(["2026-10-27T21:00", "2026-11-10T21:00"]);
+  });
   it("mantiene le 20 italiane passando all'ora solare", () => {
     const rows = occurrenceDates("2026-10-23T20:00", "2026-10-24T00:30", "Europe/Rome", "weekly", 3);
     expect(rows.map(r => wallTime(r.starts_at))).toEqual(["2026-10-23T20:00", "2026-10-30T20:00", "2026-11-06T20:00"]);

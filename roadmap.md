@@ -1,5 +1,8 @@
 # Roadmap
 
+- [ ] Pallino a strisce del colore assegnato per eventi ricorrenti nel calendario e negli appuntamenti.
+- [ ] Scelta di un giorno fisso della settimana per ricorrenze; verificare le date e il salvataggio senza lasciare prove.
+
 - [x] Aggiungere categorie, gioco, dettagli, luogo e linea di fasi modificabili alle task con più persone.
 - [x] Suddividere le task in Aperta, Work in progress e Completata; verificare salvataggio e avanzamento.
 

@@ -4,9 +4,9 @@ import { PlanningPage } from "@/components/planning/PlanningPage";
 export const Route = createFileRoute("/task-calendario")({
   head: () => ({ meta: [
     { title: "Task — Mana Flask" },
-    { name: "description", content: "Attività, checklist, responsabili e scadenze del negozio Mana Flask." },
+    { name: "description", content: "Task per categoria e gioco, responsabili, luoghi e avanzamento delle attività Mana Flask." },
     { property: "og:title", content: "Task — Mana Flask" },
-    { property: "og:description", content: "Gestisci le attività, le checklist e le scadenze del negozio Mana Flask." },
+    { property: "og:description", content: "Gestisci categorie, giochi, responsabili e fasi delle task del negozio Mana Flask." },
     { property: "og:type", content: "website" },
     { name: "twitter:card", content: "summary" },
   ] }),

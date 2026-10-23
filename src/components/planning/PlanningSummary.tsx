@@ -7,7 +7,7 @@ export function PlanningSummary({ showEvents = true }: { showEvents?: boolean })
   const { data: tasks = [] } = useTasks();
   const { data: events = [] } = useCalendarEntries();
   const s = taskStats(tasks);
-  const stats = [{label:"Task totali",value:s.total,tone:"border-secondary"},{label:"Da fare",value:s.todo,tone:"border-primary"},{label:"In corso",value:s.progress,tone:"border-info"},{label:"Completate",value:s.done,tone:"border-success"},{label:"Obbligatorie aperte",value:s.mandatory,tone:"border-primary"},{label:"Scadute",value:s.overdue,tone:"border-destructive"}];
+  const stats = [{label:"Task totali",value:s.total,tone:"border-secondary"},{label:"Aperte",value:s.todo,tone:"border-primary"},{label:"Work in progress",value:s.progress,tone:"border-info"},{label:"Completate",value:s.done,tone:"border-success"},{label:"Obbligatorie aperte",value:s.mandatory,tone:"border-primary"},{label:"Scadute",value:s.overdue,tone:"border-destructive"}];
   const next = upcomingEvents(events).slice(0, 4);
   return <section><SectionLabel>Task</SectionLabel><div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-6">
     {stats.map(stat => <div key={stat.label} className={`min-w-0 rounded-lg border border-l-4 bg-card p-4 ${stat.tone}`}><p className="min-h-10 break-words text-sm font-medium leading-5 text-muted-foreground">{stat.label}</p><p className="mt-2 text-2xl font-semibold tabular-nums">{stat.value}</p></div>)}

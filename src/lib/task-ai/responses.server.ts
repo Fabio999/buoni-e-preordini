@@ -1,5 +1,6 @@
 import { createOpenAI } from "@ai-sdk/openai";
-import { streamText, type ModelMessage } from "ai";
+import { streamText, Output, type ModelMessage } from "ai";
+import { taskDraftSchema } from "../task-drafts";
 
 import {
   createLovableAiGatewayRunIdFetch,
@@ -9,7 +10,7 @@ import {
 
 export function createResponsesCall(
   request: Request,
-  config: { baseURL: string; apiKey: string; model: string },
+  config: { baseURL: string; apiKey: string; model: string; onGatewayError?: (status: number, message: string) => Promise<void> },
   messages: ModelMessage[],
   instructions?: string,
 ) {
@@ -18,12 +19,22 @@ export function createResponsesCall(
     baseURL: `${config.baseURL.replace(/\/+$/, "").replace(/\/v1$/, "")}/v1`,
     apiKey: config.apiKey,
     headers: { "Lovable-API-Key": config.apiKey, "X-Lovable-AIG-SDK": "vercel-ai-sdk" },
-    fetch: runIdFetch.fetch,
+    fetch: async (input, init) => {
+      const response = await runIdFetch.fetch(input, init);
+      if (!response.ok) {
+        let message = "AI Gateway non disponibile.";
+        try { const body = await response.clone().json() as { message?: string; error?: { message?: string } }; message = body.message ?? body.error?.message ?? message; } catch { /* Keep safe fallback. */ }
+        await config.onGatewayError?.(response.status, message);
+      }
+      return response;
+    },
   });
   const reasoning = config.model !== "openai/chat-latest";
   const result = streamText({
     model: provider.responses(config.model),
-    // AI SDK 6 lacks `instructions`: rename this key to `system` there.
+    output: Output.object({ schema: taskDraftSchema }),
+    maxOutputTokens: 2200,
+    maxRetries: 0,
     ...(instructions ? { system: instructions } : {}),
     messages,
     abortSignal: request.signal,
@@ -33,7 +44,7 @@ export function createResponsesCall(
         ...(reasoning
           ? {
               forceReasoning: true,
-              reasoningEffort: "medium",
+              reasoningEffort: "low",
               reasoningSummary: "auto",
               include: ["reasoning.encrypted_content"],
             }

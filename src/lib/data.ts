@@ -3,6 +3,9 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 
 export type Client = Tables<"clients">;
+export const useTasks = () => useQuery({ queryKey: ["company-tasks"], queryFn: async () => unwrap(await supabase.from("company_tasks").select("*").order("created_at", { ascending: false })) });
+export const useCalendarEntries = () => useQuery({ queryKey: ["calendar-entries"], queryFn: async () => unwrap(await supabase.from("calendar_entries").select("*").order("starts_at")) });
+export const usePlanningHistory = (type: string, id: string) => useQuery({ queryKey: ["planning-history", type, id], enabled: !!id, queryFn: async () => unwrap(await supabase.from("planning_history").select("*").eq("entity_type", type).eq("entity_id", id).order("created_at", { ascending: false })) });
 export type EventRow = Tables<"events">;
 export type Product = Tables<"products">;
 export type Movement = Tables<"balance_movements">;

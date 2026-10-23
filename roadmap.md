@@ -19,3 +19,6 @@
 - [x] Creazione diretta di eventi e prodotti nei moduli, correzione errori e verifica dell'assenza di dati di prova.
 - [x] Ricerca e filtri nella sezione Clienti (nome/cognome, saldo, prenotazioni, ordinamento) e verifica.
 - [x] Controllo password già rubate attivato
+
+- [ ] Allineare meglio il campo data/ora nei filtri di Task e Calendario.
+- [x] Rimuovere la voce di prova "Verifica temporanea promemoria" dal calendario.

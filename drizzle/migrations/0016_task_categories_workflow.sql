@@ -1,0 +1,2 @@
+ALTER TABLE public.company_tasks ADD COLUMN category text NOT NULL DEFAULT '', ADD COLUMN game text NOT NULL DEFAULT '', ADD COLUMN location text NOT NULL DEFAULT '', ADD COLUMN workflow_stages jsonb NOT NULL DEFAULT '[]'::jsonb, ADD COLUMN workflow_position integer NOT NULL DEFAULT 0;
+ALTER TABLE public.company_tasks ADD CONSTRAINT task_workflow_array CHECK (jsonb_typeof(workflow_stages) = 'array'), ADD CONSTRAINT task_workflow_position CHECK (workflow_position >= 0 AND workflow_position <= jsonb_array_length(workflow_stages));

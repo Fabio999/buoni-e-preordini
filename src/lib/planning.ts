@@ -13,9 +13,9 @@ export const planningDate = (iso: string | null, zone = ZONE) => iso ? formatInT
 export const isOverdue = (task: Pick<Task, "due_at" | "status" | "archived">, now = new Date()) => !task.archived && task.status !== "completata" && !!task.due_at && new Date(task.due_at) < now;
 export function alternativesOf(entry: Pick<CalendarEntry, "alternatives">): Alternative[] {
   if (!Array.isArray(entry.alternatives)) return [];
-  return entry.alternatives.flatMap(a => a && typeof a === "object" && !Array.isArray(a) && typeof a.starts_at === "string" && typeof a.ends_at === "string" ? [{ starts_at: a.starts_at, ends_at: a.ends_at }] : []);
+  return entry.alternatives.flatMap(a => a && typeof a === "object" && !Array.isArray(a) && typeof a['starts_at'] === "string" && typeof a['ends_at'] === "string" ? [{ starts_at: a['starts_at'], ends_at: a['ends_at'] }] : []);
 }
-export function confirmAlternative(entry: CalendarEntry, alternative: Alternative) {
+export function confirmAlternative(entry: Pick<CalendarEntry, "starts_at" | "ends_at" | "alternatives">, alternative: Alternative) {
   const dates = alternativesOf(entry);
   if (!dates.some(a => a.starts_at === entry.starts_at && a.ends_at === entry.ends_at)) dates.push({ starts_at: entry.starts_at, ends_at: entry.ends_at });
   return { starts_at: alternative.starts_at, ends_at: alternative.ends_at, confirmed: true, alternatives: dates };

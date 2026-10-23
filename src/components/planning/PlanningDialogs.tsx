@@ -44,7 +44,7 @@ export function TaskDialog({ open, onOpenChange, initial, onSaved }: Props<Task>
     </form></DialogContent></Dialog>;
 }
 
-export function CalendarDialog({ open, onOpenChange, initial, onSaved, initialDate }: Props<CalendarEntry> & { initialDate?: string }) {
+export function CalendarDialog({ open, onOpenChange, initial, onSaved, initialDate }: Props<CalendarEntry> & { initialDate?: string | undefined }) {
   const refresh = useRefresh(); const { data: tasks = [] } = useTasks(); const operator = useOperator();
   const [busy, setBusy] = useState(false); const [createTask, setCreateTask] = useState(false);
   const [f,setF] = useState({ title: "", description: "", start: "", end: "", zone: ZONE, names: "", task: "", confirmed: false, alternatives: [] as {start: string; end: string}[] });

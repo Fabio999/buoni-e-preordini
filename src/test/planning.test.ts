@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { isOverdue, confirmAlternative, alternativesOf, overlaps, toInstant, wallTime, type CalendarEntry } from "@/lib/planning";
+import { isOverdue, confirmAlternative, alternativesOf, overlaps, toInstant, wallTime } from "@/lib/planning";
 
 describe("task e calendario", () => {
   it("una scadenza superata resta aperta, non completa la task", () => {
@@ -10,7 +10,7 @@ describe("task e calendario", () => {
   });
   it("confermare una data conserva le alternative e la data precedente", () => {
     const a={starts_at:"2026-10-24T08:00:00Z",ends_at:"2026-10-24T09:00:00Z"};
-    const old={starts_at:"2026-10-23T08:00:00Z",ends_at:"2026-10-23T09:00:00Z",alternatives:[a]} as CalendarEntry;
+    const old={starts_at:"2026-10-23T08:00:00Z",ends_at:"2026-10-23T09:00:00Z",alternatives:[a]};
     const result=confirmAlternative(old,a);
     expect(result.starts_at).toBe(a.starts_at);
     expect(result.confirmed).toBe(true);

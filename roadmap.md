@@ -1,7 +1,7 @@
 # Roadmap
 
-- [ ] Ricerca e filtri indipendenti per nome, data, orario e colore negli eventi in programma.
-- [ ] Promemoria evento configurabile con testo e pop-up bianco; verificare salvataggio e avviso.
+- [x] Ricerca e filtri indipendenti per nome, data, orario e colore negli eventi in programma.
+- [x] Promemoria evento configurabile con testo e pop-up bianco; verificare salvataggio e avviso.
 
 - [x] Separare Task e Calendario, aggiungere gli eventi in programma nelle Task ed escludere le task dal calendario; verificare navigazione e contenuti.
 

@@ -185,6 +185,62 @@ export type Database = {
           },
         ]
       }
+      calendar_entries: {
+        Row: {
+          alternatives: Json
+          archived: boolean
+          confirmed: boolean
+          created_at: string
+          description: string
+          ends_at: string
+          id: string
+          responsible_names: string[]
+          starts_at: string
+          task_id: string | null
+          timezone: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          alternatives?: Json
+          archived?: boolean
+          confirmed?: boolean
+          created_at?: string
+          description?: string
+          ends_at: string
+          id?: string
+          responsible_names?: string[]
+          starts_at: string
+          task_id?: string | null
+          timezone?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          alternatives?: Json
+          archived?: boolean
+          confirmed?: boolean
+          created_at?: string
+          description?: string
+          ends_at?: string
+          id?: string
+          responsible_names?: string[]
+          starts_at?: string
+          task_id?: string | null
+          timezone?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "calendar_entries_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "company_tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       checklist_items: {
         Row: {
           category: string
@@ -241,6 +297,69 @@ export type Database = {
         }
         Relationships: []
       }
+      company_tasks: {
+        Row: {
+          archived: boolean
+          claimed_at: string | null
+          claimed_by: string
+          completed_at: string | null
+          completed_by: string
+          created_at: string
+          description: string
+          due_at: string | null
+          id: string
+          mandatory: boolean
+          priority: string
+          responsible: string
+          started_at: string | null
+          started_by: string
+          starts_at: string | null
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          archived?: boolean
+          claimed_at?: string | null
+          claimed_by?: string
+          completed_at?: string | null
+          completed_by?: string
+          created_at?: string
+          description?: string
+          due_at?: string | null
+          id?: string
+          mandatory?: boolean
+          priority?: string
+          responsible?: string
+          started_at?: string | null
+          started_by?: string
+          starts_at?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          archived?: boolean
+          claimed_at?: string | null
+          claimed_by?: string
+          completed_at?: string | null
+          completed_by?: string
+          created_at?: string
+          description?: string
+          due_at?: string | null
+          id?: string
+          mandatory?: boolean
+          priority?: string
+          responsible?: string
+          started_at?: string | null
+          started_by?: string
+          starts_at?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       events: {
         Row: {
           created_at: string
@@ -286,6 +405,42 @@ export type Database = {
           operator_name?: string
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      planning_history: {
+        Row: {
+          action: string
+          after_data: Json | null
+          before_data: Json | null
+          created_at: string
+          entity_id: string
+          entity_type: string
+          id: string
+          operator_name: string
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          after_data?: Json | null
+          before_data?: Json | null
+          created_at?: string
+          entity_id: string
+          entity_type: string
+          id?: string
+          operator_name?: string
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          after_data?: Json | null
+          before_data?: Json | null
+          created_at?: string
+          entity_id?: string
+          entity_type?: string
+          id?: string
+          operator_name?: string
+          user_id?: string | null
         }
         Relationships: []
       }

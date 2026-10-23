@@ -6,6 +6,7 @@ import { SectionLabel, StatCard } from "@/components/Status";
 import { Badge } from "@/components/ui/badge";
 import { balancesByClient, useBookings, useEvents, useMovements } from "@/lib/data";
 import { EVENT_STATUS, euro, fmtDate } from "@/lib/format";
+import { PlanningSummary } from "@/components/planning/PlanningSummary";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -57,6 +58,7 @@ function Dashboard() {
   return (
     <div className="mx-auto max-w-7xl">
       <PageHeader title="Dashboard" subtitle="La situazione di oggi, a colpo d'occhio." />
+      <PlanningSummary />
 
       <SectionLabel>Prossimo evento</SectionLabel>
       {stats.next ? (

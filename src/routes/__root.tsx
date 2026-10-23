@@ -18,6 +18,7 @@ import { LoginScreen } from "@/components/LoginScreen";
 import { Toaster } from "@/components/ui/sonner";
 import { OperatorGate } from "@/lib/operator";
 import { OfflineSync } from "@/lib/offline";
+import { TaskReminders } from "@/components/planning/TaskReminders";
 
 function NotFoundComponent() {
   return (
@@ -138,6 +139,7 @@ function Gate() {
         <Outlet />
       </AppShell>
       <OfflineSync />
+      <TaskReminders userId={session.user.id} />
     </OperatorGate>
   );
 }

@@ -10,6 +10,7 @@
 <!-- LOVABLE:END -->
 
 ## Architecture rules
+- Task reminders run in the signed-in operator shell against cached tasks; local acknowledgements are scoped by account/operator/task/deadline/phase, with no scheduled server requests.
 - Company planning uses separate task/calendar tables and immutable trigger-written audit rows; all transitions are attributed by the database operator session, and date alternatives are retained when confirming a final date.
 - Planning timestamps are stored as UTC instants, edited via explicit IANA zones with date-fns-tz, and shown in Europe/Rome in the shared calendar to keep cross-zone scheduling consistent.
 - Shop balance is a ledger: only change it via DB functions (`add_balance_movement`, `register_purchase`, `update_balance_movement`, `delete_balance_movement`, which recompute later balances); never write balances directly (keeps history consistent, prevents negatives).

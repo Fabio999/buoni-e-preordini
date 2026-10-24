@@ -105,19 +105,14 @@ function Dashboard() {
       <SectionLabel>Prenotazioni</SectionLabel>
       <div className="grid divide-y divide-border rounded-xl border bg-card shadow-sm sm:grid-cols-3 sm:divide-x sm:divide-y-0">
         {bookingStats.map((s) => (
-          <div
-            key={s.label}
-            className="flex items-start gap-3 px-5 py-3 transition-colors hover:bg-secondary/40"
-          >
-            <span className={cn("mt-1 size-2 shrink-0 rounded-full", s.dot)} />
-            <div className="min-w-0">
-              <p className="truncate text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
-                {s.label}
-              </p>
-              <p className="font-display text-lg font-semibold leading-tight tabular-nums">
-                {s.value}
-              </p>
-            </div>
+          <div key={s.label} className="px-5 py-3 transition-colors hover:bg-secondary/40">
+            <p className="flex items-center gap-2 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+              <span className={cn("size-1.5 shrink-0 rounded-full", s.dot)} />
+              <span className="truncate">{s.label}</span>
+            </p>
+            <p className="mt-1 font-display text-lg font-semibold leading-tight tabular-nums">
+              {s.value}
+            </p>
           </div>
         ))}
       </div>

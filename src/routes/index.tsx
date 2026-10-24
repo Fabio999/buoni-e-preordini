@@ -107,9 +107,9 @@ function Dashboard() {
         {bookingStats.map((s) => (
           <div
             key={s.label}
-            className="flex items-center gap-3 px-5 py-3 transition-colors hover:bg-secondary/40"
+            className="flex items-start gap-3 px-5 py-3 transition-colors hover:bg-secondary/40"
           >
-            <span className={cn("size-2 shrink-0 rounded-full", s.dot)} />
+            <span className={cn("mt-1 size-2 shrink-0 rounded-full", s.dot)} />
             <div className="min-w-0">
               <p className="truncate text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
                 {s.label}

@@ -31,6 +31,11 @@
   --color-success-foreground: var(--success-foreground);
   --color-info: var(--info);
   --color-info-foreground: var(--info-foreground);
+  --color-gold: var(--gold);
+  --color-violet: var(--violet);
+  --color-pink: var(--pink);
+  --color-teal: var(--teal);
+  --color-sky: var(--sky);
   --color-reminder: var(--reminder);
   --color-reminder-foreground: var(--reminder-foreground);
   --color-warning: var(--warning);
@@ -74,6 +79,11 @@
   --success-foreground: oklch(0.99 0 0);
   --info: oklch(0.5 0.12 255);
   --info-foreground: oklch(0.99 0 0);
+  --gold: oklch(0.78 0.14 95);
+  --violet: oklch(0.52 0.17 300);
+  --pink: oklch(0.66 0.18 350);
+  --teal: oklch(0.66 0.11 195);
+  --sky: oklch(0.74 0.09 240);
   --warning: oklch(0.67 0.16 50);
   --border: oklch(0.91 0.008 250);
   --input: oklch(0.89 0.01 250);

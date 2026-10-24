@@ -6,7 +6,7 @@ import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { eventColor, alternativesOf, overlaps, wallTime, ZONE, type CalendarEntry } from "@/lib/planning";
+import { eventColor, alternativesOf, wallTime, ZONE, type CalendarEntry } from "@/lib/planning";
 import { cn } from "@/lib/utils";
 
 export function PlanningCalendar({ events, onEvent, onCreate }: { events:CalendarEntry[];onEvent:(e:CalendarEntry)=>void;onCreate:(date:string)=>void }) {

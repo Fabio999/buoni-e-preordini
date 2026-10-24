@@ -9,6 +9,10 @@ export function recurrenceTargets<T extends Pick<CalendarEntry, "id" | "recurren
 }
 
 export const RECURRENCE = { daily: "Ogni giorno", weekly: "Ogni settimana", fortnightly: "Ogni 2 settimane", monthly: "Ogni mese" };
+export function recurrenceColorUpdates<T extends Pick<CalendarEntry, "id" | "recurrence_series" | "starts_at" | "archived" | "color">>(events: T[], initial: T, color: string) {
+  if (!initial.recurrence_series || initial.color === color) return [];
+  return recurrenceTargets(events, initial, true).map(event => ({ ...event, color }));
+}
 export type Frequency = keyof typeof RECURRENCE;
 export const WEEKDAYS = [
   { value: 1, label: "Lunedì" }, { value: 2, label: "Martedì" },

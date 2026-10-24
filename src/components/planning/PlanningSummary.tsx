@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { CheckCircle2, CircleDashed, FolderKanban, LoaderCircle, ArrowRight } from "lucide-react";
+import { CheckCircle2, CircleDashed, FolderKanban, LoaderCircle } from "lucide-react";
 import { SectionLabel } from "@/components/Status";
 import { useTasks, useCalendarEntries } from "@/lib/data";
 import { planningDate, taskStats, upcomingEvents } from "@/lib/planning";

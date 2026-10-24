@@ -4,8 +4,8 @@ import { useMemo } from "react";
 import { PageHeader } from "@/components/AppShell";
 import { SectionLabel, StatCard } from "@/components/Status";
 import { Badge } from "@/components/ui/badge";
-import { balancesByClient, useBookings, useEvents, useMovements } from "@/lib/data";
-import { EVENT_STATUS, euro, fmtDate } from "@/lib/format";
+import { useBookings, useEvents } from "@/lib/data";
+import { EVENT_STATUS, fmtDate } from "@/lib/format";
 import { PlanningSummary } from "@/components/planning/PlanningSummary";
 
 export const Route = createFileRoute("/")({
@@ -31,7 +31,6 @@ export const Route = createFileRoute("/")({
 function Dashboard() {
   const { data: events = [] } = useEvents();
   const { data: bookings = [] } = useBookings();
-  const { data: movements } = useMovements();
 
   const stats = useMemo(() => {
     const today = new Date().toISOString().slice(0, 10);
@@ -39,7 +38,6 @@ function Dashboard() {
       .filter((e) => e.event_date >= today && e.status !== "concluso")
       .sort((a, b) => a.event_date.localeCompare(b.event_date))[0];
     const active = bookings.filter((b) => b.status !== "annullata");
-    const bal = [...balancesByClient(movements).values()];
     return {
       next,
       nextCount: next ? active.filter((b) => b.event_id === next.id).length : 0,
@@ -48,12 +46,8 @@ function Dashboard() {
       unpaid: active.filter((b) => b.payment_status === "non_pagato").length,
       toPrepare: active.filter((b) => b.status === "da_preparare").length,
       ready: active.filter((b) => b.status === "pronta").length,
-      withBalance: bal.filter((b) => b.balance > 0).length,
-      available: bal.reduce((s, b) => s + b.balance, 0),
-      loaded: bal.reduce((s, b) => s + b.loaded, 0),
-      used: bal.reduce((s, b) => s + b.used, 0),
     };
-  }, [events, bookings, movements]);
+  }, [events, bookings]);
 
   return (
     <div className="mx-auto max-w-7xl">
@@ -108,14 +102,6 @@ function Dashboard() {
         <StatCard label="Non pagate" value={stats.unpaid} tone="danger" />
         <StatCard label="Da preparare" value={stats.toPrepare} tone="action" />
         <StatCard label="Pronte" value={stats.ready} tone="info" />
-      </div>
-
-      <SectionLabel>Saldo negozio</SectionLabel>
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <StatCard label="Clienti con saldo" value={stats.withBalance} tone="info" />
-        <StatCard label="Saldo disponibile" value={euro(stats.available)} tone="action" />
-        <StatCard label="Totale caricato" value={euro(stats.loaded)} tone="success" />
-        <StatCard label="Totale utilizzato" value={euro(stats.used)} tone="danger" />
       </div>
     </div>
   );

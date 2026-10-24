@@ -44,16 +44,14 @@ function Dashboard() {
       nextCount: next ? active.filter((b) => b.event_id === next.id).length : 0,
       total: active.length,
       unpaid: active.filter((b) => b.payment_status === "non_pagato").length,
-      deliveredUnpaid: active.filter(
-        (b) => b.status === "consegnata" && b.payment_status === "non_pagato",
-      ).length,
+      delivered: active.filter((b) => b.status === "consegnata").length,
     };
   }, [events, bookings]);
 
   const bookingStats = [
     { label: "Totali", value: stats.total, dot: "bg-info" },
+    { label: "Consegnate", value: stats.delivered, dot: "bg-primary" },
     { label: "Non pagate", value: stats.unpaid, dot: "bg-destructive" },
-    { label: "Consegnate da pagare", value: stats.deliveredUnpaid, dot: "bg-primary" },
   ];
 
   return (

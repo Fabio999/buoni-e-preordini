@@ -120,6 +120,13 @@
       "when": 1792795949605,
       "tag": "0016_task_categories_workflow",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1792803900826,
+      "tag": "0017_calendar_all_event_colors",
+      "breakpoints": true
     }
   ]
 }

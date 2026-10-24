@@ -1,0 +1,2 @@
+ALTER TABLE public.calendar_entries DROP CONSTRAINT calendar_entries_color_check;
+ALTER TABLE public.calendar_entries ADD CONSTRAINT calendar_entries_color_check CHECK (color IN ('blu','arancione','verde','rosso','grigio','celeste','giallo','viola','rosa','turchese'));

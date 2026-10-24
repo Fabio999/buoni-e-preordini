@@ -1,7 +1,21 @@
 import { describe, expect, it } from "vitest";
-import { occurrenceDates, recurrenceTargets, mergeGames, rememberGame, readGames, gamesKey } from "../lib/event-recurrence";
+import { occurrenceDates, recurrenceTargets, recurrenceColorUpdates, mergeGames, rememberGame, readGames, gamesKey } from "../lib/event-recurrence";
 import { wallTime } from "../lib/planning";
 describe("Ricorrenze evento", () => {
+  it("propaga il colore solo dalla data modificata in avanti preservando date e dettagli", () => {
+    const events = [
+      {id:"past", recurrence_series:"nexus", starts_at:"2026-10-20T18:00:00Z", archived:false, color:"blu", description:"Prima"},
+      {id:"current", recurrence_series:"nexus", starts_at:"2026-10-27T19:00:00Z", archived:false, color:"blu", description:"Attuale"},
+      {id:"next", recurrence_series:"nexus", starts_at:"2026-11-03T19:00:00Z", archived:false, color:"blu", description:"Premi diversi"},
+      {id:"other", recurrence_series:"magic", starts_at:"2026-11-03T19:00:00Z", archived:false, color:"blu", description:"Altro"},
+    ];
+    const current = events[1];
+    if (!current) throw new Error("Missing current occurrence");
+    const rows = recurrenceColorUpdates(events, current, "viola");
+    expect(rows.map(e => [e.id,e.color])).toEqual([["current","viola"],["next","viola"]]);
+    expect(rows[1]).toEqual({...events[2],color:"viola"});
+    expect(recurrenceColorUpdates(events,current,"blu")).toEqual([]);
+  });
   it("modifica una sola data oppure questa e le successive della stessa serie senza toccare il passato", () => {
     const events = [
       {id:"past", recurrence_series:"nexus", starts_at:"2026-10-20T18:00:00Z", archived:false},

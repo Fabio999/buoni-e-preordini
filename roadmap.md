@@ -1,7 +1,7 @@
 # Roadmap
 
-- [ ] Correggere il salvataggio dei dieci colori e migliorare la distinzione dei pallini.
-- [ ] Propagare il colore alle occorrenze successive, preservando date e dettagli; verificare e rimuovere le prove.
+- [x] Correggere il salvataggio dei dieci colori e migliorare la distinzione dei pallini.
+- [x] Propagare il colore alle occorrenze successive, preservando date e dettagli; verificare e rimuovere le prove.
 
 - [x] Creare e ricordare categorie e giochi personalizzati nelle task; verificare riapertura e ricaricamento senza lasciare prove.
 

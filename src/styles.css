@@ -54,7 +54,7 @@
 
 :root {
   --radius: 0.6rem;
-  --event-recurrence-stripes: repeating-linear-gradient(135deg, transparent 0 3px, var(--card) 3px 5px);
+  --event-recurrence-stripes: repeating-linear-gradient(135deg, transparent 0 3px, var(--card) 3px 4px);
   --reminder: oklch(1 0 0);
   --reminder-foreground: oklch(0.24 0.012 255);
   --background: oklch(0.975 0.004 250);
@@ -79,11 +79,11 @@
   --success-foreground: oklch(0.99 0 0);
   --info: oklch(0.5 0.12 255);
   --info-foreground: oklch(0.99 0 0);
-  --gold: oklch(0.78 0.14 95);
+  --gold: oklch(0.77 0.17 95);
   --violet: oklch(0.52 0.17 300);
   --pink: oklch(0.66 0.18 350);
-  --teal: oklch(0.66 0.11 195);
-  --sky: oklch(0.74 0.09 240);
+  --teal: oklch(0.59 0.12 185);
+  --sky: oklch(0.7 0.14 235);
   --warning: oklch(0.67 0.16 50);
   --border: oklch(0.91 0.008 250);
   --input: oklch(0.89 0.01 250);

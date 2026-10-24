@@ -2,11 +2,12 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { CalendarDays, MapPin } from "lucide-react";
 import { useMemo } from "react";
 import { PageHeader } from "@/components/AppShell";
-import { SectionLabel, StatCard } from "@/components/Status";
+import { SectionLabel } from "@/components/Status";
 import { Badge } from "@/components/ui/badge";
 import { useBookings, useEvents } from "@/lib/data";
 import { EVENT_STATUS, fmtDate } from "@/lib/format";
 import { PlanningSummary } from "@/components/planning/PlanningSummary";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -42,12 +43,18 @@ function Dashboard() {
       next,
       nextCount: next ? active.filter((b) => b.event_id === next.id).length : 0,
       total: active.length,
-      paid: active.filter((b) => b.payment_status === "pagato").length,
       unpaid: active.filter((b) => b.payment_status === "non_pagato").length,
-      toPrepare: active.filter((b) => b.status === "da_preparare").length,
-      ready: active.filter((b) => b.status === "pronta").length,
+      deliveredUnpaid: active.filter(
+        (b) => b.status === "consegnata" && b.payment_status === "non_pagato",
+      ).length,
     };
   }, [events, bookings]);
+
+  const bookingStats = [
+    { label: "Totali", value: stats.total, dot: "bg-info" },
+    { label: "Non pagate", value: stats.unpaid, dot: "bg-destructive" },
+    { label: "Consegnate da pagare", value: stats.deliveredUnpaid, dot: "bg-primary" },
+  ];
 
   return (
     <div className="mx-auto max-w-7xl">
@@ -96,12 +103,23 @@ function Dashboard() {
       )}
 
       <SectionLabel>Prenotazioni</SectionLabel>
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-5">
-        <StatCard label="Totali" value={stats.total} />
-        <StatCard label="Pagate" value={stats.paid} tone="success" />
-        <StatCard label="Non pagate" value={stats.unpaid} tone="danger" />
-        <StatCard label="Da preparare" value={stats.toPrepare} tone="action" />
-        <StatCard label="Pronte" value={stats.ready} tone="info" />
+      <div className="grid divide-y divide-border rounded-xl border bg-card shadow-sm sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+        {bookingStats.map((s) => (
+          <div
+            key={s.label}
+            className="flex items-center gap-3 px-5 py-3 transition-colors hover:bg-secondary/40"
+          >
+            <span className={cn("size-2 shrink-0 rounded-full", s.dot)} />
+            <div className="min-w-0">
+              <p className="truncate text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+                {s.label}
+              </p>
+              <p className="font-display text-lg font-semibold leading-tight tabular-nums">
+                {s.value}
+              </p>
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );

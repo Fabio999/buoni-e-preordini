@@ -35,5 +35,10 @@ export const EVENT_COLORS = [
   { value: "verde", label: "Verde", dot: "bg-success", chip: "border-success bg-success/10 text-success" },
   { value: "rosso", label: "Rosso", dot: "bg-destructive", chip: "border-destructive bg-destructive/10 text-destructive" },
   { value: "grigio", label: "Grigio", dot: "bg-muted-foreground", chip: "border-muted-foreground bg-muted text-foreground" },
+  { value: "celeste", label: "Celeste", dot: "bg-sky", chip: "border-sky bg-sky/10 text-sky" },
+  { value: "giallo", label: "Giallo", dot: "bg-gold", chip: "border-gold bg-gold/10 text-gold" },
+  { value: "viola", label: "Viola", dot: "bg-violet", chip: "border-violet bg-violet/10 text-violet" },
+  { value: "rosa", label: "Rosa", dot: "bg-pink", chip: "border-pink bg-pink/10 text-pink" },
+  { value: "turchese", label: "Turchese", dot: "bg-teal", chip: "border-teal bg-teal/10 text-teal" },
 ] as const;
 export function eventColor(value: string | null | undefined) { return EVENT_COLORS.find(c => c.value === value) ?? EVENT_COLORS[0]; }

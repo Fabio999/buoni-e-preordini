@@ -82,23 +82,23 @@ function ProductsPage() {
         {!isLoading && !filtered.length && <Empty>Nessun prodotto</Empty>}
         <ul className="divide-y">
           {filtered.map((p) => (
-            <li key={p.id} className="flex items-center justify-between gap-3 py-2.5">
-              <div className="min-w-0">
-                <div className="font-medium">{p.name}</div>
-                <div className="mt-0.5 flex flex-wrap gap-2 text-xs text-muted-foreground">
-                  {p.game && <Badge variant="info">{p.game}</Badge>}
-                  {p.product_type && <Badge variant="info">{p.product_type}</Badge>}
-                  {p.category && <Badge variant="info">{p.category}</Badge>}
-                  {p.sku && <span>SKU {p.sku}</span>}
+            <li key={p.id} className="flex flex-col gap-2 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
+              <div className="min-w-0 flex-1">
+                <div className="break-words font-medium">{p.name}</div>
+                <div className="mt-1 flex flex-wrap gap-1.5 text-xs text-muted-foreground">
+                  {p.game && <Badge variant="info" className="max-w-full break-words">{p.game}</Badge>}
+                  {p.product_type && <Badge variant="info" className="max-w-full break-words">{p.product_type}</Badge>}
+                  {p.category && <Badge variant="info" className="max-w-full break-words">{p.category}</Badge>}
+                  {p.sku && <span className="break-all">SKU {p.sku}</span>}
                 </div>
               </div>
-              <div className="flex items-center gap-1">
+              <div className="flex shrink-0 flex-wrap items-center gap-1">
                 {p.track_stock ? (
-                  <Badge variant={p.stock > 0 ? "success" : "danger"} className="mr-2">{p.stock} pz</Badge>
+                  <Badge variant={p.stock > 0 ? "success" : "danger"} className="mr-2 whitespace-nowrap">{p.stock} pz</Badge>
                 ) : (
-                  <Badge variant="neutral" className="mr-2">Non a magazzino</Badge>
+                  <Badge variant="neutral" className="mr-2 whitespace-nowrap">Non a magazzino</Badge>
                 )}
-                <span className="mr-2 font-display font-semibold">{euro(p.price)}</span>
+                <span className="mr-auto whitespace-nowrap font-display font-semibold sm:mr-2">{euro(p.price)}</span>
                 <Button size="icon" variant="ghost" onClick={() => setSelling(p)} aria-label="Vendi">
                   <ShoppingBag className="h-4 w-4" />
                 </Button>

@@ -1,5 +1,7 @@
 # Roadmap
 
+- [x] Alleggerire Dashboard e riepiloghi, distinguere le icone del menu e rifinire il badge operatore; verificare navigazione e impaginazione.
+
 - [x] Griglia del calendario con intestazione dei giorni ed evidenziazione del giorno corrente; verificare senza colonne tagliate.
 - [x] Correggere il salvataggio dei dieci colori e migliorare la distinzione dei pallini.
 - [x] Propagare il colore alle occorrenze successive, preservando date e dettagli; verificare e rimuovere le prove.

@@ -1,12 +1,13 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import {
   CalendarDays,
+  CalendarRange,
   ClipboardList,
   LayoutDashboard,
   LogOut,
   Package,
   ShieldCheck,
-  UserRound,
+  Ticket,
   Users,
   Wallet,
 } from "lucide-react";
@@ -33,10 +34,10 @@ import iconAsset from "@/assets/mana-flask-icon.jpg.asset.json";
 
 const items = [
   { title: "Dashboard", url: "/", icon: LayoutDashboard },
-  { title: "Eventi", url: "/eventi", icon: CalendarDays },
+  { title: "Eventi", url: "/eventi", icon: CalendarRange },
   { title: "Task", url: "/task-calendario", icon: ClipboardList },
   { title: "Calendario", url: "/calendario", icon: CalendarDays },
-  { title: "Prenotazioni", url: "/prenotazioni", icon: ClipboardList },
+  { title: "Prenotazioni", url: "/prenotazioni", icon: Ticket },
   { title: "Clienti", url: "/clienti", icon: Users },
   { title: "Saldo Negozio", url: "/saldo", icon: Wallet },
   { title: "Prodotti", url: "/prodotti", icon: Package },
@@ -47,6 +48,7 @@ function AppSidebar() {
   const { setOpenMobile } = useSidebar();
   const { data: isAdmin } = useIsAdmin();
   const operator = useOperator();
+  const initials = operator.trim().split(/\s+/).filter(Boolean).map(part => part[0]).slice(0, 2).join("").toLocaleUpperCase("it");
   const all = isAdmin
     ? [...items, { title: "Amministrazione", url: "/amministrazione", icon: ShieldCheck } as const]
     : items;
@@ -65,7 +67,7 @@ function AppSidebar() {
             <SidebarMenu>
               {all.map((item) => (
                 <SidebarMenuItem key={item.url}>
-                  <SidebarMenuButton asChild isActive={isActive(item.url)} tooltip={item.title}>
+                  <SidebarMenuButton asChild isActive={isActive(item.url)} tooltip={item.title} className="h-10 rounded-md">
                     <Link to={item.url} onClick={() => setOpenMobile(false)}>
                       <item.icon className="h-4 w-4" />
                       <span>{item.title}</span>
@@ -77,14 +79,18 @@ function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter>
+      <SidebarFooter className="border-t border-sidebar-border">
+        <div title={operator} aria-label={`Operatore: ${operator}`} className="flex min-w-0 items-center gap-3 rounded-lg bg-sidebar-accent px-3 py-3 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:bg-transparent group-data-[collapsible=icon]:px-0">
+          <span className="relative grid size-8 shrink-0 place-items-center rounded-full bg-sidebar-primary/15 text-xs font-semibold text-sidebar-foreground">
+            {initials}
+            <span aria-hidden="true" className="absolute bottom-0 right-0 size-2 rounded-full bg-success ring-2 ring-sidebar" />
+          </span>
+          <div className="min-w-0 group-data-[collapsible=icon]:hidden">
+            <p className="text-[11px] text-sidebar-foreground/70">Operatore</p>
+            <p className="break-words text-sm font-semibold leading-snug">{operator}</p>
+          </div>
+        </div>
         <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton tooltip={operator} className="pointer-events-none">
-              <UserRound className="h-4 w-4" />
-              <span className="truncate">{operator}</span>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
           <SidebarMenuItem>
             <SidebarMenuButton tooltip="Esci" onClick={() => signOutOperator()}>
               <LogOut className="h-4 w-4" />

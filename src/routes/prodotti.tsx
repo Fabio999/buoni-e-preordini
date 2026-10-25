@@ -92,11 +92,11 @@ function ProductsPage() {
                   {p.sku && <span className="break-all">SKU {p.sku}</span>}
                 </div>
               </div>
-              <div className="flex shrink-0 flex-wrap items-center gap-1">
+              <div className="flex shrink-0 items-center gap-0.5 sm:gap-1">
                 {p.track_stock ? (
-                  <Badge variant={p.stock > 0 ? "success" : "danger"} className="mr-2 whitespace-nowrap">{p.stock} pz</Badge>
+                  <Badge variant={p.stock > 0 ? "success" : "danger"} className="mr-1.5 whitespace-nowrap">{p.stock} pz</Badge>
                 ) : (
-                  <Badge variant="neutral" className="mr-2 whitespace-nowrap">Non a magazzino</Badge>
+                  <Badge variant="neutral" className="mr-1.5 whitespace-nowrap">Non a magazzino</Badge>
                 )}
                 <span className="mr-auto whitespace-nowrap font-display font-semibold sm:mr-2">{euro(p.price)}</span>
                 <Button size="icon" variant="ghost" onClick={() => setSelling(p)} aria-label="Vendi">

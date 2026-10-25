@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { cn } from "@/lib/utils";
 import { TaskWorkflow } from "./TaskWorkflow";
 import { taskStages, workflowAt, positionForStatus } from "@/lib/task-workflow";
 import { Plus, Pencil, History, Archive, RotateCcw, Trash2, CalendarDays, ClipboardList, ChevronDown, Sparkles } from "lucide-react";
@@ -18,7 +19,7 @@ import { PlanningCalendar } from "@/components/planning/PlanningCalendar";
 import { DateTimeField } from "@/components/planning/DateTimeField";
 import { selectClass } from "@/components/forms/SimpleDialogs";
 import { useTasks, useCalendarEntries, useRefresh, errMsg } from "@/lib/data";
-import { TASK_STATUS, PRIORITY, planningDate, wallTime, isOverdue, confirmAlternative, alternativesOf, type Task, type CalendarEntry } from "@/lib/planning";
+import { TASK_STATUS, PRIORITY, eventColor, planningDate, wallTime, isOverdue, confirmAlternative, alternativesOf, type Task, type CalendarEntry } from "@/lib/planning";
 import { EventDetailsList } from "@/components/planning/EventDetailsList";
 import { EventFilters } from "./EventFilters";
 import { emptyEventFilters, filterUpcomingEvents } from "@/lib/event-reminders";

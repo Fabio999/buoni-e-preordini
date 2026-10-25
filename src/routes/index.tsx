@@ -1,9 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { CalendarDays, MapPin } from "lucide-react";
+import { ArrowUpRight, CalendarDays, MapPin } from "lucide-react";
 import { useMemo } from "react";
 import { PageHeader } from "@/components/AppShell";
 import { SectionLabel } from "@/components/Status";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { useBookings, useEvents } from "@/lib/data";
 import { EVENT_STATUS, fmtDate } from "@/lib/format";
 import { PlanningSummary } from "@/components/planning/PlanningSummary";
@@ -56,57 +57,61 @@ function Dashboard() {
 
   return (
     <div className="mx-auto max-w-7xl">
-      <PageHeader title="Dashboard" subtitle="La situazione di oggi, a colpo d'occhio." />
-      <PlanningSummary />
+      <PageHeader title="Dashboard" />
+      <PlanningSummary compact />
 
       <SectionLabel>Prossimo evento</SectionLabel>
       {stats.next ? (
         <Link
           to="/eventi/$id"
           params={{ id: stats.next.id }}
-          className="block rounded-xl bg-secondary p-5 text-secondary-foreground shadow-sm transition hover:shadow-md md:p-6"
+          className="group block border-y py-5 transition-colors hover:bg-accent/40"
         >
-          <div className="flex flex-wrap items-start justify-between gap-4">
-            <div>
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div className="flex min-w-0 flex-1 items-start gap-4">
+              <span className="grid size-12 shrink-0 place-items-center rounded-lg bg-info/10 text-info"><CalendarDays className="size-6" /></span>
+              <div className="min-w-0">
               <Badge variant="default">{EVENT_STATUS[stats.next.status].label}</Badge>
-              <h3 className="mt-3 text-2xl font-semibold md:text-3xl">{stats.next.name}</h3>
-              <div className="mt-2 flex flex-wrap gap-4 text-sm opacity-85">
+              <h3 className="mt-2 break-words text-xl font-semibold">{stats.next.name}</h3>
+              <div className="mt-2 flex flex-wrap gap-x-4 gap-y-2 text-sm text-muted-foreground">
                 <span className="flex items-center gap-1.5">
                   <CalendarDays className="h-4 w-4" />
                   {fmtDate(stats.next.event_date)}
                 </span>
                 {stats.next.location && (
-                  <span className="flex items-center gap-1.5">
-                    <MapPin className="h-4 w-4" />
-                    {stats.next.location}
+                  <span className="flex min-w-0 items-center gap-1.5">
+                    <MapPin className="h-4 w-4 shrink-0" />
+                    <span className="break-words">{stats.next.location}</span>
                   </span>
                 )}
               </div>
+              </div>
             </div>
-            <div className="text-right">
-              <div className="font-display text-4xl font-semibold text-primary">
+            <div className="flex shrink-0 items-center gap-4">
+              <div className="text-right">
+              <div className="font-display text-2xl font-semibold">
                 {stats.nextCount}
               </div>
-              <div className="text-sm opacity-85">prenotazioni</div>
+              <div className="text-xs text-muted-foreground">prenotazioni</div>
+              </div>
+              <ArrowUpRight className="size-5 text-muted-foreground transition-colors group-hover:text-primary" />
             </div>
           </div>
         </Link>
       ) : (
-        <div className="rounded-xl border border-dashed bg-card p-6 text-center text-sm text-muted-foreground">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-y py-5 text-sm text-muted-foreground">
           Nessun evento in programma.{" "}
-          <Link to="/eventi" className="font-medium text-primary">
-            Crea un evento
-          </Link>
+          <Button asChild variant="ghost" size="sm"><Link to="/eventi">Eventi <ArrowUpRight /></Link></Button>
         </div>
       )}
 
       <SectionLabel>Prenotazioni</SectionLabel>
-      <div className="grid divide-y divide-border rounded-xl border bg-card shadow-sm sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+      <div className="grid grid-cols-3 divide-x divide-border rounded-lg border bg-card">
         {bookingStats.map((s) => (
-          <div key={s.label} className="px-5 py-3 transition-colors hover:bg-secondary/40">
-            <p className="flex items-center gap-2 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+          <div key={s.label} className="min-w-0 px-3 py-3 transition-colors hover:bg-muted/50 sm:px-5">
+            <p className="flex items-center gap-2 text-[11px] font-medium text-muted-foreground">
               <span className={cn("size-1.5 shrink-0 rounded-full", s.dot)} />
-              <span className="truncate">{s.label}</span>
+              <span className="break-words">{s.label}</span>
             </p>
             <p className="mt-1 font-display text-lg font-semibold leading-tight tabular-nums">
               {s.value}

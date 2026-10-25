@@ -10,6 +10,7 @@
 <!-- LOVABLE:END -->
 
 ## Architecture rules
+- The dashboard uses the compact variant of the shared planning summary; task-page summary styling stays independent so dashboard refinements do not alter work queues.
 - Task and Calendar have separate content routes backed by a shared planning page; the calendar accepts events only and Tasks contain only work queues, never event lists.
 - Calendar event details are serialized as labeled lines in the existing description through the shared event-details parser/formatter, preserving legacy notes and audit history without additional data requests.
 - Event reminders use saved event advance minutes and optional text against cached events, with account/operator-scoped local acknowledgements and a white popup queued after task reminders; no periodic backend requests.

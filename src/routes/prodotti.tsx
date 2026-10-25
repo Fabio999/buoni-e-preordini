@@ -98,7 +98,7 @@ function ProductsPage() {
                 ) : (
                   <Badge variant="neutral" className="mr-1.5 whitespace-nowrap">Non a magazzino</Badge>
                 )}
-                <span className="mr-auto whitespace-nowrap font-display font-semibold sm:mr-2">{euro(p.price)}</span>
+                <span className="mr-auto whitespace-nowrap pr-2 font-display font-semibold sm:mr-2">{euro(p.price)}</span>
                 <Button size="icon" variant="ghost" onClick={() => setSelling(p)} aria-label="Vendi">
                   <ShoppingBag className="h-4 w-4" />
                 </Button>

@@ -10,7 +10,7 @@
 <!-- LOVABLE:END -->
 
 ## Architecture rules
-- The dashboard uses the compact variant of the shared planning summary; task-page summary styling stays independent so dashboard refinements do not alter work queues.
+- Dashboard uses the compact shared planning summary; keep task-page styling independent to avoid changing work queues.
 - Task and Calendar have separate content routes backed by a shared planning page; the calendar accepts events only and Tasks contain only work queues, never event lists.
 - Calendar event details are serialized as labeled lines in the existing description through the shared event-details parser/formatter, preserving legacy notes and audit history without additional data requests.
 - Event reminders use saved event advance minutes and optional text against cached events, with account/operator-scoped local acknowledgements and a white popup queued after task reminders; no periodic backend requests.
@@ -37,8 +37,8 @@
 - Vendite con sconto buono passano dal RPC `register_sale` (un’unica conferma registra vendita + movimento buono; il buono usato è limitato a totale e saldo, mai negativo); il calcolo lato app usa `saleSplit` in src/lib/data.ts.
 - Data access requires staff membership (`staff_members` row or admin role, checked by `is_staff()` in RLS and RPCs); accounts are created only from Amministrazione, which adds the membership, so self-signups see nothing.
 
-- Task AI drafts use an authenticated staff-checked server function, bounded Responses structured output with no retries, shared exact-description templates and account-scoped local similarity suggestions; only explicit generation invokes AI; the legacy checklist column is history-only.
-- Task category, game and location use dedicated columns; ordered workflow stages and a completed-prefix position are independent of the retired checklist, with shared helpers synchronizing progress and existing database status values to preserve transition attribution.
+- Task AI drafts are title/description-only via an authenticated staff-checked function: bounded Responses output, no retries, exact-description templates and account-scoped similarity suggestions; invoke AI only explicitly. Manual checklists reuse existing checklist JSON with defensive legacy parsing.
+- Task category, game and location use dedicated columns; ordered workflow stages and a completed-prefix position are independent of the manual checklist, with shared helpers synchronizing progress and existing database status values to preserve transition attribution.
 - Date and time entry goes through the shared DateTimeField, whose hour/minute selects are always 24-hour: a native time input is locale-dependent and turned typed evening times into morning ones.
 
 - Task category/game selectors allow inline creation persisted locally per account and merge cached task values; games share the event game vocabulary to avoid duplicate requests and storage.

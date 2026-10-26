@@ -1,6 +1,6 @@
 # Roadmap
 
-- [ ] Ripristinare checklist manuali per task, verificare aggiunta/modifica/eliminazione/spunta e persistenza.
+- [x] Ripristinare checklist manuali per task, verificare aggiunta/modifica/eliminazione/spunta e persistenza.
 
 - [x] Alleggerire Dashboard e riepiloghi, distinguere le icone del menu e rifinire il badge operatore; verificare navigazione e impaginazione.
 

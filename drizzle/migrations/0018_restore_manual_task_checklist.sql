@@ -1,0 +1,1 @@
+COMMENT ON COLUMN public.company_tasks.checklist IS 'Manual task checklist: JSON array of id, text and done; independent of workflow stages. Legacy entries are parsed defensively by the application.';

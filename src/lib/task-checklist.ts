@@ -17,3 +17,10 @@ export const saveTaskChecklist = (items: TaskChecklistItem[]) =>
 
 export const toggleTaskChecklist = (items: TaskChecklistItem[], id: string, done: boolean) =>
   items.map(item => item.id === id ? { ...item, done } : item);
+export const DEFAULT_TASK_CHECKLIST = ["Messaggio con carte e totale mandato al cliente", "Controllo carte a magazzino", "Rispondere con totale", "Preparare ordine", "Consegnato"];
+
+/** Append default entries that are not already present (case-insensitive). */
+export function withDefaultChecklist(items: TaskChecklistItem[]): TaskChecklistItem[] {
+  const seen = new Set(items.map(item => item.text.trim().toLowerCase()));
+  return [...items, ...DEFAULT_TASK_CHECKLIST.filter(text => !seen.has(text.toLowerCase())).map(text => ({ id: crypto.randomUUID(), text, done: false }))];
+}

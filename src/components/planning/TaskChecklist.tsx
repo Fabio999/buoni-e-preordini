@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { toggleTaskChecklist, type TaskChecklistItem } from "@/lib/task-checklist";
+import { toggleTaskChecklist, withDefaultChecklist, type TaskChecklistItem } from "@/lib/task-checklist";
 
 export function TaskChecklist({ items, onChange, editing = false, disabled = false }: {
   items: TaskChecklistItem[];
@@ -15,7 +15,7 @@ export function TaskChecklist({ items, onChange, editing = false, disabled = fal
   return <section aria-label="Checklist task" className="min-w-0 space-y-3 border-y py-3">
     <div className="flex flex-wrap items-center justify-between gap-2">
       <h3 className="flex items-center gap-2 text-sm font-semibold"><ListChecks className="size-4 text-info"/>Checklist <span className="font-normal text-muted-foreground">{items.filter(item => item.done).length}/{items.length}</span></h3>
-      {editing && <Button type="button" variant="outline" size="sm" onClick={() => onChange([...items, { id: crypto.randomUUID(), text: "", done: false }])}><Plus className="size-4"/>Aggiungi voce</Button>}
+      {editing && <div className="flex flex-wrap gap-2"><Button type="button" variant="outline" size="sm" onClick={() => onChange(withDefaultChecklist(items))}><ListChecks className="size-4"/>Predefinita</Button><Button type="button" variant="outline" size="sm" onClick={() => onChange([...items, { id: crypto.randomUUID(), text: "", done: false }])}><Plus className="size-4"/>Aggiungi voce</Button></div>}
     </div>
     <ul className="space-y-2">{items.map((item, index) => <li key={item.id} className="flex min-w-0 items-start gap-2">
       <Checkbox className="mt-2.5" aria-label={`Completa voce ${index + 1}`} checked={item.done} disabled={disabled} onCheckedChange={done => onChange(toggleTaskChecklist(items, item.id, done === true))}/>

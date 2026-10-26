@@ -17,3 +17,11 @@ describe("Checklist manuale per task", () => {
     expect(taskChecklist({})).toEqual([]);
   });
 });
+import { withDefaultChecklist as wdc } from "@/lib/task-checklist";
+describe("checklist predefinita", () => {
+  it("aggiunge le 5 voci senza duplicare quelle presenti", () => {
+    const out = wdc([{ id: "a", text: "Preparare ordine", done: true }]);
+    expect(out).toHaveLength(5);
+    expect(out[0]?.done).toBe(true);
+  });
+});

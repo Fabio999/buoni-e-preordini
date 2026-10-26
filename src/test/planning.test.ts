@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { isOverdue, confirmAlternative, alternativesOf, overlaps, toInstant, wallTime, upcomingEvents } from "@/lib/planning";
+import { isOverdue, confirmAlternative, alternativesOf, overlaps, toInstant, wallTime, upcomingEvents, archivedEvents, eventsByMonth, dayLabel } from "@/lib/planning";
 
 describe("task e calendario", () => {
   it("gli eventi in programma includono quelli in corso, escludono passati e archiviati e sono ordinati per inizio", () => {
@@ -10,6 +10,38 @@ describe("task e calendario", () => {
       {id:"in-corso",archived:false,starts_at:"2026-10-23T18:00:00Z",ends_at:"2026-10-24T00:30:00Z"},
     ];
     expect(upcomingEvents(events,new Date("2026-10-23T21:53:00Z")).map(e => e.id)).toEqual(["in-corso","futuro"]);
+  });
+  it("in archivio finiscono gli eventi terminati e quelli archiviati a mano, dal più recente", () => {
+    const events = [
+      {id:"vecchio",archived:false,starts_at:"2026-10-20T18:00:00Z",ends_at:"2026-10-20T22:00:00Z"},
+      {id:"futuro-archiviato",archived:true,starts_at:"2026-10-25T18:00:00Z",ends_at:"2026-10-25T22:00:00Z"},
+      {id:"in-corso",archived:false,starts_at:"2026-10-23T18:00:00Z",ends_at:"2026-10-24T00:30:00Z"},
+      {id:"appena-finito",archived:false,starts_at:"2026-10-23T17:00:00Z",ends_at:"2026-10-23T21:53:00Z"},
+    ];
+    const now = new Date("2026-10-23T21:53:00.001Z");
+    expect(archivedEvents(events,now).map(e => e.id)).toEqual(["futuro-archiviato","appena-finito","vecchio"]);
+    const all = [...upcomingEvents(events,now), ...archivedEvents(events,now)].map(e => e.id).sort();
+    expect(all).toEqual(events.map(e => e.id).sort());
+  });
+  it("i prossimi eventi sono divisi per mese secondo l'ora italiana", () => {
+    const events = [
+      {id:"ottobre",starts_at:"2026-10-30T19:00:00Z"},
+      {id:"notte-di-halloween",starts_at:"2026-10-31T23:30:00Z"},
+      {id:"novembre",starts_at:"2026-11-02T19:15:00Z"},
+      {id:"gennaio",starts_at:"2027-01-05T19:00:00Z"},
+    ];
+    expect(eventsByMonth(events).map(g => [g.label, g.events.map(e => e.id)])).toEqual([
+      ["Ottobre 2026", ["ottobre"]],
+      ["Novembre 2026", ["notte-di-halloween","novembre"]],
+      ["Gennaio 2027", ["gennaio"]],
+    ]);
+  });
+  it("le date vicine diventano Oggi e Domani secondo l'ora italiana, anche al cambio d'ora", () => {
+    const now = new Date("2026-10-24T22:30:00Z");
+    expect(dayLabel("2026-10-25T08:00:00Z", now)).toBe("Oggi");
+    expect(dayLabel("2026-10-25T23:30:00Z", now)).toBe("Domani");
+    expect(dayLabel("2026-10-24T21:00:00Z", now)).toBe("Sab 24 ott");
+    expect(dayLabel("2026-10-28T19:30:00Z", now)).toBe("Mer 28 ott");
   });
   it("una scadenza superata resta aperta, non completa la task", () => {
     const task = {status:"in_corso",archived:false,due_at:"2026-10-20T08:00:00Z"};

@@ -32,27 +32,27 @@ export function TaskAssistant({ open, onOpenChange, onDraft }: { open: boolean; 
     return () => { active = false; };
   }, [open, session, tasks]);
   const suggestions = similarTemplates(description, templates);
-  function useTemplate(template: TaskTemplate) {
+  function applyTemplate(template: TaskTemplate) {
     onOpenChange(false);
     onDraft({ ...template.draft, source_description: description.trim() || template.source_description });
   }
   async function prepare() {
     if (busy || !session) return;
     const exact = suggestions.find(s => s.exact);
-    if (exact) { useTemplate(exact.template); return; }
+    if (exact) { applyTemplate(exact.template); return; }
     setBusy(true); setError("");
     try {
       const result = await generate({ data: { description } });
       if (result.error || !result.draft) { setError(result.error ?? "Proposta non disponibile."); return; }
       const template = { source_description: description.trim(), draft: result.draft };
       setTemplates(rememberTemplates(session.user.id, [...templates, template]));
-      useTemplate(template);
+      applyTemplate(template);
     } catch { setError("Non è possibile contattare AI Gateway. La descrizione resta qui; puoi creare la task manualmente."); }
     finally { setBusy(false); }
   }
   return <Dialog open={open} onOpenChange={value => { if (!busy) onOpenChange(value); }}><DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-xl"><DialogHeader><DialogTitle>Descrivi una nuova attività</DialogTitle><DialogDescription>Nuova proposta: usa crediti AI Gateway. Riuso di un lavoro salvato: nessun credito AI.</DialogDescription></DialogHeader>
     <Textarea aria-label="Lavoro da organizzare" placeholder="Descrivi il lavoro da svolgere…" rows={5} maxLength={2000} disabled={busy} value={description} onChange={e => { setDescription(e.target.value); setError(""); }}/>
-    {!!suggestions.length && <section className="space-y-2"><h3 className="text-sm font-semibold">{description ? "Lavori simili salvati" : "Lavori salvati"}</h3><ul className="divide-y">{suggestions.map(({ template, exact }, i) => <li className="flex items-start justify-between gap-3 py-3" key={i}><div className="min-w-0"><strong className="block break-words text-sm">{template.draft.title}</strong><p className="line-clamp-2 break-words text-xs text-muted-foreground">{template.source_description}</p>{exact && <span className="text-xs text-success">Stessa descrizione</span>}</div><Button disabled={busy} variant="outline" size="sm" onClick={() => useTemplate(template)}><Copy className="size-4"/>Riusa</Button></li>)}</ul></section>}
+    {!!suggestions.length && <section className="space-y-2"><h3 className="text-sm font-semibold">{description ? "Lavori simili salvati" : "Lavori salvati"}</h3><ul className="divide-y">{suggestions.map(({ template, exact }, i) => <li className="flex items-start justify-between gap-3 py-3" key={i}><div className="min-w-0"><strong className="block break-words text-sm">{template.draft.title}</strong><p className="line-clamp-2 break-words text-xs text-muted-foreground">{template.source_description}</p>{exact && <span className="text-xs text-success">Stessa descrizione</span>}</div><Button disabled={busy} variant="outline" size="sm" onClick={() => applyTemplate(template)}><Copy className="size-4"/>Riusa</Button></li>)}</ul></section>}
     {error && <p role="alert" className="break-words text-sm text-destructive">{error}</p>}
     <div className="flex flex-wrap justify-end gap-2"><Button variant="outline" disabled={busy} onClick={() => { onOpenChange(false); onDraft({ title: "", description, source_description: description }); }}>Crea manualmente</Button><Button disabled={busy || description.trim().length < 8} onClick={prepare}>{busy ? <LoaderCircle className="size-4 animate-spin"/> : <Sparkles className="size-4"/>}{busy ? "Preparazione…" : suggestions.some(s => s.exact) ? "Riusa proposta" : "Genera proposta"}</Button></div>
   </DialogContent></Dialog>;

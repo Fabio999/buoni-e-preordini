@@ -139,6 +139,31 @@ export function balancesByClient(movements: Movement[] | undefined) {
   return map;
 }
 
+/**
+ * Clients have no updated_at column: the last change is the latest of the client creation,
+ * its balance movements and its bookings.
+ */
+export function lastActivityByClient(
+  clients: Pick<Client, "id" | "created_at">[],
+  ...related: Pick<Movement, "client_id" | "created_at">[][]
+) {
+  const map = new Map(clients.map((c) => [c.id, c.created_at]));
+  for (const rows of related)
+    for (const r of rows) {
+      const cur = map.get(r.client_id);
+      if (cur && new Date(r.created_at) > new Date(cur)) map.set(r.client_id, r.created_at);
+    }
+  return map;
+}
+
+export type ActivityRange = "" | "7" | "30" | "90" | "oltre90";
+
+export function activityInRange(iso: string, range: ActivityRange, now = new Date()) {
+  if (!range) return true;
+  const days = (now.getTime() - new Date(iso).getTime()) / 86_400_000;
+  return range === "oltre90" ? days > 90 : days <= Number(range);
+}
+
 export function errMsg(e: unknown) {
   const msg = e instanceof Error ? e.message :
     typeof e === "object" && e !== null && "message" in e ? String(e.message) : String(e);

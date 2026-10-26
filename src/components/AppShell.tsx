@@ -9,7 +9,6 @@ import {
   ShieldCheck,
   Ticket,
   Users,
-  Wallet,
 } from "lucide-react";
 import type { ReactNode } from "react";
 import {
@@ -38,8 +37,7 @@ const items = [
   { title: "Task", url: "/task-calendario", icon: ClipboardList },
   { title: "Calendario", url: "/calendario", icon: CalendarDays },
   { title: "Prenotazioni", url: "/prenotazioni", icon: Ticket },
-  { title: "Clienti", url: "/clienti", icon: Users },
-  { title: "Saldo Negozio", url: "/saldo", icon: Wallet },
+  { title: "Clienti e buoni", url: "/clienti", icon: Users },
   { title: "Prodotti", url: "/prodotti", icon: Package },
 ] as const;
 

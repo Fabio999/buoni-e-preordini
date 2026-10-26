@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState, type FormEvent } from "react";
-import { Pencil, Plus, Trash2, Users } from "lucide-react";
+import { Download, Pencil, Plus, Trash2, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/AppShell";
@@ -12,8 +12,11 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { createAccount, deleteAccount, listAccounts, updateAccount } from "@/lib/admin.functions";
-import { useIsAdmin } from "@/lib/data";
+import { clientsExportRows, downloadCsv, toCsv } from "@/lib/csv";
+import { balancesByClient, useBookings, useClients, useIsAdmin, useMovements } from "@/lib/data";
 import { fmtDateTime } from "@/lib/format";
+import { ZONE } from "@/lib/planning";
+import { formatInTimeZone } from "date-fns-tz";
 
 export const Route = createFileRoute("/amministrazione")({
   head: () => ({
@@ -99,9 +102,37 @@ function Accounts() {
           ))}
         </ul>
       </div>
+      <ClientsExport />
       {names && <NamesDialog account={names} onClose={() => setNames(null)} />}
       {editing && <AccountDialog account={editing === "new" ? null : editing} onClose={() => setEditing(null)} />}
     </div>
+  );
+}
+
+function ClientsExport() {
+  const { data: clients = [], isLoading: loadingClients } = useClients();
+  const { data: movements = [], isLoading: loadingMovements } = useMovements();
+  const { data: bookings = [], isLoading: loadingBookings } = useBookings();
+  const loading = loadingClients || loadingMovements || loadingBookings;
+
+  function exportClients() {
+    const rows = clientsExportRows(clients, balancesByClient(movements), bookings);
+    const today = formatInTimeZone(new Date(), ZONE, "yyyy-MM-dd");
+    downloadCsv(`clienti-mana-flask-${today}.csv`, toCsv(rows));
+    toast.success(`Esportati ${rows.length - 1} clienti`);
+  }
+
+  return (
+    <section className="mt-6 rounded-xl border bg-card p-4">
+      <h2 className="font-semibold">Esporta dati</h2>
+      <p className="mt-1 text-sm text-muted-foreground">
+        File CSV con cognome, nome, saldo buono, numero di prenotazioni attive ed eventi prenotati
+        di ogni cliente. Si apre con Excel.
+      </p>
+      <Button className="mt-3" variant="outline" disabled={loading} onClick={exportClients}>
+        <Download className="h-4 w-4" /> Esporta clienti (CSV)
+      </Button>
+    </section>
   );
 }
 

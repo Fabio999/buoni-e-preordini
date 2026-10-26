@@ -1,13 +1,14 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowUpRight, CalendarDays, MapPin } from "lucide-react";
-import { useMemo } from "react";
+import { formatInTimeZone } from "date-fns-tz";
+import { it } from "date-fns/locale";
+import { useMemo, type ReactNode } from "react";
 import { PageHeader } from "@/components/AppShell";
-import { SectionLabel } from "@/components/Status";
+import { EventDot } from "@/components/planning/EventDot";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { useBookings, useEvents } from "@/lib/data";
+import { useBookings, useCalendarEntries, useEvents, useTasks } from "@/lib/data";
 import { EVENT_STATUS, fmtDate } from "@/lib/format";
-import { PlanningSummary } from "@/components/planning/PlanningSummary";
+import { dayLabel, taskStats, upcomingEvents, ZONE } from "@/lib/planning";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/")({
@@ -18,24 +19,74 @@ export const Route = createFileRoute("/")({
       { title: "Dashboard — Mana Flask" },
       {
         name: "description",
-        content: "Panoramica di eventi, prenotazioni e saldo negozio di Mana Flask.",
+        content: "Panoramica di prossimi eventi, prenotazioni e task di Mana Flask.",
       },
       { property: "og:title", content: "Dashboard — Mana Flask" },
       {
         property: "og:description",
-        content: "Panoramica di eventi, prenotazioni e saldo negozio di Mana Flask.",
+        content: "Panoramica di prossimi eventi, prenotazioni e task di Mana Flask.",
       },
     ],
   }),
   component: Dashboard,
 });
 
+function Panel({
+  title,
+  link,
+  children,
+  className,
+}: {
+  title: string;
+  link: { to: "/eventi" | "/prenotazioni" | "/task-calendario"; label: string };
+  children: ReactNode;
+  className?: string;
+}) {
+  return (
+    <section className={cn("rounded-xl border bg-card shadow-sm", className)}>
+      <div className="flex items-center justify-between gap-2 border-b px-4 py-3">
+        <h2 className="font-display text-base font-semibold">{title}</h2>
+        <Link
+          to={link.to}
+          className="flex items-center gap-1 text-sm font-medium text-primary hover:underline"
+        >
+          {link.label} <ArrowUpRight className="h-4 w-4" />
+        </Link>
+      </div>
+      {children}
+    </section>
+  );
+}
+
+function Counter({ label, value, alert }: { label: string; value: number; alert?: boolean }) {
+  const active = alert && value > 0;
+  return (
+    <div className={cn("rounded-lg px-3 py-3", active ? "bg-destructive/10" : "bg-muted/50")}>
+      <p
+        className={cn(
+          "font-display text-3xl font-semibold leading-none tabular-nums",
+          active ? "text-destructive" : "text-foreground",
+        )}
+      >
+        {value}
+      </p>
+      <p className="mt-1.5 text-sm text-muted-foreground">{label}</p>
+    </div>
+  );
+}
+
 function Dashboard() {
   const { data: events = [] } = useEvents();
   const { data: bookings = [] } = useBookings();
+  const { data: entries = [], isLoading: loadingEntries } = useCalendarEntries();
+  const { data: tasks = [] } = useTasks();
+  const now = new Date();
+  const todayLabel = formatInTimeZone(now, ZONE, "EEEE d MMMM yyyy", { locale: it });
+  const nextEntries = upcomingEvents(entries, now).slice(0, 6);
+  const t = taskStats(tasks, now);
 
   const stats = useMemo(() => {
-    const today = new Date().toISOString().slice(0, 10);
+    const today = formatInTimeZone(new Date(), ZONE, "yyyy-MM-dd");
     const next = [...events]
       .filter((e) => e.event_date >= today && e.status !== "concluso")
       .sort((a, b) => a.event_date.localeCompare(b.event_date))[0];
@@ -44,81 +95,110 @@ function Dashboard() {
       next,
       nextCount: next ? active.filter((b) => b.event_id === next.id).length : 0,
       total: active.length,
+      toDeliver: active.filter((b) => b.status !== "consegnata").length,
       unpaid: active.filter((b) => b.payment_status === "non_pagato").length,
-      delivered: active.filter((b) => b.status === "consegnata").length,
     };
   }, [events, bookings]);
 
-  const bookingStats = [
-    { label: "Totali", value: stats.total, dot: "bg-info" },
-    { label: "Consegnate", value: stats.delivered, dot: "bg-primary" },
-    { label: "Non pagate", value: stats.unpaid, dot: "bg-destructive" },
-  ];
-
   return (
-    <div className="mx-auto max-w-7xl">
-      <PageHeader title="Dashboard" />
-      <PlanningSummary compact />
+    <div className="mx-auto max-w-5xl space-y-5">
+      <PageHeader
+        title="Dashboard"
+        subtitle={todayLabel.charAt(0).toUpperCase() + todayLabel.slice(1)}
+      />
 
-      <SectionLabel>Prossimo evento</SectionLabel>
-      {stats.next ? (
+      <Panel title="Prossimi appuntamenti" link={{ to: "/eventi", label: "Tutti gli eventi" }}>
+        {loadingEntries ? (
+          <p className="px-4 py-6 text-sm text-muted-foreground">Caricamento…</p>
+        ) : nextEntries.length ? (
+          <ul className="divide-y">
+            {nextEntries.map((e) => {
+              const day = dayLabel(e.starts_at, now);
+              return (
+                <li key={e.id} className="flex items-center gap-4 px-4 py-3">
+                  <div className="w-20 shrink-0 text-center">
+                    <p
+                      className={cn(
+                        "text-xs font-semibold uppercase tracking-wide",
+                        day === "Oggi" ? "text-primary" : "text-muted-foreground",
+                      )}
+                    >
+                      {day}
+                    </p>
+                    <p className="font-display text-lg font-semibold tabular-nums">
+                      {formatInTimeZone(e.starts_at, ZONE, "HH:mm")}
+                    </p>
+                  </div>
+                  <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-2 gap-y-1">
+                    <EventDot color={e.color} recurring={!!e.recurrence_series} />
+                    <span className="font-medium">{e.title}</span>
+                    {e.game && <span className="text-sm text-muted-foreground">{e.game}</span>}
+                    {!e.confirmed && <Badge variant="outline">Da programmare</Badge>}
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        ) : (
+          <p className="px-4 py-6 text-sm text-muted-foreground">
+            Nessun appuntamento in programma.
+          </p>
+        )}
+      </Panel>
+
+      <div className="grid gap-5 md:grid-cols-2">
+        <Panel title="Prenotazioni" link={{ to: "/prenotazioni", label: "Apri" }}>
+          <div className="grid grid-cols-2 gap-3 p-4">
+            <Counter label="Da consegnare" value={stats.toDeliver} alert />
+            <Counter label="Non pagate" value={stats.unpaid} alert />
+          </div>
+          <p className="px-4 pb-4 text-sm text-muted-foreground">
+            {stats.total} prenotazioni attive in totale
+          </p>
+        </Panel>
+
+        <Panel title="Task" link={{ to: "/task-calendario", label: "Apri" }}>
+          <div className="grid grid-cols-3 gap-3 p-4">
+            <Counter label="Aperte" value={t.todo} />
+            <Counter label="In corso" value={t.progress} />
+            <Counter label="Completate" value={t.done} />
+          </div>
+        </Panel>
+      </div>
+
+      {stats.next && (
         <Link
           to="/eventi/$id"
           params={{ id: stats.next.id }}
-          className="group block border-y py-5 transition-colors hover:bg-accent/40"
+          className="group flex flex-wrap items-center justify-between gap-4 rounded-xl border bg-card px-4 py-4 shadow-sm transition hover:border-primary"
         >
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div className="flex min-w-0 flex-1 items-start gap-4">
-              <span className="grid size-12 shrink-0 place-items-center rounded-lg bg-info/10 text-info"><CalendarDays className="size-6" /></span>
-              <div className="min-w-0">
-              <Badge variant="default">{EVENT_STATUS[stats.next.status].label}</Badge>
-              <h3 className="mt-2 break-words text-xl font-semibold">{stats.next.name}</h3>
-              <div className="mt-2 flex flex-wrap gap-x-4 gap-y-2 text-sm text-muted-foreground">
-                <span className="flex items-center gap-1.5">
-                  <CalendarDays className="h-4 w-4" />
-                  {fmtDate(stats.next.event_date)}
-                </span>
+          <div className="flex min-w-0 items-center gap-3">
+            <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-info/10 text-info">
+              <CalendarDays className="size-5" />
+            </span>
+            <div className="min-w-0">
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                Prossimo evento con prenotazioni
+              </p>
+              <p className="font-semibold">{stats.next.name}</p>
+              <p className="flex flex-wrap gap-x-3 text-sm text-muted-foreground">
+                <span>{fmtDate(stats.next.event_date)}</span>
                 {stats.next.location && (
-                  <span className="flex min-w-0 items-center gap-1.5">
-                    <MapPin className="h-4 w-4 shrink-0" />
-                    <span className="break-words">{stats.next.location}</span>
+                  <span className="flex items-center gap-1">
+                    <MapPin className="h-3.5 w-3.5" />
+                    {stats.next.location}
                   </span>
                 )}
-              </div>
-              </div>
+                <span>{EVENT_STATUS[stats.next.status].label}</span>
+              </p>
             </div>
-            <div className="flex shrink-0 items-center gap-4">
-              <div className="text-right">
-              <div className="font-display text-2xl font-semibold">
-                {stats.nextCount}
-              </div>
-              <div className="text-xs text-muted-foreground">prenotazioni</div>
-              </div>
-              <ArrowUpRight className="size-5 text-muted-foreground transition-colors group-hover:text-primary" />
-            </div>
+          </div>
+          <div className="text-right">
+            <p className="font-display text-2xl font-semibold">{stats.nextCount}</p>
+            <p className="text-xs text-muted-foreground">prenotazioni</p>
           </div>
         </Link>
-      ) : (
-        <div className="flex flex-wrap items-center justify-between gap-3 border-y py-5 text-sm text-muted-foreground">
-          Nessun evento in programma.{" "}
-          <Button asChild variant="ghost" size="sm"><Link to="/eventi">Eventi <ArrowUpRight /></Link></Button>
-        </div>
       )}
-
-      <SectionLabel>Prenotazioni</SectionLabel>
-      <div className="grid grid-cols-3 divide-x divide-border rounded-lg border bg-card">
-        {bookingStats.map((s) => (
-          <div key={s.label} className="min-w-0 px-3 py-3 transition-colors hover:bg-muted/50 sm:px-5">
-            <p className="flex items-center gap-2 text-[11px] font-medium text-muted-foreground">
-              <span className={cn("size-1.5 shrink-0 rounded-full", s.dot)} />
-              <span className="break-words">{s.label}</span>
-            </p>
-            <p className="mt-1 font-display text-lg font-semibold leading-tight tabular-nums">
-              {s.value}
-            </p>
-          </div>
-        ))}
-      </div>
     </div>
   );
 }

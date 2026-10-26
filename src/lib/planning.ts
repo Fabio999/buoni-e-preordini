@@ -1,4 +1,5 @@
 import { formatInTimeZone, fromZonedTime } from "date-fns-tz";
+import { it } from "date-fns/locale";
 import type { Tables } from "@/integrations/supabase/types";
 
 export type Task = Tables<"company_tasks">;
@@ -23,6 +24,28 @@ export function confirmAlternative(entry: Pick<CalendarEntry, "starts_at" | "end
 export const overlaps = (a: Pick<CalendarEntry, "starts_at" | "ends_at">, b: Pick<CalendarEntry, "starts_at" | "ends_at">) => new Date(a.starts_at) < new Date(b.ends_at) && new Date(b.starts_at) < new Date(a.ends_at);
 export function upcomingEvents<T extends Pick<CalendarEntry, "archived" | "starts_at" | "ends_at">>(events: T[], now = new Date()): T[] {
   return events.filter(e => !e.archived && new Date(e.ends_at) >= now).sort((a,b) => new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime());
+}
+export function archivedEvents<T extends Pick<CalendarEntry, "archived" | "starts_at" | "ends_at">>(events: T[], now = new Date()): T[] {
+  return events.filter(e => e.archived || new Date(e.ends_at) < now).sort((a,b) => new Date(b.starts_at).getTime() - new Date(a.starts_at).getTime());
+}
+export function dayLabel(iso: string, now = new Date(), zone = ZONE) {
+  const day = formatInTimeZone(iso, zone, "yyyy-MM-dd");
+  const today = formatInTimeZone(now, zone, "yyyy-MM-dd");
+  const tomorrow = formatInTimeZone(fromZonedTime(`${today}T12:00`, zone).getTime() + 86_400_000, zone, "yyyy-MM-dd");
+  if (day === today) return "Oggi";
+  if (day === tomorrow) return "Domani";
+  const label = formatInTimeZone(iso, zone, "EEE d MMM", { locale: it });
+  return label.charAt(0).toUpperCase() + label.slice(1);
+}
+export function eventsByMonth<T extends Pick<CalendarEntry, "starts_at">>(events: T[], zone = ZONE) {
+  const groups: { month: string; label: string; events: T[] }[] = [];
+  for (const e of events) {
+    const month = formatInTimeZone(e.starts_at, zone, "yyyy-MM");
+    const last = groups[groups.length - 1];
+    if (last?.month === month) last.events.push(e);
+    else { const label = formatInTimeZone(e.starts_at, zone, "LLLL yyyy", { locale: it }); groups.push({ month, label: label.charAt(0).toUpperCase() + label.slice(1), events: [e] }); }
+  }
+  return groups;
 }
 export function taskStats(tasks: Task[], now = new Date()) {
   const active = tasks.filter(t => !t.archived);

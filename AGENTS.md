@@ -10,11 +10,12 @@
 <!-- LOVABLE:END -->
 
 ## Architecture rules
-- Dashboard uses the compact shared planning summary; keep task-page styling independent to avoid changing work queues.
+- Dashboard builds its own panels (next calendar entries via upcomingEvents/dayLabel, booking and task counters) and shows no voucher data; PlanningSummary stays for the task page, so its styling is independent of the Dashboard.
 - Task and Calendar have separate content routes backed by a shared planning page; the calendar accepts events only and Tasks contain only work queues, never event lists.
 - Calendar event details are serialized as labeled lines in the existing description through the shared event-details parser/formatter, preserving legacy notes and audit history without additional data requests.
 - Event reminders use saved event advance minutes and optional text against cached events, with account/operator-scoped local acknowledgements and a white popup queued after task reminders; no periodic backend requests.
 - Calendar appointment filters compare start date/time in Europe/Rome.
+- The Eventi page lists calendar entries chronologically via upcomingEvents and archives them automatically by derivation (archivedEvents: ended or manually archived), without writing to the database; booking events from the events table stay in their own section.
 - Recurring events are inserted atomically as a finite series of individually editable occurrences; date-fns shifts wall dates before IANA-zone conversion to retain local start/end hours through DST.
 - Weekly recurrence aligns wall dates to the chosen weekday; EventDot-only calendar buttons show hover details. Editing defaults to one occurrence; optional following-series rescheduling and automatic following-series color propagation use cached members and one batch upsert preserving IDs, history and sibling dates/details. The database color constraint must accept every EVENT_COLORS value so all offered colors can be saved.
 - Event games are stored on events and remembered locally per account; suggestions merge remembered games with cached event/product games without additional requests.
@@ -28,9 +29,12 @@
 - Uploaded company logos are referenced through CDN asset pointers; the favicon is a small local raster derived from the same brand asset to support browser icon loading.
 - All editable client selectors use the shared ClientSelect with inline creation and automatic selection, keeping booking and balance workflows consistent.
 - Editable event and product selectors use shared controls with inline creation; creation dialogs refresh queries before selecting saved entities and stop nested submit propagation to preserve parent drafts.
+- Clients and shop vouchers share one page (/clienti, "Clienti e buoni") with tabs clienti/buoni/movimenti in the `tab` search param; voucher stats and the active-balance table live in src/components/BalancePanel.tsx, and /saldo only redirects to /clienti?tab=buoni so old links keep working.
+- A client's "ultima modifica" is derived (lastActivityByClient in src/lib/data.ts: latest of client creation, balance movements and bookings) because clients have no updated_at; filtering and sorting by it need no extra requests.
 - Text search in lists goes through the shared matcher in src/lib/search.ts (case- and accent-insensitive, every word of the query must match, reversed name order accepted) so every section searches the same way.
 - Product stock is adjusted only by DB triggers on booking_items and purchases (keeps quantities consistent with edits/deletes).
 - Stock changes are logged to stock_movements by triggers (log_stock for bookings/purchases, products trigger for manual edits); the table is read-only for the app.
+- The admin client CSV export is built in the browser from cached queries (src/lib/csv.ts: semicolon separator, decimal comma, UTF-8 BOM for Italian Excel; cancelled bookings excluded), with no extra requests or server function.
 - Admin = `admin` row in user_roles checked with has_role; account management goes through server functions in src/lib/admin.functions.ts that verify the role before using the admin client (keeps passwords/users server-side).
 - The working operator's name is stored per signed-in user in operator_sessions and stamped by the `operator_name` column default (current_operator()) on bookings, purchases, balance and stock movements, so no RPC needs an extra parameter.
 - Buoni offline: ricariche/acquisti salvati sul dispositivo e inviati al ritorno della rete (src/lib/offline.tsx); dati letti raramente (staleTime 5 min, niente polling) per ridurre l'uso del backend.

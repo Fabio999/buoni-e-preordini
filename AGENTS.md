@@ -10,39 +10,22 @@
 <!-- LOVABLE:END -->
 
 ## Architecture rules
-- Dashboard builds its own panels (next calendar entries via upcomingEvents/dayLabel, booking and task counters) and shows no voucher data; PlanningSummary stays for the task page, so its styling is independent of the Dashboard.
-- Task and Calendar have separate content routes backed by a shared planning page; the calendar accepts events only and Tasks contain only work queues, never event lists.
-- Calendar event details are serialized as labeled lines in the existing description through the shared event-details parser/formatter, preserving legacy notes and audit history without additional data requests.
-- Event reminders use saved event advance minutes and optional text against cached events, with account/operator-scoped local acknowledgements and a white popup queued after task reminders; no periodic backend requests.
-- Calendar appointment filters compare start date/time in Europe/Rome.
-- The Eventi page lists calendar entries chronologically via upcomingEvents and archives them automatically by derivation (archivedEvents: ended or manually archived), without writing to the database; booking events from the events table stay in their own section.
-- Recurring events are inserted atomically as a finite series of individually editable occurrences; date-fns shifts wall dates before IANA-zone conversion to retain local start/end hours through DST.
-- Weekly recurrence aligns wall dates to the chosen weekday; EventDot-only calendar buttons show hover details. Editing defaults to one occurrence; optional following-series rescheduling and automatic following-series color propagation use cached members and one batch upsert preserving IDs, history and sibling dates/details. The database color constraint must accept every EVENT_COLORS value so all offered colors can be saved.
-- Event games are stored on events and remembered locally per account; suggestions merge remembered games with cached event/product games without additional requests.
-- Task reminders use cached tasks and account/operator/task/deadline/phase acknowledgements, without polling. Assignees use deduplicated newline-separated responsible text via task-people, preserving legacy names and per-person reminders.
-- Company planning uses separate task/calendar tables and immutable trigger-written audit rows; all transitions are attributed by the database operator session, and date alternatives are retained when confirming a final date.
-- Planning timestamps are stored as UTC instants, edited via explicit IANA zones with date-fns-tz, and shown in Europe/Rome in the shared calendar to keep cross-zone scheduling consistent.
-- Shop balance is a ledger: only change it via DB functions (`add_balance_movement`, `register_purchase`, `update_balance_movement`, `delete_balance_movement`, which recompute later balances); never write balances directly (keeps history consistent, prevents negatives).
-- Data is read/written from the browser client with RLS (any signed-in staff user has full access); the root route renders the login screen until a session exists, so no route loaders fetch data.
-- Booking totals are derived from booking_items (quantity × unit_price), never stored, to avoid duplication.
-- Shared data hooks live in src/lib/data.ts; mutations call `useRefresh()` to invalidate all queries for simplicity.
-- Uploaded company logos are referenced through CDN asset pointers; the favicon is a small local raster derived from the same brand asset to support browser icon loading.
-- All editable client selectors use the shared ClientSelect with inline creation and automatic selection, keeping booking and balance workflows consistent.
-- Editable event and product selectors use shared controls with inline creation; creation dialogs refresh queries before selecting saved entities and stop nested submit propagation to preserve parent drafts.
-- Clients and shop vouchers share one page (/clienti, "Clienti e buoni") with tabs clienti/buoni/movimenti in the `tab` search param; voucher stats and the active-balance table live in src/components/BalancePanel.tsx, and /saldo only redirects to /clienti?tab=buoni so old links keep working.
-- A client's "ultima modifica" is derived (lastActivityByClient in src/lib/data.ts: latest of client creation, balance movements and bookings) because clients have no updated_at; filtering and sorting by it need no extra requests.
-- Text search in lists goes through the shared matcher in src/lib/search.ts (case- and accent-insensitive, every word of the query must match, reversed name order accepted) so every section searches the same way.
-- Product stock is adjusted only by DB triggers on booking_items and purchases (keeps quantities consistent with edits/deletes).
-- Stock changes are logged to stock_movements by triggers (log_stock for bookings/purchases, products trigger for manual edits); the table is read-only for the app.
-- The admin client CSV export is built in the browser from cached queries (src/lib/csv.ts: semicolon separator, decimal comma, UTF-8 BOM for Italian Excel; cancelled bookings excluded), with no extra requests or server function.
-- Admin = `admin` row in user_roles checked with has_role; account management goes through server functions in src/lib/admin.functions.ts that verify the role before using the admin client (keeps passwords/users server-side).
-- The working operator's name is stored per signed-in user in operator_sessions and stamped by the `operator_name` column default (current_operator()) on bookings, purchases, balance and stock movements, so no RPC needs an extra parameter.
-- Buoni offline: ricariche/acquisti salvati sul dispositivo e inviati al ritorno della rete (src/lib/offline.tsx); dati letti raramente (staleTime 5 min, niente polling) per ridurre l'uso del backend.
-- Vendite con sconto buono passano dal RPC `register_sale` (un’unica conferma registra vendita + movimento buono; il buono usato è limitato a totale e saldo, mai negativo); il calcolo lato app usa `saleSplit` in src/lib/data.ts.
-- Data access requires staff membership (`staff_members` row or admin role, checked by `is_staff()` in RLS and RPCs); accounts are created only from Amministrazione, which adds the membership, so self-signups see nothing.
-
-- Task AI drafts are title/description-only via an authenticated staff-checked function: bounded Responses output, no retries, exact-description templates and account-scoped similarity suggestions; invoke AI only explicitly. Manual checklists reuse existing checklist JSON with defensive legacy parsing.
-- Task category, game and location use dedicated columns; ordered workflow stages and a completed-prefix position are independent of the manual checklist, with shared helpers synchronizing progress and existing database status values to preserve transition attribution.
-- Date and time entry goes through the shared DateTimeField, whose hour/minute selects are always 24-hour: a native time input is locale-dependent and turned typed evening times into morning ones.
-
-- Task category/game selectors allow inline creation persisted locally per account and merge cached task values; games share the event game vocabulary to avoid duplicate requests and storage.
+- Shared browser data hooks use RLS-protected staff access and useRefresh() after mutations; the root login gate prevents signed-out reads, so content routes have no data loaders. Accounts are created by admin functions after server-side role verification; roles stay in user_roles, memberships in staff_members.
+- Dashboard owns its panels and excludes voucher data. Task and Calendar have separate routes sharing PlanningPage: task queues contain no event lists and calendars contain no tasks.
+- Calendar details use the shared labeled-description parser/formatter, preserving legacy notes and alternatives. Timestamps are UTC instants, edited in explicit IANA zones and displayed in Europe/Rome through DateTimeField's 24-hour selects.
+- Recurrences are finite atomic inserts with individually editable occurrences. Wall-date shifts retain local times across DST; weekly dates align to the chosen weekday. Editing defaults to one occurrence, optionally reschedules following cached members, and propagates color to following members in one batch upsert. All EVENT_COLORS must satisfy database constraints.
+- Calendar-dialog deletion delegates to PlanningPage's existing single-entry confirmation/delete, preserving other occurrences, audit history and shared refresh behavior.
+- Calendar filters compare Europe/Rome start times. Eventi derives chronological upcoming and archived calendar lists without database writes; booking events remain separate. EventDot-only recurring buttons expose hover details and click editing.
+- Event and task reminders use cached rows and account/operator-scoped local acknowledgements, without backend polling; white event popups queue after task reminders. Task responsible text uses deduplicated newline-separated names through task-people.
+- Company planning uses separate task/calendar tables with immutable trigger-written audit rows, attributed through the database operator session. Confirming dates preserves alternatives.
+- Tasks have dedicated category/game/location columns. Workflow stages and completed-prefix position are independent of manually editable checklist JSON; shared helpers preserve status transitions and defensively parse legacy checklist data.
+- Task category/game inline creation persists locally per account and merges cached values; games share the event vocabulary without additional requests. Event game suggestions merge cached event/product games with local account memory.
+- Task AI is explicit-only through authenticated staff-checked functions: title/description drafts, bounded output, no retries, exact-description templates and account-scoped similarity reuse.
+- Shop balances change only through ledger RPCs (add_balance_movement, register_purchase, update_balance_movement, delete_balance_movement), which recompute later balances and prevent negatives. register_sale atomically records a sale and voucher deduction bounded by total and balance; saleSplit supplies the browser calculation.
+- Voucher operations are queued locally in src/lib/offline.tsx and sent when online; cached reads have five-minute staleTime and no polling. Booking totals derive from booking_items quantity × unit_price, not duplicated stored totals.
+- Product stock is changed only by booking_items/purchases triggers; stock_movements is app-read-only and records triggered booking/purchase/manual-product changes.
+- ClientSelect and shared event/product selectors support inline creation, refresh before selecting saved entities and stop nested submit propagation to preserve drafts.
+- Client/voucher/movement views share /clienti through the tab search parameter; BalancePanel owns voucher statistics and active balances, and /saldo redirects to /clienti?tab=buoni. Client last activity derives from cached creation, movement and booking dates.
+- All list text search uses src/lib/search.ts for accent/case-insensitive all-word matching and reversed names. Admin client CSV exports use cached data via src/lib/csv.ts, Italian Excel formatting and exclude cancelled bookings.
+- Account management stays server-side in src/lib/admin.functions.ts with verified admin role before privileged access. operator_sessions scopes working names per user; current_operator() defaults stamp movements, bookings and stock without RPC parameters.
+- Uploaded logos use CDN pointers; the local raster favicon derives from the same official asset.

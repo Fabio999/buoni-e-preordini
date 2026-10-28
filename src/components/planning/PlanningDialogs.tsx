@@ -66,7 +66,7 @@ export function TaskDialog({ open, onOpenChange, initial, onSaved, draft }: Prop
     </form></DialogContent></Dialog>;
 }
 
-export function CalendarDialog({ open, onOpenChange, initial, onSaved, initialDate }: Props<CalendarEntry> & { initialDate?: string | undefined }) {
+export function CalendarDialog({ open, onOpenChange, initial, onSaved, initialDate, onDelete }: Props<CalendarEntry> & { initialDate?: string | undefined; onDelete?: (event: CalendarEntry) => void }) {
   const { session } = useAuth();
   const [recurrence, setRecurrence] = useState("");
   const [count, setCount] = useState(4);
@@ -136,7 +136,7 @@ export function CalendarDialog({ open, onOpenChange, initial, onSaved, initialDa
       <Field label="Responsabili · un nome e cognome per riga"><Textarea aria-label="Responsabili appuntamento" value={f.names} onChange={e => setF({...f,names:e.target.value})}/></Field>
       <Field label="Task collegata"><div className="flex gap-2"><select aria-label="Task collegata" className={selectClass} value={f.task} onChange={e => setF({...f,task:e.target.value})}><option value="">Nessuna task</option>{tasks.filter(t => !t.archived || t.id===f.task).map(t => <option key={t.id} value={t.id}>{t.title}</option>)}</select><Button type="button" variant="outline" size="icon" title="Crea task" aria-label="Crea task dal calendario" onClick={() => setCreateTask(true)}><Plus className="size-4"/></Button></div></Field>
       <label className="flex items-center gap-2 text-sm"><input type="checkbox" className="size-4 accent-primary" checked={f.confirmed} onChange={e => setF({...f,confirmed:e.target.checked})}/>Data confermata</label>
-      <DialogFooter><Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Annulla</Button><Button type="submit" disabled={busy}>Salva evento</Button></DialogFooter>
+      <DialogFooter>{initial && onDelete && <Button type="button" variant="destructive" disabled={busy || aiBusy} onClick={() => onDelete(initial)}><Trash2 className="size-4"/>Elimina evento</Button>}<Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Annulla</Button><Button type="submit" disabled={busy}>Salva evento</Button></DialogFooter>
     </form></DialogContent></Dialog><TaskDialog open={createTask} onOpenChange={setCreateTask} onSaved={id => setF({...f,task:id})}/></>;
 }
 

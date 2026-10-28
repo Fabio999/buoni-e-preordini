@@ -1,5 +1,7 @@
 # Roadmap
 
+- [ ] Eliminare un evento direttamente dalla finestra aperta nel calendario, con conferma; verificare salvataggio e conservazione delle altre date.
+
 - [x] Ripristinare checklist manuali per task, verificare aggiunta/modifica/eliminazione/spunta e persistenza.
 
 - [x] Alleggerire Dashboard e riepiloghi, distinguere le icone del menu e rifinire il badge operatore; verificare navigazione e impaginazione.

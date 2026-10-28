@@ -1,5 +1,7 @@
 # Roadmap
 
+- [x] Rifinire accesso e scelta operatore con layout condiviso e anteprima del nome; verificati nomi lunghi, schermo piccolo, visibilità password e ingresso nella Dashboard.
+
 - [x] Eliminare un evento direttamente dalla finestra aperta nel calendario, con conferma; verificati annullamento, eliminazione e persistenza dopo il caricamento, senza lasciare prove.
 
 - [x] Ripristinare checklist manuali per task, verificare aggiunta/modifica/eliminazione/spunta e persistenza.

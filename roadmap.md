@@ -1,6 +1,6 @@
 # Roadmap
 
-- [ ] Eliminare un evento direttamente dalla finestra aperta nel calendario, con conferma; verificare salvataggio e conservazione delle altre date.
+- [x] Eliminare un evento direttamente dalla finestra aperta nel calendario, con conferma; verificati annullamento, eliminazione e persistenza dopo il caricamento, senza lasciare prove.
 
 - [x] Ripristinare checklist manuali per task, verificare aggiunta/modifica/eliminazione/spunta e persistenza.
 

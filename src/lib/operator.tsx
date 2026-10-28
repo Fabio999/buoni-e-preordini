@@ -3,7 +3,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import logoAsset from "@/assets/mana-flask-logo.png.asset.json";
+import { AccessLayout, OperatorPreview } from "@/components/AccessLayout";
+import { ArrowRight, LoaderCircle } from "lucide-react";
 
 const key = (uid: string) => `mf-operator:${uid}`;
 const OperatorContext = createContext<string>("");
@@ -65,40 +66,38 @@ export function OperatorGate({ userId, children }: { userId: string; children: R
   if (!ready) return null;
   if (name) return <OperatorContext.Provider value={name}>{children}</OperatorContext.Provider>;
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <form onSubmit={submit} className="w-full max-w-sm space-y-4 rounded-xl border bg-card p-6 shadow-sm">
-        <img src={logoAsset.url} alt="Mana Flask" className="mx-auto h-20 object-contain" />
-        <div className="text-center">
-          <h1 className="text-lg font-semibold">Chi sta lavorando?</h1>
-          <p className="text-sm text-muted-foreground">Il tuo nome verrà registrato sulle operazioni.</p>
-        </div>
+    <AccessLayout step={2} title="Chi sta lavorando?">
+      <form onSubmit={submit} className="space-y-5">
         {saved.length > 0 && !manual ? (
           <div className="space-y-2">
             {saved.map((o) => (
-              <Button key={o.id} type="button" variant="outline" className="w-full" disabled={busy}
+              <Button key={o.id} type="button" variant="outline" className="h-auto min-h-16 w-full justify-start whitespace-normal px-3 py-3" disabled={busy}
                 onClick={() => choose(`${o.first_name} ${o.last_name}`)}>
-                {o.first_name} {o.last_name}
+                <OperatorPreview name={`${o.first_name} ${o.last_name}`} />
+                <ArrowRight className="ml-auto size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
               </Button>
             ))}
-            <button type="button" onClick={() => setManual(true)} className="w-full text-sm text-primary hover:underline">
+            <Button type="button" variant="ghost" onClick={() => setManual(true)} className="w-full text-sm text-primary">
               Non sono in elenco
-            </button>
+            </Button>
           </div>
         ) : (<>
         <div className="space-y-1">
           <Label htmlFor="op-first">Nome</Label>
-          <Input id="op-first" value={first} onChange={(e) => setFirst(e.target.value)} required autoFocus />
+          <Input id="op-first" autoComplete="given-name" className="h-11" value={first} onChange={(e) => setFirst(e.target.value)} required autoFocus />
         </div>
         <div className="space-y-1">
           <Label htmlFor="op-last">Cognome</Label>
-          <Input id="op-last" value={last} onChange={(e) => setLast(e.target.value)} required />
+          <Input id="op-last" autoComplete="family-name" className="h-11" value={last} onChange={(e) => setLast(e.target.value)} required />
         </div>
-        <Button type="submit" className="w-full" disabled={busy}>Inizia</Button>
+        <div className="border-y py-4" aria-live="polite"><OperatorPreview name={`${first.trim()} ${last.trim()}`.trim()} pending={!first.trim() || !last.trim()} /></div>
+        <Button type="submit" className="h-11 w-full gap-2" disabled={busy}>{busy ? "Accesso in corso…" : "Inizia"}{busy ? <LoaderCircle className="size-4 motion-safe:animate-spin" /> : <ArrowRight className="size-4" />}</Button>
+        {saved.length > 0 && <Button type="button" variant="ghost" className="w-full" onClick={() => setManual(false)}>Torna ai nomi salvati</Button>}
         </>)}
-        <button type="button" onClick={() => signOutOperator()} className="w-full text-sm text-muted-foreground hover:text-foreground">
+        <Button type="button" variant="ghost" disabled={busy} onClick={() => signOutOperator()} className="w-full text-sm text-muted-foreground">
           Esci
-        </button>
+        </Button>
       </form>
-    </div>
+    </AccessLayout>
   );
 }

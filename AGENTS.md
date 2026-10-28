@@ -29,3 +29,4 @@
 - All list text search uses src/lib/search.ts for accent/case-insensitive all-word matching and reversed names. Admin client CSV exports use cached data via src/lib/csv.ts, Italian Excel formatting and exclude cancelled bookings.
 - Account management stays server-side in src/lib/admin.functions.ts with verified admin role before privileged access. operator_sessions scopes working names per user; current_operator() defaults stamp movements, bookings and stock without RPC parameters.
 - Uploaded logos use CDN pointers; the local raster favicon derives from the same official asset.
+- AccessLayout shares the credential and operator screens; operator previews show names only after authentication and do not change operator-session persistence.

@@ -342,6 +342,7 @@ export type Database = {
           updated_at: string
           workflow_position: number
           workflow_stages: Json
+          workflow_workers: Json
         }
         Insert: {
           archived?: boolean
@@ -369,6 +370,7 @@ export type Database = {
           updated_at?: string
           workflow_position?: number
           workflow_stages?: Json
+          workflow_workers?: Json
         }
         Update: {
           archived?: boolean
@@ -396,6 +398,7 @@ export type Database = {
           updated_at?: string
           workflow_position?: number
           workflow_stages?: Json
+          workflow_workers?: Json
         }
         Relationships: []
       }

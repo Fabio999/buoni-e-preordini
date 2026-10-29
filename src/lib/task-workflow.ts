@@ -15,3 +15,13 @@ export function positionForStatus(stages: string[], position: number, status: st
   if (status === "da_fare") return 0;
   return Math.min(Math.max(0, position), Math.max(0, stages.length - 1));
 }
+export function taskWorkers(value: unknown, length: number): string[] {
+  const list = Array.isArray(value) ? value : [];
+  return Array.from({ length }, (_, i) => (typeof list[i] === "string" ? (list[i] as string).trim() : ""));
+}
+
+/** Completing stages fills empty "who worked" slots with the current operator. */
+export function workersAfterAdvance(workers: string[], from: number, to: number, operator: string): string[] {
+  if (!operator.trim()) return workers;
+  return workers.map((w, i) => (i >= from && i < to && !w ? operator.trim() : w));
+}

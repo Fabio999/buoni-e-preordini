@@ -1,0 +1,2 @@
+ALTER TABLE public.company_tasks ADD COLUMN IF NOT EXISTS workflow_workers jsonb NOT NULL DEFAULT '[]'::jsonb;
+COMMENT ON COLUMN public.company_tasks.workflow_workers IS 'Names of who worked on each workflow stage, parallel to workflow_stages';

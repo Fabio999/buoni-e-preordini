@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AmministrazioneRouteImport } from './routes/amministrazione'
 import { Route as CalendarioRouteImport } from './routes/calendario'
+import { Route as DisponibilitaRouteImport } from './routes/disponibilita'
 import { Route as PrenotazioniRouteImport } from './routes/prenotazioni'
 import { Route as ProdottiRouteImport } from './routes/prodotti'
 import { Route as SaldoRouteImport } from './routes/saldo'
@@ -20,6 +21,7 @@ import { Route as ClientiIndexRouteImport } from './routes/clienti.index'
 import { Route as ClientiIdRouteImport } from './routes/clienti.$id'
 import { Route as EventiIndexRouteImport } from './routes/eventi.index'
 import { Route as EventiIdRouteImport } from './routes/eventi.$id'
+import { Route as ApiPublicShiftsRouteImport } from './routes/api/public/shifts'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -34,6 +36,11 @@ const AmministrazioneRoute = AmministrazioneRouteImport.update({
 const CalendarioRoute = CalendarioRouteImport.update({
   id: '/calendario',
   path: '/calendario',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DisponibilitaRoute = DisponibilitaRouteImport.update({
+  id: '/disponibilita',
+  path: '/disponibilita',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PrenotazioniRoute = PrenotazioniRouteImport.update({
@@ -76,11 +83,17 @@ const EventiIdRoute = EventiIdRouteImport.update({
   path: '/eventi/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicShiftsRoute = ApiPublicShiftsRouteImport.update({
+  id: '/api/public/shifts',
+  path: '/api/public/shifts',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/amministrazione': typeof AmministrazioneRoute
   '/calendario': typeof CalendarioRoute
+  '/disponibilita': typeof DisponibilitaRoute
   '/prenotazioni': typeof PrenotazioniRoute
   '/prodotti': typeof ProdottiRoute
   '/saldo': typeof SaldoRoute
@@ -89,11 +102,13 @@ export interface FileRoutesByFullPath {
   '/eventi/$id': typeof EventiIdRoute
   '/clienti/': typeof ClientiIndexRoute
   '/eventi/': typeof EventiIndexRoute
+  '/api/public/shifts': typeof ApiPublicShiftsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/amministrazione': typeof AmministrazioneRoute
   '/calendario': typeof CalendarioRoute
+  '/disponibilita': typeof DisponibilitaRoute
   '/prenotazioni': typeof PrenotazioniRoute
   '/prodotti': typeof ProdottiRoute
   '/saldo': typeof SaldoRoute
@@ -102,12 +117,14 @@ export interface FileRoutesByTo {
   '/eventi/$id': typeof EventiIdRoute
   '/clienti': typeof ClientiIndexRoute
   '/eventi': typeof EventiIndexRoute
+  '/api/public/shifts': typeof ApiPublicShiftsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/amministrazione': typeof AmministrazioneRoute
   '/calendario': typeof CalendarioRoute
+  '/disponibilita': typeof DisponibilitaRoute
   '/prenotazioni': typeof PrenotazioniRoute
   '/prodotti': typeof ProdottiRoute
   '/saldo': typeof SaldoRoute
@@ -116,6 +133,7 @@ export interface FileRoutesById {
   '/eventi/$id': typeof EventiIdRoute
   '/clienti/': typeof ClientiIndexRoute
   '/eventi/': typeof EventiIndexRoute
+  '/api/public/shifts': typeof ApiPublicShiftsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -123,6 +141,7 @@ export interface FileRouteTypes {
     | '/'
     | '/amministrazione'
     | '/calendario'
+    | '/disponibilita'
     | '/prenotazioni'
     | '/prodotti'
     | '/saldo'
@@ -131,11 +150,13 @@ export interface FileRouteTypes {
     | '/eventi/$id'
     | '/clienti/'
     | '/eventi/'
+    | '/api/public/shifts'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/amministrazione'
     | '/calendario'
+    | '/disponibilita'
     | '/prenotazioni'
     | '/prodotti'
     | '/saldo'
@@ -144,11 +165,13 @@ export interface FileRouteTypes {
     | '/eventi/$id'
     | '/clienti'
     | '/eventi'
+    | '/api/public/shifts'
   id:
     | '__root__'
     | '/'
     | '/amministrazione'
     | '/calendario'
+    | '/disponibilita'
     | '/prenotazioni'
     | '/prodotti'
     | '/saldo'
@@ -157,12 +180,14 @@ export interface FileRouteTypes {
     | '/eventi/$id'
     | '/clienti/'
     | '/eventi/'
+    | '/api/public/shifts'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AmministrazioneRoute: typeof AmministrazioneRoute
   CalendarioRoute: typeof CalendarioRoute
+  DisponibilitaRoute: typeof DisponibilitaRoute
   PrenotazioniRoute: typeof PrenotazioniRoute
   ProdottiRoute: typeof ProdottiRoute
   SaldoRoute: typeof SaldoRoute
@@ -171,6 +196,7 @@ export interface RootRouteChildren {
   EventiIdRoute: typeof EventiIdRoute
   ClientiIndexRoute: typeof ClientiIndexRoute
   EventiIndexRoute: typeof EventiIndexRoute
+  ApiPublicShiftsRoute: typeof ApiPublicShiftsRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -194,6 +220,13 @@ declare module '@tanstack/react-router' {
       path: '/calendario'
       fullPath: '/calendario'
       preLoaderRoute: typeof CalendarioRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/disponibilita': {
+      id: '/disponibilita'
+      path: '/disponibilita'
+      fullPath: '/disponibilita'
+      preLoaderRoute: typeof DisponibilitaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/prenotazioni': {
@@ -252,6 +285,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EventiIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/shifts': {
+      id: '/api/public/shifts'
+      path: '/api/public/shifts'
+      fullPath: '/api/public/shifts'
+      preLoaderRoute: typeof ApiPublicShiftsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -259,6 +299,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AmministrazioneRoute: AmministrazioneRoute,
   CalendarioRoute: CalendarioRoute,
+  DisponibilitaRoute: DisponibilitaRoute,
   PrenotazioniRoute: PrenotazioniRoute,
   ProdottiRoute: ProdottiRoute,
   SaldoRoute: SaldoRoute,
@@ -267,6 +308,7 @@ const rootRouteChildren: RootRouteChildren = {
   EventiIdRoute: EventiIdRoute,
   ClientiIndexRoute: ClientiIndexRoute,
   EventiIndexRoute: EventiIndexRoute,
+  ApiPublicShiftsRoute: ApiPublicShiftsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

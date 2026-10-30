@@ -30,3 +30,4 @@
 - Account management stays server-side in src/lib/admin.functions.ts with verified admin role before privileged access. operator_sessions scopes working names per user; current_operator() defaults stamp movements, bookings and stock without RPC parameters.
 - Uploaded logos use CDN pointers; the local raster favicon derives from the same official asset.
 - AccessLayout shares the credential and operator screens; operator previews show names only after authentication and do not change operator-session persistence.
+- Shift calendars use admin-only RLS; personal access bypasses only the root gate at /disponibilita and verifies a hashed fragment capability via POST before scoped access. Revocable links and secret data-free broadcast topics avoid signup, expose no rows and refresh without polling; privileged link/write RPCs are service-only.

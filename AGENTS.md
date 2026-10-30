@@ -31,3 +31,4 @@
 - Uploaded logos use CDN pointers; the local raster favicon derives from the same official asset.
 - AccessLayout shares the credential and operator screens; operator previews show names only after authentication and do not change operator-session persistence.
 - Shift calendars use admin-only RLS; personal access bypasses only the root gate at /disponibilita and verifies a hashed fragment capability via POST before scoped access. Revocable links and secret data-free broadcast topics avoid signup, expose no rows and refresh without polling; privileged link/write RPCs are service-only.
+- Assigned shifts are stored separately from availability, one per collaborator/day with explicit overnight handling; only verified admins write decisions and the personal capability reads its own assignments, preserving availability edits and link stability.

@@ -148,6 +148,13 @@
       "when": 1793323678649,
       "tag": "0020_staff_availability_calendar",
       "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1793323715243,
+      "tag": "0021_shift_link_atomic_operations",
+      "breakpoints": true
     }
   ]
 }

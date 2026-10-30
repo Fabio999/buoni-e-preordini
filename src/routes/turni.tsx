@@ -36,7 +36,7 @@ function AdminShifts() {
   const manage = useServerFn(manageShiftCollaborator);
   const save = useServerFn(saveAdminShift);
   const saveAssignment = useServerFn(saveShiftAssignment);
-  const [assignmentDialog, setAssignmentDialog] = useState<{ day: string; personId?: string } | null>(null);
+  const [assignmentDialog, setAssignmentDialog] = useState<{ day: string; personId?: string | undefined } | null>(null);
   const [month, setMonth] = useState(() => formatInTimeZone(new Date(), "Europe/Rome", "yyyy-MM"));
   const [selected, setSelected] = useState<string>("");
   const [editing, setEditing] = useState<{ person: Collaborator; day: string } | null>(null);

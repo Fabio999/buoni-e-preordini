@@ -26,7 +26,7 @@ export function AssignmentList({ assignments }: { assignments: ShiftAssignment[]
   return <ul className="mt-4 divide-y">{[...assignments].sort((a, b) => a.day.localeCompare(b.day)).map(entry => <li key={entry.id} className="flex flex-wrap items-start justify-between gap-3 py-4"><div className="min-w-0"><p className="font-medium">{new Date(`${entry.day}T12:00:00`).toLocaleDateString("it-IT", { weekday: "long", day: "numeric", month: "long" })}</p><p className="mt-1 text-sm">{assignmentTime(entry)}</p>{entry.note && <p className="mt-2 whitespace-pre-wrap break-words text-sm text-muted-foreground">{entry.note}</p>}</div><span className={cn("rounded border px-2 py-1 text-xs font-semibold", ASSIGNMENT_STATUSES.find(s => s.value === entry.status)?.className)}>{ASSIGNMENT_STATUSES.find(s => s.value === entry.status)?.label}</span></li>)}</ul>;
 }
 
-export function AssignmentDialog({ day, personId, people, assignments, onClose, onSave, onDelete }: { day: string; personId?: string; people: Collaborator[]; assignments: ShiftAssignment[]; onClose: () => void; onSave: (entry: Omit<ShiftAssignment, "id" | "updated_at">) => Promise<void>; onDelete: (personId: string, day: string) => Promise<void> }) {
+export function AssignmentDialog({ day, personId, people, assignments, onClose, onSave, onDelete }: { day: string; personId?: string | undefined; people: Collaborator[]; assignments: ShiftAssignment[]; onClose: () => void; onSave: (entry: Omit<ShiftAssignment, "id" | "updated_at">) => Promise<void>; onDelete: (personId: string, day: string) => Promise<void> }) {
   const [person, setPerson] = useState(personId ?? people[0]?.id ?? "");
   const [date, setDate] = useState(day);
   const existing = assignments.find(e => e.day === date && e.collaborator_id === person);

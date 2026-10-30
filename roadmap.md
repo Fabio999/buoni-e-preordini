@@ -1,8 +1,8 @@
 # Roadmap
 
-- [ ] Mostrare calendario generale Turni e accesso alla creazione link per ogni collaboratore.
-- [ ] Aggiungere turni accettati/rifiutati con orario, gestiti dall’amministrazione e visibili sullo stesso link personale.
-- [ ] Verificare salvataggio, isolamento dei link e aggiornamenti live, senza lasciare prove.
+- [x] Mostrare calendario generale Turni e accesso alla creazione link per ogni collaboratore.
+- [x] Aggiungere turni accettati/rifiutati con orario, gestiti dall’amministrazione e visibili sullo stesso link personale.
+- [x] Verificare salvataggio, isolamento dei link, decisioni non modificabili dai collaboratori e aggiornamenti live; nessuna prova residua, 8 test superati e nessuna fuoriuscita della pagina sul cellulare.
 
 - [x] Creare Turni con collaboratori, link revocabili, disponibilità e note riservate.
 - [x] Aggiungere calendario personale e riepilogo amministrativo con aggiornamenti live.

@@ -1,8 +1,8 @@
 # Roadmap
 
-- [ ] Creare Turni con collaboratori, link revocabili, disponibilità e note riservate.
-- [ ] Aggiungere calendario personale e riepilogo amministrativo con aggiornamenti live.
-- [ ] Verificare accesso riservato, modifiche da entrambi i calendari e impaginazione sul cellulare; rimuovere prove.
+- [x] Creare Turni con collaboratori, link revocabili, disponibilità e note riservate.
+- [x] Aggiungere calendario personale e riepilogo amministrativo con aggiornamenti live.
+- [x] Verificare accesso riservato, modifiche live da entrambi i calendari, note, rifiuto dei link invalidi, disattivazione e impaginazione sul cellulare; prove rimosse e 6 test superati.
 
 - [x] Rifinire accesso e scelta operatore con layout condiviso e anteprima del nome; verificati nomi lunghi, schermo piccolo, visibilità password e ingresso nella Dashboard.
 

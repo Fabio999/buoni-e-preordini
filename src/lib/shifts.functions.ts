@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { shiftEntrySchema } from "./shifts";
+import { assignmentInputSchema, shiftDaySchema, shiftEntrySchema } from "./shifts";
 
 export const manageShiftCollaborator = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -58,6 +58,23 @@ export const saveAdminShift = createServerFn({ method: "POST" })
     const result = data.status === null
       ? await query.delete().eq("collaborator_id", data.collaborator_id).eq("day", data.day)
       : await query.upsert({ ...data, status: data.status, updated_at: new Date().toISOString() }, { onConflict: "collaborator_id,day" });
+    if (result.error) throw new Error(result.error.message);
+    return { ok: true };
+  });
+
+export const saveShiftAssignment = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator(input => z.discriminatedUnion("action", [
+    z.object({ action: z.literal("save"), entry: assignmentInputSchema }),
+    z.object({ action: z.literal("delete"), collaborator_id: z.string().uuid(), day: shiftDaySchema }),
+  ]).parse(input))
+  .handler(async ({ data, context }) => {
+    const { data: allowed, error } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" });
+    if (error || !allowed) throw new Error("Non autorizzato");
+    const table = context.supabase.from("shift_assignments");
+    const result = data.action === "delete"
+      ? await table.delete().eq("collaborator_id", data.collaborator_id).eq("day", data.day)
+      : await table.upsert({ ...data.entry, updated_at: new Date().toISOString() }, { onConflict: "collaborator_id,day" });
     if (result.error) throw new Error(result.error.message);
     return { ok: true };
   });

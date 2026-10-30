@@ -579,6 +579,94 @@ export type Database = {
           },
         ]
       }
+      shift_availability: {
+        Row: {
+          collaborator_id: string
+          day: string
+          id: string
+          note: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          collaborator_id: string
+          day: string
+          id?: string
+          note?: string
+          status: string
+          updated_at?: string
+        }
+        Update: {
+          collaborator_id?: string
+          day?: string
+          id?: string
+          note?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shift_availability_collaborator_id_fkey"
+            columns: ["collaborator_id"]
+            isOneToOne: false
+            referencedRelation: "shift_collaborators"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      shift_collaborators: {
+        Row: {
+          active: boolean
+          created_at: string
+          first_name: string
+          id: string
+          last_name: string
+          realtime_topic: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          first_name: string
+          id?: string
+          last_name: string
+          realtime_topic?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          first_name?: string
+          id?: string
+          last_name?: string
+          realtime_topic?: string
+        }
+        Relationships: []
+      }
+      shift_link_keys: {
+        Row: {
+          collaborator_id: string
+          created_at: string
+          token_hash: string
+        }
+        Insert: {
+          collaborator_id: string
+          created_at?: string
+          token_hash: string
+        }
+        Update: {
+          collaborator_id?: string
+          created_at?: string
+          token_hash?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shift_link_keys_collaborator_id_fkey"
+            columns: ["collaborator_id"]
+            isOneToOne: true
+            referencedRelation: "shift_collaborators"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       staff_members: {
         Row: {
           created_at: string

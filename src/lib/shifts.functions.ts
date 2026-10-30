@@ -40,8 +40,8 @@ export const manageShiftCollaborator = createServerFn({ method: "POST" })
       const { error } = await admin.from("shift_collaborators").delete().eq("id", id);
       if (error) throw new Error(error.message);
     } else {
-      const update = data.action === "activate" ? { active: data.active ?? false } : { first_name: data.first_name, last_name: data.last_name };
       if (data.action === "rename" && (!data.first_name || !data.last_name)) throw new Error("Inserisci nome e cognome");
+      const update = data.action === "activate" ? { active: data.active ?? false } : { first_name: data.first_name ?? "", last_name: data.last_name ?? "" };
       const { error } = await admin.from("shift_collaborators").update(update).eq("id", id);
       if (error) throw new Error(error.message);
     }

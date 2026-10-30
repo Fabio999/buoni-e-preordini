@@ -26,7 +26,7 @@ export function ShiftCalendar({ month, entries, onEdit }: { month: string; entri
     return <Button key={day} variant="ghost" aria-label={`Disponibilità ${day}${state ? `: ${state.label}` : ""}`} onClick={() => onEdit(day)} className={cn("relative flex h-20 min-w-0 flex-col items-start justify-between gap-1 whitespace-normal rounded-none border-b border-r p-2 text-left sm:h-28 sm:p-3", day.startsWith(month) ? "" : "opacity-45", state?.className, day === today && "ring-1 ring-inset ring-primary")}><span className={cn("text-xs font-semibold", day === today && "text-primary")}>{Number(day.slice(-2))}</span><span className="flex w-full min-w-0 items-center justify-between gap-1">{state && <><span className={cn("size-2.5 shrink-0 rounded-full", state.dot)} /><span className="hidden min-w-0 break-words text-[11px] leading-tight sm:block">{state.label}</span></>}{entry?.note && <MessageSquare className="ml-auto size-3 shrink-0" />}</span></Button>;
   })}</div></div>;
 }
-export function ShiftEditDialog({ day, entry, name, onClose, onSave }: { day: string; entry?: ShiftEntry; name: string; onClose: () => void; onSave: (data: { day: string; status: ShiftStatus | null; note: string }) => Promise<void> }) {
+export function ShiftEditDialog({ day, entry, name, onClose, onSave }: { day: string; entry: ShiftEntry | undefined; name: string; onClose: () => void; onSave: (data: { day: string; status: ShiftStatus | null; note: string }) => Promise<void> }) {
   const [status, setStatus] = useState<ShiftStatus | null>((entry?.status as ShiftStatus) ?? null);
   const [note, setNote] = useState(entry?.note ?? "");
   const [busy, setBusy] = useState(false);

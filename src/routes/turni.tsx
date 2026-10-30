@@ -56,7 +56,7 @@ function AdminShifts() {
       .subscribe(status => { if (status === "SUBSCRIBED") { qc.invalidateQueries({ queryKey: ["shift-people"] }); qc.invalidateQueries({ queryKey: ["shift-entries"] }); } });
     return () => { void supabase.removeChannel(channel); };
   }, [qc]);
-  async function action(data: Parameters<typeof manage>[0]["data"]) {
+  async function action(data: { action: "create" | "rename" | "rotate" | "activate" | "delete"; id?: string | undefined; first_name?: string; last_name?: string; active?: boolean }) {
     setBusy(true);
     try {
       const result = await manage({ data });

@@ -155,6 +155,13 @@
       "when": 1793323715243,
       "tag": "0021_shift_link_atomic_operations",
       "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1793324352065,
+      "tag": "0022_shift_assignments",
+      "breakpoints": true
     }
   ]
 }

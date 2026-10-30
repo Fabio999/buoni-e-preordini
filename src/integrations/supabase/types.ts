@@ -579,6 +579,50 @@ export type Database = {
           },
         ]
       }
+      shift_assignments: {
+        Row: {
+          collaborator_id: string
+          day: string
+          ends_at: string
+          ends_next_day: boolean
+          id: string
+          note: string
+          starts_at: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          collaborator_id: string
+          day: string
+          ends_at: string
+          ends_next_day?: boolean
+          id?: string
+          note?: string
+          starts_at: string
+          status: string
+          updated_at?: string
+        }
+        Update: {
+          collaborator_id?: string
+          day?: string
+          ends_at?: string
+          ends_next_day?: boolean
+          id?: string
+          note?: string
+          starts_at?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shift_assignments_collaborator_id_fkey"
+            columns: ["collaborator_id"]
+            isOneToOne: false
+            referencedRelation: "shift_collaborators"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       shift_availability: {
         Row: {
           collaborator_id: string

@@ -1,5 +1,9 @@
 # Roadmap
 
+- [ ] Creare Turni con collaboratori, link revocabili, disponibilità e note riservate.
+- [ ] Aggiungere calendario personale e riepilogo amministrativo con aggiornamenti live.
+- [ ] Verificare accesso riservato, modifiche da entrambi i calendari e impaginazione sul cellulare; rimuovere prove.
+
 - [x] Rifinire accesso e scelta operatore con layout condiviso e anteprima del nome; verificati nomi lunghi, schermo piccolo, visibilità password e ingresso nella Dashboard.
 
 - [x] Barra delle fasi delle task compatta: pallini sottili con linea continua, verde per le fasi concluse, bordo blu per quella attuale, avanzamento al tocco; verificata su computer e cellulare.

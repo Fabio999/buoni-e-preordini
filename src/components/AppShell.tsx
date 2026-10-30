@@ -2,6 +2,7 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import {
   CalendarDays,
   CalendarRange,
+  CalendarClock,
   ClipboardList,
   LayoutDashboard,
   LogOut,
@@ -48,7 +49,7 @@ function AppSidebar() {
   const operator = useOperator();
   const initials = operator.trim().split(/\s+/).filter(Boolean).map(part => part[0]).slice(0, 2).join("").toLocaleUpperCase("it");
   const all = isAdmin
-    ? [...items, { title: "Amministrazione", url: "/amministrazione", icon: ShieldCheck } as const]
+    ? [...items.slice(0, 4), { title: "Turni", url: "/turni", icon: CalendarClock } as const, ...items.slice(4), { title: "Amministrazione", url: "/amministrazione", icon: ShieldCheck } as const]
     : items;
   const isActive = (url: string) => (url === "/" ? path === "/" : path.startsWith(url));
   return (

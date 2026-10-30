@@ -7,6 +7,7 @@ import {
   HeadContent,
   Scripts,
   type ErrorComponentProps,
+  useRouterState,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
 
@@ -126,6 +127,8 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function Gate() {
   const { session, loading } = useAuth();
+  const isPersonalCalendar = useRouterState({ select: state => state.location.pathname === "/disponibilita" });
+  if (isPersonalCalendar) return <Outlet />;
   if (loading)
     return (
       <div className="flex min-h-screen items-center justify-center text-muted-foreground">

@@ -579,6 +579,94 @@ export type Database = {
           },
         ]
       }
+      shift_availability: {
+        Row: {
+          collaborator_id: string
+          day: string
+          id: string
+          note: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          collaborator_id: string
+          day: string
+          id?: string
+          note?: string
+          status: string
+          updated_at?: string
+        }
+        Update: {
+          collaborator_id?: string
+          day?: string
+          id?: string
+          note?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shift_availability_collaborator_id_fkey"
+            columns: ["collaborator_id"]
+            isOneToOne: false
+            referencedRelation: "shift_collaborators"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      shift_collaborators: {
+        Row: {
+          active: boolean
+          created_at: string
+          first_name: string
+          id: string
+          last_name: string
+          realtime_topic: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          first_name: string
+          id?: string
+          last_name: string
+          realtime_topic?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          first_name?: string
+          id?: string
+          last_name?: string
+          realtime_topic?: string
+        }
+        Relationships: []
+      }
+      shift_link_keys: {
+        Row: {
+          collaborator_id: string
+          created_at: string
+          token_hash: string
+        }
+        Insert: {
+          collaborator_id: string
+          created_at?: string
+          token_hash: string
+        }
+        Update: {
+          collaborator_id?: string
+          created_at?: string
+          token_hash?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shift_link_keys_collaborator_id_fkey"
+            columns: ["collaborator_id"]
+            isOneToOne: true
+            referencedRelation: "shift_collaborators"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       staff_members: {
         Row: {
           created_at: string
@@ -716,6 +804,10 @@ export type Database = {
         Returns: string
       }
       client_balance: { Args: { _client: string }; Returns: number }
+      create_shift_collaborator: {
+        Args: { _first: string; _hash: string; _last: string }
+        Returns: string
+      }
       current_operator: { Args: never; Returns: string }
       delete_balance_movement: { Args: { _id: string }; Returns: undefined }
       has_role: {
@@ -762,6 +854,14 @@ export type Database = {
           _quantity: number
         }
         Returns: string
+      }
+      rotate_shift_link: {
+        Args: { _hash: string; _id: string }
+        Returns: undefined
+      }
+      save_personal_shift: {
+        Args: { _day: string; _hash: string; _note: string; _status: string }
+        Returns: undefined
       }
       update_balance_movement: {
         Args: { _amount: number; _description: string; _id: string }

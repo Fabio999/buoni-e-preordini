@@ -27,7 +27,9 @@ export const Route = createFileRoute("/api/public/shifts")({
       const { first, last } = monthBounds(data.month);
       const { data: entries, error } = await admin.from("shift_availability").select("*").eq("collaborator_id", person.id).gte("day", first).lte("day", last);
       if (error) throw error;
-      return Response.json({ person, entries: entries ?? [] }, { headers });
+      const { data: assignments, error: assignmentsError } = await admin.from("shift_assignments").select("id,collaborator_id,day,status,starts_at,ends_at,ends_next_day,note,updated_at").eq("collaborator_id", person.id).gte("day", first).lte("day", last).order("day").order("starts_at");
+      if (assignmentsError) throw assignmentsError;
+      return Response.json({ person, entries: entries ?? [], assignments: assignments ?? [] }, { headers });
     } catch (error) {
       return Response.json({ error: error instanceof z.ZodError ? "Dati non validi" : "Impossibile aggiornare i turni. Riprova." }, { status: error instanceof z.ZodError ? 400 : 503, headers });
     }

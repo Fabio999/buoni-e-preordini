@@ -25,3 +25,21 @@ describe("checklist predefinita", () => {
     expect(out[0]?.done).toBe(true);
   });
 });
+
+import { learnedChecklist, toggleTaskChecklist as toggle2 } from "@/lib/task-checklist";
+describe("checklist per categoria e svolta da", () => {
+  const tasks = [
+    { id: "1", category: "Caricare carte", checklist: [{ id: "x", text: "Vecchia", done: false }], created_at: "2026-01-01" },
+    { id: "2", category: "caricare carte", checklist: [{ id: "y", text: "Scansionare", done: true }], created_at: "2026-02-01" },
+    { id: "3", category: "Ritiro", checklist: [{ id: "z", text: "Ritirare", done: false }], created_at: "2026-03-01" },
+  ];
+  it("impara dall'ultima task della stessa categoria", () => {
+    expect(learnedChecklist(tasks, "Caricare Carte")).toEqual(["Scansionare"]);
+    expect(learnedChecklist(tasks, "Altro")).toEqual([]);
+  });
+  it("segna l'operatore quando la voce viene completata", () => {
+    const out = toggle2([{ id: "a", text: "t", done: false }], "a", true, "Mario Rossi");
+    expect(out[0]?.doneBy).toBe("Mario Rossi");
+    expect(toggle2(out, "a", false)[0]?.doneBy).toBeUndefined();
+  });
+});

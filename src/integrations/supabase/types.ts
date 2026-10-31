@@ -661,27 +661,36 @@ export type Database = {
       shift_collaborators: {
         Row: {
           active: boolean
+          contact_email: string
           created_at: string
           first_name: string
           id: string
           last_name: string
           realtime_topic: string
+          staff_notes: string
+          staff_role: string
         }
         Insert: {
           active?: boolean
+          contact_email?: string
           created_at?: string
           first_name: string
           id?: string
           last_name: string
           realtime_topic?: string
+          staff_notes?: string
+          staff_role?: string
         }
         Update: {
           active?: boolean
+          contact_email?: string
           created_at?: string
           first_name?: string
           id?: string
           last_name?: string
           realtime_topic?: string
+          staff_notes?: string
+          staff_role?: string
         }
         Relationships: []
       }

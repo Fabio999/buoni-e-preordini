@@ -162,6 +162,13 @@
       "when": 1793324352065,
       "tag": "0022_shift_assignments",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1793463395756,
+      "tag": "0023_shift_staff_profile",
+      "breakpoints": true
     }
   ]
 }

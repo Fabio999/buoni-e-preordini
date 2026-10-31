@@ -15,7 +15,7 @@ export const shiftMonthSchema = z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/);
 export const shiftTokenSchema = z.string().regex(/^[a-f0-9]{64}$/);
 export type ShiftStatus = typeof SHIFT_STATUSES[number]["value"];
 export type ShiftEntry = { id: string; collaborator_id: string; day: string; status: string; note: string; updated_at: string };
-export type Collaborator = { id: string; first_name: string; last_name: string; active: boolean; realtime_topic: string };
+export type Collaborator = { id: string; first_name: string; last_name: string; active: boolean; realtime_topic: string; staff_role: string; contact_email: string; staff_notes: string };
 export const ASSIGNMENT_STATUSES = [
   { value: "accettato", label: "Accettato", className: "bg-success/10 text-success border-success/30" },
   { value: "rifiutato", label: "Rifiutato", className: "bg-destructive/10 text-destructive border-destructive/30" },

@@ -1,6 +1,6 @@
 # Roadmap
 
-- [ ] Rimuovere le checklist dalle task mantenendo fasi e nomi; rendere le schede richiudibili anche in griglia e verificare a schermo.
+- [x] Rimuovere le checklist dalle task mantenendo fasi e nomi; schede richiudibili in griglia e a righe verificate con accesso attivo, 10 test superati.
 
 - [x] Mostrare calendario generale Turni e accesso alla creazione link per ogni collaboratore.
 - [x] Aggiungere turni accettati/rifiutati con orario, gestiti dall’amministrazione e visibili sullo stesso link personale.

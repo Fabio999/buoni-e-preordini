@@ -1,5 +1,7 @@
 # Roadmap
 
+- [x] Rimuovere le checklist dalle task mantenendo fasi e nomi; schede richiudibili in griglia e a righe verificate con accesso attivo, 10 test superati.
+
 - [x] Mostrare calendario generale Turni e accesso alla creazione link per ogni collaboratore.
 - [x] Aggiungere turni accettati/rifiutati con orario, gestiti dall’amministrazione e visibili sullo stesso link personale.
 - [x] Verificare salvataggio, isolamento dei link, decisioni non modificabili dai collaboratori e aggiornamenti live; nessuna prova residua, 8 test superati e nessuna fuoriuscita della pagina sul cellulare.

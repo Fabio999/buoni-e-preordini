@@ -3,6 +3,7 @@ import { Plus, Trash2, Sparkles } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { generateEventDescription } from "@/lib/task-ai.functions";
 import { EventGameField } from "./EventGameField";
+import { taskChecklist } from "@/lib/task-checklist";
 import { TaskPeopleField } from "./TaskPeopleField";
 import { TaskWorkflowEditor } from "./TaskWorkflow";
 import { TaskOptionField } from "./TaskOptionField";

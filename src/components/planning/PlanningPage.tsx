@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { TaskWorkflow } from "./TaskWorkflow";
+import { TaskDeadlineAlerts } from "./TaskDeadlineAlerts";
 import { taskStages, workflowAt, positionForStatus, taskWorkers, workersAfterAdvance } from "@/lib/task-workflow";
 import { useOperator } from "@/lib/operator";
 import { Rows3, LayoutGrid, ChevronRight } from "lucide-react";

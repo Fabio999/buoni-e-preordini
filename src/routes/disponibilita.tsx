@@ -8,6 +8,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { MonthControls, ShiftCalendar, ShiftEditDialog, ShiftLegend } from "@/components/shifts/ShiftCalendar";
 import { AssignmentList, ShiftSchedule } from "@/components/shifts/ShiftSchedule";
+import { TaskDeadlineAlerts } from "@/components/planning/TaskDeadlineAlerts";
+import type { PersonalDeadlineTask } from "@/lib/task-reminders";
 import { type Collaborator, type ShiftAssignment, type ShiftEntry, type ShiftStatus } from "@/lib/shifts";
 import logo from "@/assets/mana-flask-logo.png.asset.json";
 
@@ -27,7 +29,7 @@ function PersonalShifts() {
   // Fragment never reaches web servers or referrer headers.
   useEffect(() => { setToken(window.location.hash.slice(1)); }, []);
   const key = ["personal-shifts", token, month];
-  async function call(entry?: { day: string; status: ShiftStatus | null; note: string }): Promise<{ person: Collaborator; entries: ShiftEntry[]; assignments: ShiftAssignment[] }> {
+  async function call(entry?: { day: string; status: ShiftStatus | null; note: string }): Promise<{ person: Collaborator; entries: ShiftEntry[]; assignments: ShiftAssignment[]; tasks: PersonalDeadlineTask[] }> {
     const res = await fetch("/api/public/shifts", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token, month, entry }) });
     const body = await res.json();
     if (!res.ok) throw new Error(body.error ?? "Impossibile caricare i turni");

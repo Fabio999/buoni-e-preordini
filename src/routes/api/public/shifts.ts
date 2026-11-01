@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 import { monthBounds, shiftEntrySchema, shiftMonthSchema, shiftTokenSchema } from "@/lib/shifts";
+import { assignedDeadlineTasks } from "@/lib/task-reminders";
 
 export const Route = createFileRoute("/api/public/shifts")({
   server: { handlers: { POST: async ({ request }) => {
@@ -29,7 +30,10 @@ export const Route = createFileRoute("/api/public/shifts")({
       if (error) throw error;
       const { data: assignments, error: assignmentsError } = await admin.from("shift_assignments").select("id,collaborator_id,day,status,starts_at,ends_at,ends_next_day,note,updated_at").eq("collaborator_id", person.id).gte("day", first).lte("day", last).order("day").order("starts_at");
       if (assignmentsError) throw assignmentsError;
-      return Response.json({ person, entries: entries ?? [], assignments: assignments ?? [] }, { headers });
+      const { data: taskRows, error: taskError } = await admin.from("company_tasks").select("id,title,due_at,status,archived,responsible").eq("archived", false).neq("status", "completata").not("due_at", "is", null);
+      if (taskError) throw taskError;
+      const tasks = assignedDeadlineTasks(taskRows ?? [], `${person.first_name} ${person.last_name}`);
+      return Response.json({ person, entries: entries ?? [], assignments: assignments ?? [], tasks }, { headers });
     } catch (error) {
       return Response.json({ error: error instanceof z.ZodError ? "Dati non validi" : "Impossibile aggiornare i turni. Riprova." }, { status: error instanceof z.ZodError ? 400 : 503, headers });
     }

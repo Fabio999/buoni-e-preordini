@@ -1,5 +1,7 @@
 # Roadmap
 
+- [ ] Avvisi automatici task entro un’ora e scadute nel gestionale e nei link personali, con isolamento per collaboratore e aggiornamenti senza richieste periodiche.
+
 - [x] Rimuovere le checklist dalle task mantenendo fasi e nomi; schede richiudibili in griglia e a righe verificate con accesso attivo, 10 test superati.
 
 - [x] Mostrare calendario generale Turni e accesso alla creazione link per ogni collaboratore.

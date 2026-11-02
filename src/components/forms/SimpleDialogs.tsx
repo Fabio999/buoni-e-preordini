@@ -99,17 +99,17 @@ export function ProductDialog({ open, onOpenChange, initial, onSaved }: Omit<Dia
   const submit = async (e: FormEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    const row = {
+    const base = {
       name: f.name.trim(),
       price: Number(f.price),
       category: f.category.trim(),
       sku: f.sku.trim() || null,
       game: f.game.trim(),
       product_type: f.product_type.trim(),
-      // Nuovi prodotti: valori neutri, le quantità non si gestiscono più dall'interfaccia.
-      stock: initial ? undefined : 0,
-      track_stock: initial ? undefined : true,
     };
+    // Nuovi prodotti: valori neutri, le quantità non si gestiscono più dall'interfaccia;
+    // per i prodotti esistenti le quantità restano invariate.
+    const row = initial ? base : { ...base, stock: 0, track_stock: true };
     const res = initial
       ? await supabase.from("products").update(row).eq("id", initial.id).select("*").single()
       : await supabase.from("products").insert(row).select("*").single();

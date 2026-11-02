@@ -1,0 +1,1 @@
+ALTER TABLE public.calendar_entries ADD COLUMN participant_cap integer CHECK (participant_cap IS NULL OR participant_cap > 0), ADD COLUMN participant_count integer CHECK (participant_count IS NULL OR participant_count >= 0), ADD COLUMN participants jsonb NOT NULL DEFAULT '[]'::jsonb;

@@ -176,6 +176,13 @@
       "when": 1793553109661,
       "tag": "0024_task_deadline_personal_refresh",
       "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1793627253578,
+      "tag": "0025_event_participants",
+      "breakpoints": true
     }
   ]
 }

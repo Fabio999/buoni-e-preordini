@@ -83,7 +83,7 @@ export function ClientDialog({ open, onOpenChange, initial, onSaved }: DialogPro
 }
 
 export function ProductDialog({ open, onOpenChange, initial, onSaved }: Omit<DialogProps<Product>, "onSaved"> & { onSaved?: (id: string, product: Product) => void }) {
-  const [f, setF] = useState({ name: "", price: "", category: "", sku: "", game: "", product_type: "", stock: "", track: true });
+  const [f, setF] = useState({ name: "", price: "", category: "", sku: "", game: "", product_type: "" });
   const refresh = useRefresh();
   useEffect(() => {
     if (open)
@@ -94,23 +94,22 @@ export function ProductDialog({ open, onOpenChange, initial, onSaved }: Omit<Dia
         sku: initial?.sku ?? "",
         game: initial?.game ?? "",
         product_type: initial?.product_type ?? "",
-        stock: initial ? String(initial.stock) : "0",
-        track: initial?.track_stock ?? true,
       });
   }, [open, initial]);
   const submit = async (e: FormEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    const row = {
+    const base = {
       name: f.name.trim(),
       price: Number(f.price),
       category: f.category.trim(),
       sku: f.sku.trim() || null,
       game: f.game.trim(),
       product_type: f.product_type.trim(),
-      stock: Math.trunc(Number(f.stock) || 0),
-      track_stock: f.track,
     };
+    // Nuovi prodotti: valori neutri, le quantità non si gestiscono più dall'interfaccia;
+    // per i prodotti esistenti le quantità restano invariate.
+    const row = initial ? base : { ...base, stock: 0, track_stock: true };
     const res = initial
       ? await supabase.from("products").update(row).eq("id", initial.id).select("*").single()
       : await supabase.from("products").insert(row).select("*").single();
@@ -151,24 +150,6 @@ export function ProductDialog({ open, onOpenChange, initial, onSaved }: Omit<Dia
               />
             </Field>
           </div>
-          <label className="flex items-center gap-2 text-sm">
-            <input
-              type="checkbox"
-              checked={!f.track}
-              onChange={(e) => setF({ ...f, track: !e.target.checked })}
-              className="h-4 w-4 accent-primary"
-            />
-            Non a magazzino (es. carte singole sfuse): la quantità non viene scalata
-          </label>
-          {f.track && <Field label="Quantità disponibile">
-            <Input
-              type="number"
-              step="1"
-              aria-label="Quantità disponibile"
-              value={f.stock}
-              onChange={(e) => setF({ ...f, stock: e.target.value })}
-            />
-          </Field>}
           <div className="grid gap-4 sm:grid-cols-3">
             <Field label="Prezzo (€)">
               <Input

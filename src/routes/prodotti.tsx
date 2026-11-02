@@ -1,9 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { History, Pencil, Plus, Search, ShoppingBag, Trash2 } from "lucide-react";
+import { Pencil, Plus, Search, ShoppingBag, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/AppShell";
-import { StockHistoryDialog } from "@/components/StockHistoryDialog";
 import { SaleDialog } from "@/components/forms/BalanceDialogs";
 import { ProductDialog } from "@/components/forms/SimpleDialogs";
 import { Empty, Section } from "@/components/Status";
@@ -38,7 +37,6 @@ function ProductsPage() {
   const [q, setQ] = useState("");
   const [editing, setEditing] = useState<Product | null>(null);
   const [open, setOpen] = useState(false);
-  const [history, setHistory] = useState<Product | null>(null);
   const [selling, setSelling] = useState<Product | null>(null);
   const filtered = products.filter((p) =>
     matchesText(`${p.name} ${p.category} ${p.sku ?? ""} ${p.game} ${p.product_type}`, q),
@@ -93,17 +91,9 @@ function ProductsPage() {
                 </div>
               </div>
               <div className="flex shrink-0 items-center gap-0.5 sm:gap-1">
-                {p.track_stock ? (
-                  <Badge variant={p.stock > 0 ? "success" : "danger"} className="mr-1.5 whitespace-nowrap">{p.stock} pz</Badge>
-                ) : (
-                  <Badge variant="neutral" className="mr-1.5 whitespace-nowrap">Non a magazzino</Badge>
-                )}
                 <span className="mr-auto whitespace-nowrap pr-2 font-display font-semibold sm:mr-2">{euro(p.price)}</span>
                 <Button size="icon" variant="ghost" onClick={() => setSelling(p)} aria-label="Vendi">
                   <ShoppingBag className="h-4 w-4" />
-                </Button>
-                <Button size="icon" variant="ghost" onClick={() => setHistory(p)} aria-label="Storico quantità">
-                  <History className="h-4 w-4" />
                 </Button>
                 <Button
                   size="icon"
@@ -124,7 +114,6 @@ function ProductsPage() {
           ))}
         </ul>
       </Section>
-      <StockHistoryDialog product={history} onOpenChange={(o) => !o && setHistory(null)} />
       <ProductDialog open={open} onOpenChange={setOpen} initial={editing} />
       <SaleDialog
         open={!!selling}

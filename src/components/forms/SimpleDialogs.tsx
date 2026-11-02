@@ -106,12 +106,10 @@ export function ProductDialog({ open, onOpenChange, initial, onSaved }: Omit<Dia
       sku: f.sku.trim() || null,
       game: f.game.trim(),
       product_type: f.product_type.trim(),
-    };
-    if (!initial) {
       // Nuovi prodotti: valori neutri, le quantità non si gestiscono più dall'interfaccia.
-      (row as Record<string, unknown>).stock = 0;
-      (row as Record<string, unknown>).track_stock = true;
-    }
+      stock: initial ? undefined : 0,
+      track_stock: initial ? undefined : true,
+    };
     const res = initial
       ? await supabase.from("products").update(row).eq("id", initial.id).select("*").single()
       : await supabase.from("products").insert(row).select("*").single();

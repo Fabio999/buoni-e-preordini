@@ -196,6 +196,9 @@ export type Database = {
           ends_at: string
           game: string
           id: string
+          participant_cap: number | null
+          participant_count: number | null
+          participants: Json
           recurrence_frequency: string | null
           recurrence_series: string | null
           reminder_minutes: number | null
@@ -217,6 +220,9 @@ export type Database = {
           ends_at: string
           game?: string
           id?: string
+          participant_cap?: number | null
+          participant_count?: number | null
+          participants?: Json
           recurrence_frequency?: string | null
           recurrence_series?: string | null
           reminder_minutes?: number | null
@@ -238,6 +244,9 @@ export type Database = {
           ends_at?: string
           game?: string
           id?: string
+          participant_cap?: number | null
+          participant_count?: number | null
+          participants?: Json
           recurrence_frequency?: string | null
           recurrence_series?: string | null
           reminder_minutes?: number | null

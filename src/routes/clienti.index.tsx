@@ -326,7 +326,6 @@ function ClientsPage() {
                       title={`Usa buono di ${c.first_name} ${c.last_name}`}
                       aria-label={`Usa buono di ${c.first_name} ${c.last_name}`}
                       onClick={() => openDialog("purchase", c.id)}
-                      disabled={bal <= 0}
                     >
                       <ShoppingBag className="h-4 w-4" />
                     </Button>

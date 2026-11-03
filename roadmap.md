@@ -1,5 +1,7 @@
 # Roadmap
 
+- [ ] Rinnovare lista clienti e filtri rapidi con badge buono/prenotazioni e azioni dirette di ricarica e prenotazione; verificare selezione cliente e impaginazione.
+
 - [ ] Avvisi automatici task entro un’ora e scadute nel gestionale e nei link personali, con isolamento per collaboratore e aggiornamenti senza richieste periodiche.
 
 - [x] Rimuovere le checklist dalle task mantenendo fasi e nomi; schede richiudibili in griglia e a righe verificate con accesso attivo, 10 test superati.

@@ -1,13 +1,15 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { Plus, RotateCcw, Search, ShoppingBag, SlidersHorizontal } from "lucide-react";
+import { CalendarPlus, ChevronDown, ChevronUp, Plus, RotateCcw, Search, ShoppingBag, SlidersHorizontal, Ticket, Users } from "lucide-react";
 import { useMemo, useState } from "react";
 import { PageHeader } from "@/components/AppShell";
 import { ActiveBalances, BalanceStats, type BalanceDialog } from "@/components/BalancePanel";
 import { MovementsTable } from "@/components/MovementsTable";
 import { PurchaseDialog, TopUpDialog } from "@/components/forms/BalanceDialogs";
+import { BookingDialog } from "@/components/forms/BookingDialog";
 import { ClientDialog, selectClass } from "@/components/forms/SimpleDialogs";
 import { Empty, Section } from "@/components/Status";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -67,6 +69,8 @@ function ClientsPage() {
   const [booked, setBooked] = useState("");
   const [activity, setActivity] = useState<ActivityRange>("");
   const [open, setOpen] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
+  const [bookingClient, setBookingClient] = useState<string | undefined>();
   const [dlg, setDlg] = useState<BalanceDialog | null>(null);
   const [dlgClient, setDlgClient] = useState<string | undefined>();
   const openDialog = (type: BalanceDialog, clientId?: string) => {
@@ -190,7 +194,25 @@ function ClientsPage() {
         </div>
 
         <TabsContent value="clienti">
-          <div className="mb-4 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mb-5 space-y-3 border-b pb-5">
+            <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Filtri rapidi clienti">
+              <Button size="sm" variant={balance === "" && booked === "" ? "secondary" : "outline"} aria-pressed={balance === "" && booked === ""} onClick={() => { setBalance(""); setBooked(""); }}>
+                <Users /> Tutti
+              </Button>
+              <Button size="sm" variant={balance === "positivo" ? "secondary" : "outline"} aria-pressed={balance === "positivo"} onClick={() => setBalance(balance === "positivo" ? "" : "positivo")}>
+                <Ticket /> Buono attivo
+              </Button>
+              <Button size="sm" variant={balance === "zero" ? "secondary" : "outline"} aria-pressed={balance === "zero"} onClick={() => setBalance(balance === "zero" ? "" : "zero")}>
+                Senza buono
+              </Button>
+              <Button size="sm" variant={booked === "con" ? "secondary" : "outline"} aria-pressed={booked === "con"} onClick={() => setBooked(booked === "con" ? "" : "con")}>
+                <CalendarPlus /> Con prenotazioni
+              </Button>
+              <Button size="sm" variant="ghost" aria-expanded={showFilters} aria-controls="client-filters" onClick={() => setShowFilters(!showFilters)} className="sm:ml-auto">
+                <SlidersHorizontal /> Altri filtri {showFilters ? <ChevronUp /> : <ChevronDown />}
+              </Button>
+            </div>
+          <div id="client-filters" hidden={!showFilters} className={cn("grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4", showFilters && "grid")}>
             <select
               className={selectClass}
               aria-label="Filtra per saldo"
@@ -237,11 +259,13 @@ function ClientsPage() {
               <option value="modifica">Ordina: ultima modifica, dalla più recente</option>
             </select>
           </div>
-          <Section
-            title={
-              filtered ? `${rows.length} clienti su ${clients.length}` : `${rows.length} clienti`
-            }
-          >
+          </div>
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <h2 className="text-sm font-semibold text-foreground">
+              {filtered ? `${rows.length} clienti su ${clients.length}` : `${rows.length} clienti`}
+            </h2>
+            <span className="hidden text-xs text-muted-foreground sm:block">{sort === "cognome" ? "Cognome A–Z" : sort === "nome" ? "Nome A–Z" : sort === "saldo" ? "Saldo decrescente" : sort === "prenotazioni" ? "Prenotazioni decrescenti" : "Attività più recente"}</span>
+          </div>
             {!isLoading && !rows.length && (
               <Empty>
                 {clients.length
@@ -249,47 +273,52 @@ function ClientsPage() {
                   : "Nessun cliente: premi Nuovo cliente per iniziare."}
               </Empty>
             )}
-            <ul className="divide-y">
+            {isLoading && <div className="py-8 text-center text-sm text-muted-foreground" role="status">Caricamento clienti…</div>}
+            <ul className="space-y-2">
               {rows.map(({ client: c, balance: bal, bookings: n, lastActivity: last }) => (
-                <li key={c.id} className="flex items-center gap-2 hover:bg-muted/40">
+                <li key={c.id} className={cn("grid min-w-0 gap-x-5 gap-y-3 rounded-lg border border-l-[3px] bg-card p-4 transition-colors hover:border-secondary/30 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center", bal > 0 ? "border-l-success" : "border-l-border")}>
                   <Link
                     to="/clienti/$id"
                     params={{ id: c.id }}
-                    className="flex min-w-0 flex-1 items-center justify-between gap-3 px-1 py-3"
+                    className="group flex min-w-0 items-start gap-3 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
-                    <div className="flex min-w-0 items-center gap-3">
-                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent text-sm font-semibold text-accent-foreground">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent text-sm font-semibold uppercase text-accent-foreground">
                         {c.first_name[0]}
                         {c.last_name[0]}
                       </div>
-                      <div className="min-w-0">
-                        <div className="font-medium">
+                      <div className="min-w-0 flex-1">
+                        <div className="break-words font-semibold group-hover:text-secondary">
                           {c.first_name} {c.last_name}
                         </div>
-                        <div className="text-xs text-muted-foreground">
-                          {n} prenotazioni · ultima modifica {fmtDate(last)}
+                        <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                          <Badge variant={bal > 0 ? "success" : bal < 0 ? "danger" : "neutral"} className="max-w-full gap-1.5 whitespace-normal break-words">
+                            <Ticket className="h-3 w-3 shrink-0" />
+                            {bal > 0 ? `Buono attivo · ${euro(bal)}` : bal < 0 ? `Saldo · ${euro(bal)}` : "Nessun buono"}
+                          </Badge>
+                          {n > 0 && <Badge variant="info" className="gap-1.5"><CalendarPlus className="h-3 w-3" />{n} {n === 1 ? "prenotazione" : "prenotazioni"}</Badge>}
+                        </div>
+                        <div className="mt-2 text-xs text-muted-foreground">
+                          Ultima attività {fmtDate(last)}
                         </div>
                       </div>
-                    </div>
-                    <div
-                      className={cn(
-                        "text-right text-sm font-semibold",
-                        bal > 0 ? "text-primary" : "text-muted-foreground",
-                      )}
-                    >
-                      {euro(bal)}
-                      <div className="text-xs font-normal text-muted-foreground">saldo</div>
-                    </div>
                   </Link>
-                  <div className="flex shrink-0 pr-1">
+                  <div className="flex flex-wrap items-center gap-2 border-t pt-3 sm:justify-end sm:border-t-0 sm:pt-0">
                     <Button
-                      size="icon"
-                      variant="ghost"
+                      size="sm"
+                      variant="default"
                       title={`Ricarica buono di ${c.first_name} ${c.last_name}`}
                       aria-label={`Ricarica buono di ${c.first_name} ${c.last_name}`}
                       onClick={() => openDialog("topup", c.id)}
                     >
-                      <Plus className="h-4 w-4" />
+                      <Plus className="h-4 w-4" /> Ricarica
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      aria-label={`Nuova prenotazione per ${c.first_name} ${c.last_name}`}
+                      onClick={() => setBookingClient(c.id)}
+                    >
+                      <CalendarPlus className="h-4 w-4" /> Prenota
                     </Button>
                     <Button
                       size="icon"
@@ -297,6 +326,7 @@ function ClientsPage() {
                       title={`Usa buono di ${c.first_name} ${c.last_name}`}
                       aria-label={`Usa buono di ${c.first_name} ${c.last_name}`}
                       onClick={() => openDialog("purchase", c.id)}
+                      disabled={bal <= 0}
                     >
                       <ShoppingBag className="h-4 w-4" />
                     </Button>
@@ -304,7 +334,6 @@ function ClientsPage() {
                 </li>
               ))}
             </ul>
-          </Section>
         </TabsContent>
         <TabsContent value="buoni">
           <ActiveBalances
@@ -323,6 +352,7 @@ function ClientsPage() {
       </Tabs>
 
       <ClientDialog open={open} onOpenChange={setOpen} />
+      <BookingDialog open={bookingClient !== undefined} onOpenChange={(value) => { if (!value) setBookingClient(undefined); }} defaultClientId={bookingClient} />
       <TopUpDialog open={dlg === "topup"} onOpenChange={closeDialog} clientId={dlgClient} />
       <TopUpDialog
         open={dlg === "correction"}

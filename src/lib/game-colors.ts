@@ -37,5 +37,5 @@ export function gameLegend(events: { game: string | null; color: string | null }
     const k = normalizeText(label); const item = map.get(k) ?? { label, counts: new Map() };
     item.counts.set(e.color, (item.counts.get(e.color) ?? 0) + 1); map.set(k, item);
   }
-  return [...map.values()].map(({ label, counts }) => ({ game: label, color: [...counts].sort((a, b) => b[1] - a[1])[0][0] })).sort((a, b) => a.game.localeCompare(b.game, "it"));
+  return [...map.values()].map(({ label, counts }) => ({ game: label, color: [...counts].sort((a, b) => b[1] - a[1])[0]?.[0] ?? "blu" })).sort((a, b) => a.game.localeCompare(b.game, "it"));
 }

@@ -5,7 +5,9 @@ type Cell = string | number;
 // Semicolon separator and decimal comma so Excel with Italian settings opens the file in columns.
 export function toCsv(rows: Cell[][]) {
   const cell = (v: Cell) => {
-    const s = typeof v === "number" ? v.toFixed(2).replace(".", ",") : v;
+    let s = typeof v === "number" ? v.toFixed(2).replace(".", ",") : v;
+    // Neutralize spreadsheet formula injection in text cells.
+    if (typeof v === "string" && /^[=+\-@\t\r]/.test(s)) s = `'${s}`;
     return /[";\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
   };
   return rows.map((r) => r.map(cell).join(";")).join("\r\n");

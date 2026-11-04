@@ -8,6 +8,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { eventColor, alternativesOf, wallTime, ZONE, type CalendarEntry } from "@/lib/planning";
 import { cn } from "@/lib/utils";
+import { gameLegend } from "@/lib/game-colors";
 
 const capitalize = (text: string) => text.charAt(0).toUpperCase() + text.slice(1);
 
@@ -15,6 +16,7 @@ export function PlanningCalendar({ events, onEvent, onCreate }: { events:Calenda
   const [view,setView] = useState("mese"); const [anchor,setAnchor] = useState(() => new Date(`${wallTime(new Date().toISOString()).slice(0,10)}T12:00`));
   const todayKey = wallTime(new Date().toISOString()).slice(0,10);
   const days = view === "giorno" ? [anchor] : view === "settimana" ? eachDayOfInterval({start:startOfWeek(anchor,{weekStartsOn:1}),end:endOfWeek(anchor,{weekStartsOn:1})}) : eachDayOfInterval({start:startOfWeek(startOfMonth(anchor),{weekStartsOn:1}),end:endOfWeek(endOfMonth(anchor),{weekStartsOn:1})});
+  const legend = gameLegend(events);
   const headers = view === "giorno" ? [anchor] : days.slice(0,7);
   const move = (n:number) => setAnchor(view === "mese" ? addMonths(anchor,n) : addDays(anchor,n*(view === "settimana" ? 7:1)));
   return <section className="space-y-4"><div className="flex flex-wrap items-center justify-between gap-3"><div className="flex items-center gap-1"><Button variant="outline" size="icon" title="Periodo precedente" aria-label="Periodo precedente" onClick={() => move(-1)}><ChevronLeft/></Button><Button variant="outline" onClick={() => setAnchor(new Date(`${wallTime(new Date().toISOString()).slice(0,10)}T12:00`))}>Oggi</Button><Button variant="outline" size="icon" title="Periodo successivo" aria-label="Periodo successivo" onClick={() => move(1)}><ChevronRight/></Button></div><h2 className="font-semibold">{format(anchor,view === "mese" ? "MMMM yyyy" : "dd MMMM yyyy",{locale:it})}</h2><Tabs value={view} onValueChange={setView}><TabsList><TabsTrigger value="giorno">Giorno</TabsTrigger><TabsTrigger value="settimana">Settimana</TabsTrigger><TabsTrigger value="mese">Mese</TabsTrigger></TabsList></Tabs></div>

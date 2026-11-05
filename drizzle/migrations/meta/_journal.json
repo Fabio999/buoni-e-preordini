@@ -183,6 +183,13 @@
       "when": 1793627253578,
       "tag": "0025_event_participants",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1793906564809,
+      "tag": "0026_shifts_phase2",
+      "breakpoints": true
     }
   ]
 }

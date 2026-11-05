@@ -2,29 +2,51 @@ import { useState } from "react";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import { formatInTimeZone } from "date-fns-tz";
-import { History, Save, Trash2 } from "lucide-react";
+import { History, Maximize2, Pencil, Plus, Save, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ASSIGNMENT_STATUSES, assignmentInputSchema, assignmentMinutes, assignmentTime, formatHours, monthDays, type Collaborator, type ShiftAssignment } from "@/lib/shifts";
+import { ASSIGNMENT_STATUSES, assignmentInputSchema, assignmentMinutes, assignmentTime, compactTime, formatHours, monthDays, type Collaborator, type ShiftAssignment } from "@/lib/shifts";
 import { cn } from "@/lib/utils";
 
+const STATUS_DOT: Record<ShiftAssignment["status"], string> = { pubblicato: "bg-success", bozza: "border border-dashed border-muted-foreground bg-transparent", modificato: "bg-warning" };
 export function ShiftSchedule({ month, days, assignments, people, onEdit }: { month: string; days?: string[] | undefined; assignments: ShiftAssignment[]; people: Collaborator[]; onEdit?: (day: string, collaboratorId?: string) => void }) {
+  const [zoom, setZoom] = useState<string | null>(null);
   const today = formatInTimeZone(new Date(), "Europe/Rome", "yyyy-MM-dd");
   const names = new Map(people.map(p => [p.id, `${p.first_name} ${p.last_name}`]));
+  const short = new Map(people.map(p => [p.id, `${p.first_name} ${p.last_name.slice(0, 1)}.`]));
   const list = days ?? monthDays(month);
   const single = list.length === 1;
+  const showNames = people.length > 1;
   const headers = single ? [format(new Date(`${list[0]}T12:00:00`), "EEEE", { locale: it })] : ["Lun", "Mar", "Mer", "Gio", "Ven", "Sab", "Dom"];
-  return <div className="overflow-x-auto rounded-lg border bg-card"><div className={single ? "" : "min-w-[560px]"}><div className={cn("grid border-b bg-muted/60", single ? "grid-cols-1" : "grid-cols-7")}>{headers.map(day => <div key={day} className="py-3 text-center text-xs font-semibold capitalize text-muted-foreground">{day}</div>)}</div><div className={cn("grid", single ? "grid-cols-1" : "grid-cols-7")}>{list.map(day => <div key={day} className={cn("min-h-28 min-w-0 border-b border-r p-2", !days && !day.startsWith(month) && "opacity-45", day === today && "bg-primary/5 ring-1 ring-inset ring-primary")}>
-    {onEdit ? <Button variant="ghost" size="sm" className="mb-2 h-7 px-2" aria-label={`Aggiungi turno ${day}`} onClick={() => onEdit(day)}>{Number(day.slice(-2))}</Button> : <p className="mb-2 text-xs font-semibold">{Number(day.slice(-2))}</p>}
-    <div className="space-y-1">{assignments.filter(e => e.day === day).map(entry => {
+  const ofDay = (day: string) => assignments.filter(e => e.day === day).sort((a, b) => a.starts_at.localeCompare(b.starts_at));
+  return <><div className="overflow-x-auto rounded-lg border bg-card"><div className={single ? "" : "min-w-[560px]"}><div className={cn("grid border-b bg-muted/60", single ? "grid-cols-1" : "grid-cols-7")}>{headers.map(day => <div key={day} className="py-3 text-center text-xs font-semibold capitalize text-muted-foreground">{day}</div>)}</div><div className={cn("grid", single ? "grid-cols-1" : "grid-cols-7")}>{list.map(day => {
+    const shifts = ofDay(day);
+    return <div key={day} className={cn("group min-h-24 min-w-0 cursor-pointer border-b border-r p-1.5 transition-colors hover:bg-muted/40", !days && !day.startsWith(month) && "opacity-45", day === today && "bg-primary/5 ring-1 ring-inset ring-primary")} onClick={() => setZoom(day)}>
+      <div className="mb-1 flex items-center justify-between"><button type="button" className="rounded px-1 text-xs font-semibold hover:bg-muted" aria-label={`Apri ${day}`} onClick={e => { e.stopPropagation(); setZoom(day); }}>{Number(day.slice(-2))}</button>{shifts.length > 0 && <Maximize2 className="size-3 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />}</div>
+      <ul className="space-y-0.5">{shifts.map(entry => {
+        const status = ASSIGNMENT_STATUSES.find(s => s.value === entry.status);
+        const content = <><span className={cn("size-1.5 shrink-0 rounded-full", STATUS_DOT[entry.status])} />{showNames && <span className="min-w-0 truncate">{short.get(entry.collaborator_id)}</span>}<span className="ml-auto shrink-0 tabular-nums text-muted-foreground">{compactTime(entry)}</span></>;
+        const title = `${names.get(entry.collaborator_id) ?? ""} · ${assignmentTime(entry)} · ${status?.label ?? ""}`;
+        return <li key={entry.id}>{onEdit ? <button type="button" title={title} className={cn("flex w-full min-w-0 items-center gap-1 rounded px-1 py-0.5 text-left text-[10px] leading-none hover:bg-muted", entry.status !== "pubblicato" && status?.className, entry.status !== "pubblicato" && "border")} onClick={e => { e.stopPropagation(); onEdit(day, entry.collaborator_id); }}>{content}</button> : <div title={title} className={cn("flex min-w-0 items-center gap-1 rounded px-1 py-0.5 text-[10px] leading-none", entry.status !== "pubblicato" && status?.className, entry.status !== "pubblicato" && "border")}>{content}</div>}</li>;
+      })}</ul>
+    </div>;
+  })}</div></div></div>
+  {zoom && <DayDialog day={zoom} shifts={ofDay(zoom)} names={names} onClose={() => setZoom(null)} onEdit={onEdit ? collaboratorId => { setZoom(null); onEdit(zoom, collaboratorId); } : undefined} />}</>;
+}
+
+function DayDialog({ day, shifts, names, onClose, onEdit }: { day: string; shifts: ShiftAssignment[]; names: Map<string, string>; onClose: () => void; onEdit?: ((collaboratorId?: string) => void) | undefined }) {
+  const total = shifts.reduce((sum, e) => sum + assignmentMinutes(e), 0);
+  return <Dialog open onOpenChange={o => !o && onClose()}><DialogContent className="max-h-[90dvh] overflow-y-auto"><DialogHeader><DialogTitle className="capitalize">{format(new Date(`${day}T12:00:00`), "EEEE d MMMM yyyy", { locale: it })}</DialogTitle></DialogHeader>
+    <p className="text-sm text-muted-foreground">{shifts.length ? `${shifts.length} ${shifts.length === 1 ? "turno" : "turni"} · ${formatHours(total)} h in totale` : "Nessun turno in questo giorno."}</p>
+    {shifts.length > 0 && <ul className="divide-y rounded-lg border">{shifts.map(entry => {
       const status = ASSIGNMENT_STATUSES.find(s => s.value === entry.status);
-      const content = <><span className="block break-words font-semibold">{names.get(entry.collaborator_id)}</span><span className="block">{entry.starts_at.slice(0, 5)}–{entry.ends_at.slice(0, 5)}{entry.ends_next_day && " +1"} · {formatHours(assignmentMinutes(entry))} h</span><span className="block">{status?.label}</span></>;
-      return onEdit ? <Button key={entry.id} variant="outline" className={cn("h-auto w-full min-w-0 whitespace-normal p-1.5 text-left text-[10px] leading-tight", status?.className)} onClick={() => onEdit(day, entry.collaborator_id)}><span className="w-full min-w-0">{content}</span></Button> : <div key={entry.id} className={cn("rounded border p-1.5 text-[10px] leading-tight", status?.className)}>{content}</div>;
-    })}</div>
-  </div>)}</div></div></div>;
+      return <li key={entry.id} className="space-y-1 p-3"><div className="flex flex-wrap items-center justify-between gap-2"><span className="break-words font-semibold">{names.get(entry.collaborator_id) ?? "Collaboratore"}</span><span className={cn("rounded border px-2 py-0.5 text-xs font-semibold", status?.className)}>{status?.label}</span></div><p className="text-sm tabular-nums">{assignmentTime(entry)} · {formatHours(assignmentMinutes(entry))} h</p>{entry.note && <p className="whitespace-pre-wrap break-words text-sm text-muted-foreground">{entry.note}</p>}{entry.published_at && <p className="text-xs text-muted-foreground">Pubblicato il {new Date(entry.published_at).toLocaleString("it-IT", { dateStyle: "short", timeStyle: "short" })}</p>}{onEdit && <Button variant="outline" size="sm" className="mt-1" onClick={() => onEdit(entry.collaborator_id)}><Pencil />Modifica</Button>}</li>;
+    })}</ul>}
+    {onEdit && <div className="flex justify-end"><Button onClick={() => onEdit()}><Plus />Nuovo turno</Button></div>}
+  </DialogContent></Dialog>;
 }
 
 export function AssignmentList({ assignments }: { assignments: ShiftAssignment[] }) {

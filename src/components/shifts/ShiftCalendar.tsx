@@ -11,7 +11,7 @@ import { SHIFT_STATUSES, monthDays, type ShiftEntry, type ShiftStatus } from "@/
 import { cn } from "@/lib/utils";
 
 export function ShiftLegend() {
-  return <div className="flex flex-wrap gap-x-5 gap-y-2 text-xs">{SHIFT_STATUSES.map(s => <span key={s.value} className="flex items-center gap-2"><span className={cn("size-2.5 rounded-full", s.dot)} />{s.label}</span>)}<span className="flex items-center gap-2 text-muted-foreground"><span className="size-2.5 rounded-full border bg-muted" />Non indicato</span></div>;
+  return <div className="flex flex-wrap gap-x-5 gap-y-2 text-xs">{SHIFT_STATUSES.map(s => <span key={s.value} className="flex items-center gap-2"><span className={cn("size-2.5 rounded-full", s.dot)} />{s.label}</span>)}<span className="flex items-center gap-2 text-muted-foreground"><span className="size-2.5 rounded-full border bg-muted" />Da inserire</span></div>;
 }
 export function MonthControls({ month, onChange }: { month: string; onChange: (m: string) => void }) {
   const date = new Date(`${month}-01T12:00:00`);

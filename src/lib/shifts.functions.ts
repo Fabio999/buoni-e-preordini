@@ -16,7 +16,7 @@ export const manageShiftCollaborator = createServerFn({ method: "POST" })
     const { data: allowed, error: roleError } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" });
     if (roleError || !allowed) throw new Error("Non autorizzato");
     const { supabaseAdmin: admin } = await import("@/integrations/supabase/client.server");
-    let id = data.id;
+    const id = data.id;
     if (data.action === "create") {
       if (!data.first_name || !data.last_name) throw new Error("Inserisci nome e cognome");
       // Generate the key before inserting: both are stored atomically by the RPC.
@@ -77,4 +77,14 @@ export const saveShiftAssignment = createServerFn({ method: "POST" })
       : await table.upsert({ ...data.entry, updated_at: new Date().toISOString() }, { onConflict: "collaborator_id,day" });
     if (result.error) throw new Error(result.error.message);
     return { ok: true };
+  });
+export const publishShifts = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator(input => z.object({ from: shiftDaySchema, to: shiftDaySchema }).refine(d => d.from <= d.to, "Periodo non valido").parse(input))
+  .handler(async ({ data, context }) => {
+    const { data: allowed, error } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" });
+    if (error || !allowed) throw new Error("Non autorizzato");
+    const { data: published, error: publishError } = await context.supabase.rpc("publish_shifts", { _from: data.from, _to: data.to });
+    if (publishError) throw new Error(publishError.message);
+    return { count: published?.length ?? 0 };
   });

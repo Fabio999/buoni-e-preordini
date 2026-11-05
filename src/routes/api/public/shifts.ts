@@ -28,7 +28,7 @@ export const Route = createFileRoute("/api/public/shifts")({
       const { first, last } = monthBounds(data.month);
       const { data: entries, error } = await admin.from("shift_availability").select("*").eq("collaborator_id", person.id).gte("day", first).lte("day", last);
       if (error) throw error;
-      const { data: assignments, error: assignmentsError } = await admin.from("shift_assignments").select("id,collaborator_id,day,status,starts_at,ends_at,ends_next_day,note,updated_at").eq("collaborator_id", person.id).gte("day", first).lte("day", last).order("day").order("starts_at");
+      const { data: assignments, error: assignmentsError } = await admin.from("shift_assignments").select("id,collaborator_id,day,status,starts_at,ends_at,ends_next_day,note,updated_at,published_at").eq("collaborator_id", person.id).in("status", ["pubblicato", "modificato"]).gte("day", first).lte("day", last).order("day").order("starts_at");
       if (assignmentsError) throw assignmentsError;
       const { data: taskRows, error: taskError } = await admin.from("company_tasks").select("id,title,due_at,status,archived,responsible").eq("archived", false).neq("status", "completata").not("due_at", "is", null);
       if (taskError) throw taskError;

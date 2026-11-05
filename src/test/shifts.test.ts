@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { assignmentInputSchema, assignmentMinutes, assignmentTime, availabilityDeadline, criticalDays, formatHours, hoursByCollaborator, hoursExportRows, isAvailabilityLocked, monthDays, monthWeeks, movePeriod, planChanges, planKey, planMinutes, planningOrder, planSlots, slotMinutes, pendingPublication, periodDays, periodLabel, shiftHistoryChanges, shiftsExportRows, toAssignmentStatus, shiftEntrySchema, shiftTokenSchema, type ShiftAssignment } from "@/lib/shifts";
+import { assignmentInputSchema, assignmentMinutes, compactTime, assignmentTime, availabilityDeadline, criticalDays, formatHours, hoursByCollaborator, hoursExportRows, isAvailabilityLocked, monthDays, monthWeeks, movePeriod, planChanges, planKey, planMinutes, planningOrder, planSlots, slotMinutes, pendingPublication, periodDays, periodLabel, shiftHistoryChanges, shiftsExportRows, toAssignmentStatus, shiftEntrySchema, shiftTokenSchema, type ShiftAssignment } from "@/lib/shifts";
 
 describe("Disponibilità personali", () => {
   const assignment = { collaborator_id: "00000000-0000-4000-8000-000000000001", day: "2026-10-30", starts_at: "20:00", ends_at: "23:00", ends_next_day: false, note: "Banco" };
@@ -114,6 +114,14 @@ describe("Viste, export e cronologia turni", () => {
     expect(shiftHistoryChanges("turno", before, { ...before, ends_at: "20:00:00", status: "modificato" })).toEqual(["Orario: 15:00–19:00 → 15:00–20:00", "Stato: Pubblicato → Modificato"]);
     expect(shiftHistoryChanges("turno", null, before)).toEqual(["Orario: 15:00–19:00", "Stato: Pubblicato"]);
     expect(shiftHistoryChanges("disponibilita", { status: "disponibile", note: "" }, null)).toEqual(["Disponibilità: Disponibile → —"]);
+  });
+});
+
+describe("Calendario turni compatto", () => {
+  it("accorcia gli orari tondi e segna i turni dopo mezzanotte", () => {
+    expect(compactTime({ starts_at: "15:00:00", ends_at: "19:00:00", ends_next_day: false })).toBe("15–19");
+    expect(compactTime({ starts_at: "09:30", ends_at: "13:45", ends_next_day: false })).toBe("9:30–13:45");
+    expect(compactTime({ starts_at: "22:00", ends_at: "02:00", ends_next_day: true })).toBe("22–2+1");
   });
 });
 

@@ -178,6 +178,21 @@ export function planSlots(assignments: ShiftAssignment[], days: string[]) {
   for (const a of assignments) if (days.includes(a.day)) slots[planKey(a.collaborator_id, a.day)] = { on: true, starts_at: a.starts_at.slice(0, 5), ends_at: a.ends_at.slice(0, 5), ends_next_day: a.ends_next_day, note: a.note };
   return slots;
 }
+export function slotMinutes(day: string, slot: PlanSlot) {
+  if (!slot.on || !/^\d\d:\d\d$/.test(slot.starts_at) || !/^\d\d:\d\d$/.test(slot.ends_at)) return 0;
+  return Math.max(0, assignmentMinutes({ day, ...slot }));
+}
+export function planMinutes(slots: Record<string, PlanSlot>) {
+  const byPerson = new Map<string, number>(); const byDay = new Map<string, number>();
+  for (const [key, slot] of Object.entries(slots)) {
+    const [collaboratorId = "", day = ""] = key.split(":");
+    const minutes = slotMinutes(day, slot);
+    if (!minutes) continue;
+    byPerson.set(collaboratorId, (byPerson.get(collaboratorId) ?? 0) + minutes);
+    byDay.set(day, (byDay.get(day) ?? 0) + minutes);
+  }
+  return { byPerson, byDay };
+}
 const AVAILABILITY_ORDER = ["disponibile", "meglio_di_no", "", "assente"];
 export function planningOrder<P extends Pick<Collaborator, "id" | "first_name" | "last_name">>(people: P[], entries: Pick<ShiftEntry, "collaborator_id" | "day" | "status" | "note">[], day: string) {
   const byPerson = new Map(entries.filter(e => e.day === day).map(e => [e.collaborator_id, e]));

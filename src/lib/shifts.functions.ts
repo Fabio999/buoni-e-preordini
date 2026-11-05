@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { assignmentInputSchema, shiftDaySchema, shiftEntrySchema } from "./shifts";
+import { assignmentInputSchema, shiftDaySchema, shiftEntrySchema, toAssignmentStatus } from "./shifts";
 
 export const manageShiftCollaborator = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -76,7 +76,11 @@ export const saveShiftAssignment = createServerFn({ method: "POST" })
       ? await table.delete().eq("collaborator_id", data.collaborator_id).eq("day", data.day)
       : await table.upsert({ ...data.entry, updated_at: new Date().toISOString() }, { onConflict: "collaborator_id,day" });
     if (result.error) throw new Error(result.error.message);
-    return { ok: true };
+    try {
+      const { refreshSheetShifts } = await import("./shift-sheets.server");
+      await refreshSheetShifts(context.supabase, data.action === "delete" ? data.collaborator_id : data.entry.collaborator_id);
+    } catch (e) { return { ok: true, sheetWarning: `Turno salvato, ma il foglio Google non è stato aggiornato: ${(e as Error).message}` }; }
+    return { ok: true, sheetWarning: null };
   });
 export const publishShifts = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -86,5 +90,21 @@ export const publishShifts = createServerFn({ method: "POST" })
     if (error || !allowed) throw new Error("Non autorizzato");
     const { data: published, error: publishError } = await context.supabase.rpc("publish_shifts", { _from: data.from, _to: data.to });
     if (publishError) throw new Error(publishError.message);
-    return { count: published?.length ?? 0 };
+    const rows = (published ?? []).map(e => ({ ...e, status: toAssignmentStatus(e.status) }));
+    const notice = { count: rows.length, mailed: 0, noEmail: [] as string[], errors: [] as string[] };
+    if (!rows.length) return notice;
+    const { refreshSheetShifts, sendPublicationEmail } = await import("./shift-sheets.server");
+    const { data: people, error: peopleError } = await context.supabase.from("shift_collaborators").select("id,first_name,last_name,contact_email,sheet_id,active").in("id", [...new Set(rows.map(r => r.collaborator_id))]);
+    if (peopleError) { notice.errors.push(peopleError.message); return notice; }
+    for (const person of people ?? []) {
+      const name = `${person.first_name} ${person.last_name}`;
+      if (!person.active) continue;
+      try {
+        if (person.sheet_id) await refreshSheetShifts(context.supabase, person.id);
+        if (await sendPublicationEmail(person, rows.filter(r => r.collaborator_id === person.id))) notice.mailed++;
+        else notice.noEmail.push(name);
+      } catch (e) { notice.errors.push(`${name}: ${(e as Error).message}`); }
+    }
+    await context.supabase.from("shift_sync_runs").insert({ kind: "pubblicazione", status: notice.errors.length ? "con_errori" : "completata", finished_at: new Date().toISOString(), summary: { ...notice, from: data.from, to: data.to }, error: notice.errors.join("\n").slice(0, 4000) });
+    return notice;
   });

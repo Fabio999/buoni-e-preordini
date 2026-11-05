@@ -40,6 +40,10 @@ export function pendingPublication(assignments: Pick<ShiftAssignment, "status">[
 export function assignmentTime(entry: Pick<ShiftAssignment, "starts_at" | "ends_at" | "ends_next_day">) {
   return `${entry.starts_at.slice(0, 5)}–${entry.ends_at.slice(0, 5)}${entry.ends_next_day ? " (+1 giorno)" : ""}`;
 }
+export function compactTime(entry: Pick<ShiftAssignment, "starts_at" | "ends_at" | "ends_next_day">) {
+  const short = (t: string) => t.slice(3, 5) === "00" ? String(Number(t.slice(0, 2))) : `${Number(t.slice(0, 2))}:${t.slice(3, 5)}`;
+  return `${short(entry.starts_at)}–${short(entry.ends_at)}${entry.ends_next_day ? "+1" : ""}`;
+}
 export function monthDays(month: string) {
   const date = new Date(`${month}-01T12:00:00`);
   const first = startOfWeek(startOfMonth(date), { weekStartsOn: 1 });

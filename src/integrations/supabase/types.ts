@@ -596,6 +596,7 @@ export type Database = {
           ends_next_day: boolean
           id: string
           note: string
+          published_at: string | null
           starts_at: string
           status: string
           updated_at: string
@@ -607,8 +608,9 @@ export type Database = {
           ends_next_day?: boolean
           id?: string
           note?: string
+          published_at?: string | null
           starts_at: string
-          status: string
+          status?: string
           updated_at?: string
         }
         Update: {
@@ -618,6 +620,7 @@ export type Database = {
           ends_next_day?: boolean
           id?: string
           note?: string
+          published_at?: string | null
           starts_at?: string
           status?: string
           updated_at?: string
@@ -676,6 +679,8 @@ export type Database = {
           id: string
           last_name: string
           realtime_topic: string
+          sheet_id: string
+          sheet_synced_at: string | null
           staff_notes: string
           staff_role: string
         }
@@ -687,6 +692,8 @@ export type Database = {
           id?: string
           last_name: string
           realtime_topic?: string
+          sheet_id?: string
+          sheet_synced_at?: string | null
           staff_notes?: string
           staff_role?: string
         }
@@ -698,8 +705,61 @@ export type Database = {
           id?: string
           last_name?: string
           realtime_topic?: string
+          sheet_id?: string
+          sheet_synced_at?: string | null
           staff_notes?: string
           staff_role?: string
+        }
+        Relationships: []
+      }
+      shift_history: {
+        Row: {
+          action: string
+          after_data: Json | null
+          after_deadline: boolean
+          before_data: Json | null
+          collaborator_id: string
+          collaborator_name: string
+          created_at: string
+          day: string
+          entity_id: string
+          entity_type: string
+          id: string
+          operator_name: string
+          source: string
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          after_data?: Json | null
+          after_deadline?: boolean
+          before_data?: Json | null
+          collaborator_id: string
+          collaborator_name?: string
+          created_at?: string
+          day: string
+          entity_id: string
+          entity_type: string
+          id?: string
+          operator_name?: string
+          source?: string
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          after_data?: Json | null
+          after_deadline?: boolean
+          before_data?: Json | null
+          collaborator_id?: string
+          collaborator_name?: string
+          created_at?: string
+          day?: string
+          entity_id?: string
+          entity_type?: string
+          id?: string
+          operator_name?: string
+          source?: string
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -728,6 +788,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      shift_sync_runs: {
+        Row: {
+          error: string
+          finished_at: string | null
+          id: string
+          kind: string
+          operator_name: string
+          started_at: string
+          status: string
+          summary: Json
+          user_id: string | null
+        }
+        Insert: {
+          error?: string
+          finished_at?: string | null
+          id?: string
+          kind: string
+          operator_name?: string
+          started_at?: string
+          status?: string
+          summary?: Json
+          user_id?: string | null
+        }
+        Update: {
+          error?: string
+          finished_at?: string | null
+          id?: string
+          kind?: string
+          operator_name?: string
+          started_at?: string
+          status?: string
+          summary?: Json
+          user_id?: string | null
+        }
+        Relationships: []
       }
       staff_members: {
         Row: {
@@ -865,6 +961,10 @@ export type Database = {
         }
         Returns: string
       }
+      apply_sheet_availability: {
+        Args: { _collaborator: string; _rows: Json }
+        Returns: number
+      }
       client_balance: { Args: { _client: string }; Returns: number }
       create_shift_collaborator: {
         Args: { _first: string; _hash: string; _last: string }
@@ -890,6 +990,27 @@ export type Database = {
           _source: string
         }
         Returns: undefined
+      }
+      publish_shifts: {
+        Args: { _from: string; _to: string }
+        Returns: {
+          collaborator_id: string
+          day: string
+          ends_at: string
+          ends_next_day: boolean
+          id: string
+          note: string
+          published_at: string | null
+          starts_at: string
+          status: string
+          updated_at: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "shift_assignments"
+          isOneToOne: false
+          isSetofReturn: true
+        }
       }
       recompute_client_ledger: { Args: { _client: string }; Returns: undefined }
       register_purchase: {
@@ -925,6 +1046,7 @@ export type Database = {
         Args: { _day: string; _hash: string; _note: string; _status: string }
         Returns: undefined
       }
+      shift_availability_deadline: { Args: { _day: string }; Returns: string }
       update_balance_movement: {
         Args: { _amount: number; _description: string; _id: string }
         Returns: undefined

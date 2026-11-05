@@ -17,6 +17,7 @@ import { downloadCsv, toCsv } from "@/lib/csv";
 import { AssignmentDialog, ShiftSchedule } from "@/components/shifts/ShiftSchedule";
 import { useIsAdmin } from "@/lib/data";
 import { supabase } from "@/integrations/supabase/client";
+import { googleConnectionTest } from "@/lib/google.functions";
 import { manageShiftCollaborator, publishShifts, saveAdminShift, saveShiftAssignment } from "@/lib/shifts.functions";
 import { hoursExportRows, monthBounds, monthDays, pendingPublication, periodDays, periodLabel, SHIFT_STATUSES, shiftsExportRows, toAssignmentStatus, type Collaborator, type ShiftAssignment, type ShiftStatus, type ShiftView } from "@/lib/shifts";
 import { cn } from "@/lib/utils";
@@ -113,7 +114,16 @@ function AdminShifts() {
     } catch (error) { toast.error((error as Error).message); }
     finally { setBusy(false); }
   }
-  return <div><PageHeader title="Turni" actions={<Button onClick={() => setPersonDialog("new")}><Plus />Collaboratore</Button>} /><div className="mb-6 flex flex-wrap items-center gap-4"><span className="flex items-center gap-2 text-sm text-muted-foreground"><Users className="size-4" />{all.filter(p => p.active).length} collaboratori attivi</span><ShiftLegend /></div>{people.error || entries.error ? <p className="mb-4 text-destructive">Impossibile caricare i turni. <Button variant="link" onClick={() => { people.refetch(); entries.refetch(); }}>Riprova</Button></p> : null}
+  const googleTest = useServerFn(googleConnectionTest);
+  const testGoogle = async () => {
+    try {
+      const r = await googleTest();
+      const line = (n: string, x: { ok: boolean; value?: string; error?: string }) => `${n}: ${x.ok ? x.value : "ERRORE " + x.error}`;
+      const text = [line("Gmail", r.gmail), line("Drive", r.drive), line("Sheets", r.sheets)].join("\n");
+      (r.gmail.ok && r.drive.ok && r.sheets.ok ? toast.success : toast.error)("Prova collegamento Google", { description: <span className="whitespace-pre-line">{text}</span>, duration: 15000 });
+    } catch (error) { toast.error((error as Error).message); }
+  };
+  return <div><PageHeader title="Turni" actions={<><Button variant="outline" onClick={testGoogle}>Prova collegamento Google</Button><Button onClick={() => setPersonDialog("new")}><Plus />Collaboratore</Button></>} /><div className="mb-6 flex flex-wrap items-center gap-4"><span className="flex items-center gap-2 text-sm text-muted-foreground"><Users className="size-4" />{all.filter(p => p.active).length} collaboratori attivi</span><ShiftLegend /></div>{people.error || entries.error ? <p className="mb-4 text-destructive">Impossibile caricare i turni. <Button variant="link" onClick={() => { people.refetch(); entries.refetch(); }}>Riprova</Button></p> : null}
     <div className="mb-5 flex flex-wrap gap-2"><Button variant={!selected ? "secondary" : "outline"} onClick={() => setSelected("")}>Tutti</Button>{all.map(p => <Button key={p.id} variant={selected === p.id ? "secondary" : "outline"} onClick={() => setSelected(p.id)} className="max-w-full whitespace-normal break-words">{fullName(p)}{!p.active && <span className="text-xs opacity-70">Disattivato</span>}</Button>)}</div>
     <PeriodControls view={view} anchor={anchor} onView={setView} onAnchor={setAnchor} />
     <section className="mb-8"><div className="mb-4 flex flex-wrap items-center justify-between gap-3"><h2 className="text-lg font-semibold">Calendario turni</h2><div className="flex flex-wrap gap-2"><Button variant="outline" disabled={!all.length} onClick={() => setAssignmentDialog({ day: periodFirst, personId: current?.id })}><Plus />Nuovo turno</Button><Button variant="outline" disabled={!periodAssignments.length} onClick={() => exportCsv("turni")}><Download />Esporta turni</Button><Button variant="outline" disabled={!all.length} onClick={() => exportCsv("ore")}><Download />Esporta ore</Button><Button disabled={busy || !pending} onClick={publishMonth}><Send />{pending ? `Conferma e pubblica turni (${pending})` : "Turni pubblicati"}</Button></div></div>{assignments.error ? <p className="text-destructive">Impossibile caricare i turni. <Button variant="link" onClick={() => assignments.refetch()}>Riprova</Button></p> : <><ShiftSchedule month={month} days={view === "mese" ? undefined : period} people={current ? [current] : all} assignments={(assignments.data ?? []).filter(e => !current || e.collaborator_id === current.id)} onEdit={(day, personId) => { if (all.length) setAssignmentDialog({ day, personId: personId ?? current?.id }); }} /><ShiftSummary days={period} people={current ? [current] : all} assignments={assignments.data ?? []} entries={entries.data ?? []} /></>}</section>

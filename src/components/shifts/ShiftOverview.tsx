@@ -1,11 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
 import { formatInTimeZone } from "date-fns-tz";
 import { it } from "date-fns/locale";
-import { AlertTriangle, ChevronLeft, ChevronRight } from "lucide-react";
+import { AlertTriangle, ChevronLeft, ChevronRight, Minimize2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { errMsg } from "@/lib/data";
+import { useCollapsed } from "@/hooks/use-collapsed";
+import { cn } from "@/lib/utils";
 import { criticalDays, formatHours, HISTORY_ACTIONS, HISTORY_SOURCES, hoursByCollaborator, MIN_STAFF_PER_DAY, movePeriod, periodLabel, SHIFT_VIEWS, shiftHistoryChanges, type Collaborator, type ShiftAssignment, type ShiftEntry, type ShiftView } from "@/lib/shifts";
 
 export function PeriodControls({ view, anchor, onView, onAnchor }: { view: ShiftView; anchor: string; onView: (v: ShiftView) => void; onAnchor: (day: string) => void }) {
@@ -21,9 +23,10 @@ export function ShiftSummary({ days, people, assignments, entries }: { days: str
   const totals = hoursByCollaborator(assignments, first, last);
   const listed = people.filter(p => p.active || totals.has(p.id));
   const critical = criticalDays(days, people, assignments, entries);
-  return <div className="mt-4 grid gap-4 lg:grid-cols-2">
-    <section className="rounded-lg border bg-card p-4"><h3 className="mb-3 font-semibold">Ore per collaboratore</h3>{!listed.length ? <p className="text-sm text-muted-foreground">Nessun collaboratore.</p> : <table className="w-full text-sm"><thead><tr className="text-left text-muted-foreground"><th className="py-1 font-medium">Collaboratore</th><th className="py-1 text-right font-medium">Turni</th><th className="py-1 text-right font-medium">Ore</th></tr></thead><tbody>{listed.map(p => { const t = totals.get(p.id); return <tr key={p.id} className="border-t"><td className="break-words py-1.5">{p.first_name} {p.last_name}</td><td className="py-1.5 text-right">{t?.shifts ?? 0}</td><td className="py-1.5 text-right">{formatHours(t?.minutes ?? 0)}</td></tr>; })}</tbody></table>}</section>
-    <section className="rounded-lg border bg-card p-4"><h3 className="mb-3 font-semibold">Giorni con meno di {MIN_STAFF_PER_DAY} persone</h3>{!critical.length ? <p className="text-sm text-muted-foreground">Nessun giorno critico nel periodo.</p> : <ul className="space-y-2 text-sm">{critical.map(d => <li key={d.day} className="rounded border border-warning/40 bg-warning/10 p-2"><p className="flex items-center gap-2 font-medium"><AlertTriangle className="size-4 shrink-0 text-warning" /><span className="capitalize">{dayLabel(d.day)}</span> · {d.assigned} {d.assigned === 1 ? "persona" : "persone"} in turno</p>{d.missing.length > 0 && <p className="mt-1 break-words text-xs text-muted-foreground">Disponibilità da inserire: {d.missing.map(p => `${p.first_name} ${p.last_name}`).join(", ")}</p>}</li>)}</ul>}</section>
+  const [collapsed, collapse] = useCollapsed("mf-critical-days-collapsed");
+  return <div className={cn("mt-4 grid gap-4", !collapsed && "lg:grid-cols-2")}>
+    <section className="rounded-lg border bg-card p-4"><h3 className="mb-3 flex flex-wrap items-center justify-between gap-2 font-semibold">Ore per collaboratore{collapsed && <Button variant="outline" size="sm" className="font-normal" aria-expanded={false} aria-label={`Mostra giorni con meno di ${MIN_STAFF_PER_DAY} persone (${critical.length})`} title={`Giorni con meno di ${MIN_STAFF_PER_DAY} persone`} onClick={() => collapse(false)}><AlertTriangle className={critical.length ? "text-warning" : "text-muted-foreground"} /><span className={cn("rounded-full px-1.5 text-[11px] font-semibold", critical.length ? "bg-warning text-white" : "bg-muted text-muted-foreground")}>{critical.length}</span></Button>}</h3>{!listed.length ? <p className="text-sm text-muted-foreground">Nessun collaboratore.</p> : <table className="w-full text-sm"><thead><tr className="text-left text-muted-foreground"><th className="py-1 font-medium">Collaboratore</th><th className="py-1 text-right font-medium">Turni</th><th className="py-1 text-right font-medium">Ore</th></tr></thead><tbody>{listed.map(p => { const t = totals.get(p.id); return <tr key={p.id} className="border-t"><td className="break-words py-1.5">{p.first_name} {p.last_name}</td><td className="py-1.5 text-right">{t?.shifts ?? 0}</td><td className="py-1.5 text-right">{formatHours(t?.minutes ?? 0)}</td></tr>; })}</tbody></table>}</section>
+    {!collapsed && <section className="rounded-lg border bg-card p-4"><h3 className="mb-3 flex items-center gap-2 font-semibold">Giorni con meno di {MIN_STAFF_PER_DAY} persone<Button variant="ghost" size="sm" className="ml-auto font-normal" aria-expanded title="Riduci a icona" onClick={() => collapse(true)}><Minimize2 />Riduci a icona</Button></h3>{!critical.length ? <p className="text-sm text-muted-foreground">Nessun giorno critico nel periodo.</p> : <ul className="space-y-2 text-sm">{critical.map(d => <li key={d.day} className="rounded border border-warning/40 bg-warning/10 p-2"><p className="flex items-center gap-2 font-medium"><AlertTriangle className="size-4 shrink-0 text-warning" /><span className="capitalize">{dayLabel(d.day)}</span> · {d.assigned} {d.assigned === 1 ? "persona" : "persone"} in turno</p>{d.missing.length > 0 && <p className="mt-1 break-words text-xs text-muted-foreground">Disponibilità da inserire: {d.missing.map(p => `${p.first_name} ${p.last_name}`).join(", ")}</p>}</li>)}</ul>}</section>}
   </div>;
 }
 

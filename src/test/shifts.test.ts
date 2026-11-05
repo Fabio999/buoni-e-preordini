@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { assignmentInputSchema, assignmentMinutes, assignmentTime, availabilityDeadline, criticalDays, formatHours, hoursByCollaborator, hoursExportRows, isAvailabilityLocked, monthDays, monthWeeks, movePeriod, planChanges, planKey, planningOrder, planSlots, pendingPublication, periodDays, periodLabel, shiftHistoryChanges, shiftsExportRows, toAssignmentStatus, shiftEntrySchema, shiftTokenSchema, type ShiftAssignment } from "@/lib/shifts";
+import { assignmentInputSchema, assignmentMinutes, assignmentTime, availabilityDeadline, criticalDays, formatHours, hoursByCollaborator, hoursExportRows, isAvailabilityLocked, monthDays, monthWeeks, movePeriod, planChanges, planKey, planMinutes, planningOrder, planSlots, slotMinutes, pendingPublication, periodDays, periodLabel, shiftHistoryChanges, shiftsExportRows, toAssignmentStatus, shiftEntrySchema, shiftTokenSchema, type ShiftAssignment } from "@/lib/shifts";
 
 describe("Disponibilità personali", () => {
   const assignment = { collaborator_id: "00000000-0000-4000-8000-000000000001", day: "2026-10-30", starts_at: "20:00", ends_at: "23:00", ends_next_day: false, note: "Banco" };
@@ -138,6 +138,14 @@ describe("Pianificazione settimanale", () => {
     slots[planKey(B, "2026-11-11")] = { on: true, starts_at: "18:00", ends_at: "23:00", ends_next_day: false, note: "" };
     slots[planKey(A, "2026-11-10")] = { ...slots[planKey(A, "2026-11-10")]!, ends_at: "20:00" };
     expect(planChanges([published], slots).save.map(s => `${s.collaborator_id}:${s.ends_at}`)).toEqual([`${A}:20:00`, `${B}:23:00`]);
+  });
+  it("conta le ore pianificate per persona e per giorno, anche dopo mezzanotte", () => {
+    const slot = { on: true, starts_at: "15:00", ends_at: "19:30", ends_next_day: false, note: "" };
+    const slots = { [planKey(A, "2026-11-10")]: slot, [planKey(A, "2026-11-11")]: { ...slot, starts_at: "22:00", ends_at: "02:00", ends_next_day: true }, [planKey(B, "2026-11-10")]: { ...slot, on: false }, [planKey(C, "2026-11-10")]: { ...slot, starts_at: "" }, [planKey(C, "2026-11-12")]: { ...slot, starts_at: "20:00", ends_at: "18:00" } };
+    expect(slotMinutes("2026-11-10", slot)).toBe(270);
+    const { byPerson, byDay } = planMinutes(slots);
+    expect(Object.fromEntries(byPerson)).toEqual({ [A]: 510 });
+    expect(Object.fromEntries(byDay)).toEqual({ "2026-11-10": 270, "2026-11-11": 240 });
   });
   it("rimuove i turni tolti e segnala gli orari mancanti o sbagliati", () => {
     const slots = { [planKey(A, "2026-11-10")]: { on: false, starts_at: "15:00", ends_at: "19:00", ends_next_day: false, note: "" }, [planKey(B, "2026-11-11")]: { on: true, starts_at: "", ends_at: "", ends_next_day: false, note: "" }, [planKey(C, "2026-11-12")]: { on: true, starts_at: "20:00", ends_at: "02:00", ends_next_day: false, note: "" }, [planKey(C, "2026-11-13")]: { on: false, starts_at: "", ends_at: "", ends_next_day: false, note: "" } };

@@ -5,19 +5,14 @@ import { planningDate } from "@/lib/planning";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
+import { useCollapsed } from "@/hooks/use-collapsed";
 
 export function TaskDeadlineAlerts({ tasks, scope, popup = false, onTask }: { tasks: PersonalDeadlineTask[]; scope?: string; popup?: boolean; onTask?: (id: string) => void }) {
   const [now, setNow] = useState(() => new Date());
   const [seen, setSeen] = useState<string[]>([]);
   const [ready, setReady] = useState(false);
   const storageKey = `mf-personal-task-reminders:${scope ?? ""}`;
-  const collapsedKey = `mf-task-alerts-collapsed:${scope ?? ""}`;
-  const [collapsed, setCollapsed] = useState(false);
-  useEffect(() => { try { setCollapsed(localStorage.getItem(collapsedKey) === "1"); } catch { setCollapsed(false); } }, [collapsedKey]);
-  function collapse(value: boolean) {
-    setCollapsed(value);
-    try { localStorage.setItem(collapsedKey, value ? "1" : "0"); } catch { /* Preference lasts for this visit only. */ }
-  }
+  const [collapsed, collapse] = useCollapsed(`mf-task-alerts-collapsed:${scope ?? ""}`);
   useEffect(() => {
     const tick = () => setNow(new Date());
     const timer = window.setInterval(tick, 30_000);

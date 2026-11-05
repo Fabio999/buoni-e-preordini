@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { assignmentInputSchema, assignmentMinutes, assignmentTime, availabilityDeadline, criticalDays, formatHours, hoursByCollaborator, hoursExportRows, isAvailabilityLocked, monthDays, movePeriod, pendingPublication, periodDays, periodLabel, shiftHistoryChanges, shiftsExportRows, toAssignmentStatus, shiftEntrySchema, shiftTokenSchema, type ShiftAssignment } from "@/lib/shifts";
+import { assignmentInputSchema, assignmentMinutes, assignmentTime, availabilityDeadline, criticalDays, formatHours, hoursByCollaborator, hoursExportRows, isAvailabilityLocked, monthDays, monthWeeks, movePeriod, planChanges, planKey, planningOrder, planSlots, pendingPublication, periodDays, periodLabel, shiftHistoryChanges, shiftsExportRows, toAssignmentStatus, shiftEntrySchema, shiftTokenSchema, type ShiftAssignment } from "@/lib/shifts";
 
 describe("Disponibilità personali", () => {
   const assignment = { collaborator_id: "00000000-0000-4000-8000-000000000001", day: "2026-10-30", starts_at: "20:00", ends_at: "23:00", ends_next_day: false, note: "Banco" };
@@ -114,5 +114,37 @@ describe("Viste, export e cronologia turni", () => {
     expect(shiftHistoryChanges("turno", before, { ...before, ends_at: "20:00:00", status: "modificato" })).toEqual(["Orario: 15:00–19:00 → 15:00–20:00", "Stato: Pubblicato → Modificato"]);
     expect(shiftHistoryChanges("turno", null, before)).toEqual(["Orario: 15:00–19:00", "Stato: Pubblicato"]);
     expect(shiftHistoryChanges("disponibilita", { status: "disponibile", note: "" }, null)).toEqual(["Disponibilità: Disponibile → —"]);
+  });
+});
+
+describe("Pianificazione settimanale", () => {
+  const A = "00000000-0000-4000-8000-00000000000a"; const B = "00000000-0000-4000-8000-00000000000b"; const C = "00000000-0000-4000-8000-00000000000c";
+  const published: ShiftAssignment = { id: "1", collaborator_id: A, day: "2026-11-10", starts_at: "15:00:00", ends_at: "19:00:00", ends_next_day: false, note: "", status: "pubblicato", published_at: null, updated_at: "" };
+  it("divide il mese in settimane da lunedì a domenica", () => {
+    const weeks = monthWeeks("2026-11");
+    expect(weeks.every(w => w.length === 7)).toBe(true);
+    expect(weeks[0]?.[0]).toBe("2026-10-26");
+    expect(weeks.at(-1)?.at(-1)).toBe("2026-12-06");
+  });
+  it("mette prima i disponibili, poi meglio di no, non compilati e assenti", () => {
+    const people = [{ id: A, first_name: "Anna", last_name: "Zeta" }, { id: B, first_name: "Bruno", last_name: "Alfa" }, { id: C, first_name: "Carla", last_name: "Beta" }, { id: "d", first_name: "Dario", last_name: "Gamma" }];
+    const entries = [{ collaborator_id: A, day: "2026-11-10", status: "assente", note: "" }, { collaborator_id: C, day: "2026-11-10", status: "disponibile", note: "dopo le 16" }, { collaborator_id: B, day: "2026-11-10", status: "meglio_di_no", note: "" }, { collaborator_id: "d", day: "2026-11-11", status: "disponibile", note: "" }];
+    expect(planningOrder(people, entries, "2026-11-10").map(r => r.person.first_name)).toEqual(["Carla", "Bruno", "Dario", "Anna"]);
+  });
+  it("invia solo i turni cambiati, così i pubblicati intatti non diventano Modificato", () => {
+    const slots = planSlots([published], ["2026-11-10", "2026-11-11"]);
+    expect(slots[planKey(A, "2026-11-10")]).toMatchObject({ on: true, starts_at: "15:00", ends_at: "19:00" });
+    expect(planChanges([published], slots)).toEqual({ save: [], remove: [], errors: [] });
+    slots[planKey(B, "2026-11-11")] = { on: true, starts_at: "18:00", ends_at: "23:00", ends_next_day: false, note: "" };
+    slots[planKey(A, "2026-11-10")] = { ...slots[planKey(A, "2026-11-10")]!, ends_at: "20:00" };
+    expect(planChanges([published], slots).save.map(s => `${s.collaborator_id}:${s.ends_at}`)).toEqual([`${A}:20:00`, `${B}:23:00`]);
+  });
+  it("rimuove i turni tolti e segnala gli orari mancanti o sbagliati", () => {
+    const slots = { [planKey(A, "2026-11-10")]: { on: false, starts_at: "15:00", ends_at: "19:00", ends_next_day: false, note: "" }, [planKey(B, "2026-11-11")]: { on: true, starts_at: "", ends_at: "", ends_next_day: false, note: "" }, [planKey(C, "2026-11-12")]: { on: true, starts_at: "20:00", ends_at: "02:00", ends_next_day: false, note: "" }, [planKey(C, "2026-11-13")]: { on: false, starts_at: "", ends_at: "", ends_next_day: false, note: "" } };
+    const r = planChanges([published], slots, new Map([[B, "Bruno Alfa"]]));
+    expect(r.remove).toEqual([{ collaborator_id: A, day: "2026-11-10" }]);
+    expect(r.save).toEqual([]);
+    expect(r.errors[0]).toBe("Bruno Alfa, mercoledì 11: inserisci inizio e fine");
+    expect(r.errors[1]).toContain("giorno successivo");
   });
 });

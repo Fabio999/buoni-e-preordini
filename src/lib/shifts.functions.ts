@@ -108,3 +108,29 @@ export const publishShifts = createServerFn({ method: "POST" })
     await context.supabase.from("shift_sync_runs").insert({ kind: "pubblicazione", status: notice.errors.length ? "con_errori" : "completata", finished_at: new Date().toISOString(), summary: { ...notice, from: data.from, to: data.to }, error: notice.errors.join("\n").slice(0, 4000) });
     return notice;
   });
+
+export const saveWeekPlan = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator(input => z.object({
+    save: z.array(assignmentInputSchema).max(500),
+    remove: z.array(z.object({ collaborator_id: z.string().uuid(), day: shiftDaySchema })).max(500),
+  }).parse(input))
+  .handler(async ({ data, context }) => {
+    const { data: allowed, error } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" });
+    if (error || !allowed) throw new Error("Non autorizzato");
+    for (const r of data.remove) {
+      const { error: removeError } = await context.supabase.from("shift_assignments").delete().eq("collaborator_id", r.collaborator_id).eq("day", r.day);
+      if (removeError) throw new Error(removeError.message);
+    }
+    if (data.save.length) {
+      const now = new Date().toISOString();
+      const { error: saveError } = await context.supabase.from("shift_assignments").upsert(data.save.map(e => ({ ...e, updated_at: now })), { onConflict: "collaborator_id,day" });
+      if (saveError) throw new Error(saveError.message);
+    }
+    const { refreshSheetShifts } = await import("./shift-sheets.server");
+    const sheetWarnings: string[] = [];
+    for (const id of new Set([...data.save, ...data.remove].map(e => e.collaborator_id))) {
+      try { await refreshSheetShifts(context.supabase, id); } catch (e) { sheetWarnings.push((e as Error).message); }
+    }
+    return { saved: data.save.length, removed: data.remove.length, sheetWarnings };
+  });

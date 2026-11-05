@@ -167,3 +167,36 @@ export function shiftHistoryChanges(entityType: string, before: HistoryData, aft
     return [before ? `${field.label}: ${from || "—"} → ${to || "—"}` : `${field.label}: ${to}`];
   });
 }
+export function monthWeeks(month: string) {
+  const days = monthDays(month);
+  return Array.from({ length: days.length / 7 }, (_, i) => days.slice(i * 7, i * 7 + 7));
+}
+export type PlanSlot = { on: boolean; starts_at: string; ends_at: string; ends_next_day: boolean; note: string };
+export const planKey = (collaboratorId: string, day: string) => `${collaboratorId}:${day}`;
+export function planSlots(assignments: ShiftAssignment[], days: string[]) {
+  const slots: Record<string, PlanSlot> = {};
+  for (const a of assignments) if (days.includes(a.day)) slots[planKey(a.collaborator_id, a.day)] = { on: true, starts_at: a.starts_at.slice(0, 5), ends_at: a.ends_at.slice(0, 5), ends_next_day: a.ends_next_day, note: a.note };
+  return slots;
+}
+const AVAILABILITY_ORDER = ["disponibile", "meglio_di_no", "", "assente"];
+export function planningOrder<P extends Pick<Collaborator, "id" | "first_name" | "last_name">>(people: P[], entries: Pick<ShiftEntry, "collaborator_id" | "day" | "status" | "note">[], day: string) {
+  const byPerson = new Map(entries.filter(e => e.day === day).map(e => [e.collaborator_id, e]));
+  return people.map(p => ({ person: p, entry: byPerson.get(p.id) }))
+    .sort((a, b) => AVAILABILITY_ORDER.indexOf(a.entry?.status ?? "") - AVAILABILITY_ORDER.indexOf(b.entry?.status ?? "") || a.person.last_name.localeCompare(b.person.last_name, "it") || a.person.first_name.localeCompare(b.person.first_name, "it"));
+}
+// Only changed rows are sent, so untouched published shifts never turn into "Modificato".
+export function planChanges(existing: ShiftAssignment[], slots: Record<string, PlanSlot>, names: Map<string, string> = new Map()) {
+  const current = new Map(existing.map(a => [planKey(a.collaborator_id, a.day), a]));
+  const save: z.infer<typeof assignmentInputSchema>[] = []; const remove: { collaborator_id: string; day: string }[] = []; const errors: string[] = [];
+  for (const [key, slot] of Object.entries(slots)) {
+    const [collaborator_id = "", day = ""] = key.split(":");
+    const before = current.get(key);
+    if (!slot.on) { if (before) remove.push({ collaborator_id, day }); continue; }
+    const parsed = assignmentInputSchema.safeParse({ collaborator_id, day, starts_at: slot.starts_at, ends_at: slot.ends_at, ends_next_day: slot.ends_next_day, note: slot.note });
+    if (!parsed.success) { errors.push(`${names.get(collaborator_id) ?? "Collaboratore"}, ${format(noon(day), "EEEE d", { locale: it })}: ${slot.starts_at && slot.ends_at ? parsed.error.issues[0]?.message ?? "orario non valido" : "inserisci inizio e fine"}`); continue; }
+    const p = parsed.data;
+    if (before && before.starts_at.slice(0, 5) === p.starts_at && before.ends_at.slice(0, 5) === p.ends_at && before.ends_next_day === p.ends_next_day && before.note === p.note) continue;
+    save.push(p);
+  }
+  return { save, remove, errors };
+}

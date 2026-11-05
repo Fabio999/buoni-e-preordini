@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState, type FormEvent } from "react";
 import { formatInTimeZone } from "date-fns-tz";
-import { CalendarClock, Copy, Link2, Pencil, Plus, Power, Send, Trash2, Users } from "lucide-react";
+import { CalendarClock, Copy, Download, Link2, Pencil, Plus, Power, Send, Trash2, Users } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/AppShell";
 import { Button } from "@/components/ui/button";
@@ -11,12 +11,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { MonthControls, ShiftCalendar, ShiftEditDialog, ShiftLegend } from "@/components/shifts/ShiftCalendar";
+import { ShiftCalendar, ShiftEditDialog, ShiftLegend } from "@/components/shifts/ShiftCalendar";
+import { PeriodControls, ShiftHistoryDialog, ShiftSummary } from "@/components/shifts/ShiftOverview";
+import { downloadCsv, toCsv } from "@/lib/csv";
 import { AssignmentDialog, ShiftSchedule } from "@/components/shifts/ShiftSchedule";
 import { useIsAdmin } from "@/lib/data";
 import { supabase } from "@/integrations/supabase/client";
 import { manageShiftCollaborator, publishShifts, saveAdminShift, saveShiftAssignment } from "@/lib/shifts.functions";
-import { monthBounds, monthDays, pendingPublication, SHIFT_STATUSES, toAssignmentStatus, type Collaborator, type ShiftAssignment, type ShiftStatus } from "@/lib/shifts";
+import { hoursExportRows, monthBounds, monthDays, pendingPublication, periodDays, periodLabel, SHIFT_STATUSES, shiftsExportRows, toAssignmentStatus, type Collaborator, type ShiftAssignment, type ShiftStatus, type ShiftView } from "@/lib/shifts";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/turni")({
@@ -39,7 +41,10 @@ function AdminShifts() {
   const saveAssignment = useServerFn(saveShiftAssignment);
   const publish = useServerFn(publishShifts);
   const [assignmentDialog, setAssignmentDialog] = useState<{ day: string; personId?: string | undefined } | null>(null);
-  const [month, setMonth] = useState(() => formatInTimeZone(new Date(), "Europe/Rome", "yyyy-MM"));
+  const [view, setView] = useState<ShiftView>("mese");
+  const [anchor, setAnchor] = useState(() => formatInTimeZone(new Date(), "Europe/Rome", "yyyy-MM-dd"));
+  const month = anchor.slice(0, 7);
+  const [history, setHistory] = useState<{ collaboratorId: string; day: string } | null>(null);
   const [selected, setSelected] = useState<string>("");
   const [editing, setEditing] = useState<{ person: Collaborator; day: string } | null>(null);
   const [personDialog, setPersonDialog] = useState<Collaborator | "new" | null>(null);
@@ -89,13 +94,20 @@ function AdminShifts() {
   const current = all.find(p => p.id === selected);
   const days = monthDays(month).filter(d => d.startsWith(month));
   const lookup = new Map((entries.data ?? []).map(e => [`${e.collaborator_id}:${e.day}`, e]));
-  const pending = pendingPublication((assignments.data ?? []).filter(e => e.day.startsWith(month)));
+  const period = periodDays(view, anchor);
+  const periodFirst = period[0] ?? anchor; const periodLast = period.at(-1) ?? anchor;
+  const periodAssignments = (assignments.data ?? []).filter(e => e.day >= periodFirst && e.day <= periodLast);
+  const pending = pendingPublication(periodAssignments);
+  function exportCsv(kind: "turni" | "ore") {
+    const rows = kind === "turni" ? shiftsExportRows(all, periodAssignments) : hoursExportRows(all, periodAssignments, periodFirst, periodLast);
+    downloadCsv(`${kind}-mana-flask-${periodFirst}${periodLast === periodFirst ? "" : `_${periodLast}`}.csv`, toCsv(rows));
+  }
   async function publishMonth() {
-    const label = new Date(`${month}-01T12:00:00`).toLocaleDateString("it-IT", { month: "long", year: "numeric" });
-    if (!confirm(`Confermare e pubblicare ${pending} ${pending === 1 ? "turno" : "turni"} di ${label}?`)) return;
+    const label = periodLabel(view, anchor);
+    if (!confirm(`Confermare e pubblicare ${pending} ${pending === 1 ? "turno" : "turni"} (${label})?`)) return;
     setBusy(true);
     try {
-      const result = await publish({ data: { from: days[0] ?? `${month}-01`, to: days.at(-1) ?? `${month}-28` } });
+      const result = await publish({ data: { from: periodFirst, to: periodLast } });
       await qc.invalidateQueries({ queryKey: ["shift-assignments"] });
       toast.success(`${result.count} ${result.count === 1 ? "turno pubblicato" : "turni pubblicati"}`);
     } catch (error) { toast.error((error as Error).message); }
@@ -103,8 +115,8 @@ function AdminShifts() {
   }
   return <div><PageHeader title="Turni" actions={<Button onClick={() => setPersonDialog("new")}><Plus />Collaboratore</Button>} /><div className="mb-6 flex flex-wrap items-center gap-4"><span className="flex items-center gap-2 text-sm text-muted-foreground"><Users className="size-4" />{all.filter(p => p.active).length} collaboratori attivi</span><ShiftLegend /></div>{people.error || entries.error ? <p className="mb-4 text-destructive">Impossibile caricare i turni. <Button variant="link" onClick={() => { people.refetch(); entries.refetch(); }}>Riprova</Button></p> : null}
     <div className="mb-5 flex flex-wrap gap-2"><Button variant={!selected ? "secondary" : "outline"} onClick={() => setSelected("")}>Tutti</Button>{all.map(p => <Button key={p.id} variant={selected === p.id ? "secondary" : "outline"} onClick={() => setSelected(p.id)} className="max-w-full whitespace-normal break-words">{fullName(p)}{!p.active && <span className="text-xs opacity-70">Disattivato</span>}</Button>)}</div>
-    <MonthControls month={month} onChange={setMonth} />
-    <section className="mb-8"><div className="mb-4 flex flex-wrap items-center justify-between gap-3"><h2 className="text-lg font-semibold">Calendario turni</h2><div className="flex flex-wrap gap-2"><Button variant="outline" disabled={!all.length} onClick={() => setAssignmentDialog({ day: `${month}-01`, personId: current?.id })}><Plus />Nuovo turno</Button><Button disabled={busy || !pending} onClick={publishMonth}><Send />{pending ? `Conferma e pubblica turni (${pending})` : "Turni pubblicati"}</Button></div></div>{assignments.error ? <p className="text-destructive">Impossibile caricare i turni. <Button variant="link" onClick={() => assignments.refetch()}>Riprova</Button></p> : <ShiftSchedule month={month} people={current ? [current] : all} assignments={(assignments.data ?? []).filter(e => !current || e.collaborator_id === current.id)} onEdit={(day, personId) => { if (all.length) setAssignmentDialog({ day, personId: personId ?? current?.id }); }} />}</section>
+    <PeriodControls view={view} anchor={anchor} onView={setView} onAnchor={setAnchor} />
+    <section className="mb-8"><div className="mb-4 flex flex-wrap items-center justify-between gap-3"><h2 className="text-lg font-semibold">Calendario turni</h2><div className="flex flex-wrap gap-2"><Button variant="outline" disabled={!all.length} onClick={() => setAssignmentDialog({ day: periodFirst, personId: current?.id })}><Plus />Nuovo turno</Button><Button variant="outline" disabled={!periodAssignments.length} onClick={() => exportCsv("turni")}><Download />Esporta turni</Button><Button variant="outline" disabled={!all.length} onClick={() => exportCsv("ore")}><Download />Esporta ore</Button><Button disabled={busy || !pending} onClick={publishMonth}><Send />{pending ? `Conferma e pubblica turni (${pending})` : "Turni pubblicati"}</Button></div></div>{assignments.error ? <p className="text-destructive">Impossibile caricare i turni. <Button variant="link" onClick={() => assignments.refetch()}>Riprova</Button></p> : <><ShiftSchedule month={month} days={view === "mese" ? undefined : period} people={current ? [current] : all} assignments={(assignments.data ?? []).filter(e => !current || e.collaborator_id === current.id)} onEdit={(day, personId) => { if (all.length) setAssignmentDialog({ day, personId: personId ?? current?.id }); }} /><ShiftSummary days={period} people={current ? [current] : all} assignments={assignments.data ?? []} entries={entries.data ?? []} /></>}</section>
     <h2 className="mb-4 text-lg font-semibold">Disponibilità dei collaboratori</h2>
     {people.isLoading || entries.isLoading ? <p className="py-10 text-muted-foreground">Caricamento…</p> : !all.length ? <div className="py-16 text-center"><CalendarClock className="mx-auto mb-4 size-10 text-info" /><h2 className="text-lg font-semibold">Nessun collaboratore</h2><Button className="mt-5" onClick={() => setPersonDialog("new")}><Plus />Aggiungi collaboratore</Button></div> : current ? <ShiftCalendar month={month} entries={(entries.data ?? []).filter(e => e.collaborator_id === current.id)} onEdit={day => setEditing({ person: current, day })} /> : <div className="overflow-x-auto rounded-lg border bg-card"><table className="w-full border-collapse text-sm"><thead className="bg-muted/60"><tr><th className="sticky left-0 z-10 min-w-40 bg-muted p-3 text-left">Collaboratore</th>{days.map(day => <th key={day} className="min-w-12 border-l px-1 py-3"><span className="block text-[10px] font-medium text-muted-foreground">{new Date(`${day}T12:00:00`).toLocaleDateString("it-IT", { weekday: "short" })}</span>{Number(day.slice(-2))}</th>)}</tr></thead><tbody>{all.map(p => <tr key={p.id} className="border-t"><th className="sticky left-0 z-10 bg-card p-3 text-left"><Button variant="link" className="h-auto max-w-48 whitespace-normal break-words p-0 text-left text-foreground" onClick={() => setSelected(p.id)}>{fullName(p)}</Button></th>{days.map(day => {
       const entry = lookup.get(`${p.id}:${day}`); const state = SHIFT_STATUSES.find(s => s.value === entry?.status);
@@ -116,7 +128,8 @@ function AdminShifts() {
       catch (error) { toast.error((error as Error).message); throw error; }
     }} />}
     {personDialog && <PersonDialog person={personDialog === "new" ? null : personDialog} busy={busy} onClose={() => setPersonDialog(null)} onSave={async (first_name, last_name, profile) => { const id = await action({ action: personDialog === "new" ? "create" : "rename", id: personDialog === "new" ? undefined : personDialog.id, first_name, last_name }); if (id && await saveProfile(id, profile)) setPersonDialog(null); }} />}
-    {assignmentDialog && <AssignmentDialog day={assignmentDialog.day} personId={assignmentDialog.personId} people={all} assignments={assignments.data ?? []} onClose={() => setAssignmentDialog(null)} onSave={async entry => { await saveAssignment({ data: { action: "save", entry } }); await qc.invalidateQueries({ queryKey: ["shift-assignments"] }); toast.success("Turno salvato"); }} onDelete={async (collaborator_id, day) => { await saveAssignment({ data: { action: "delete", collaborator_id, day } }); await qc.invalidateQueries({ queryKey: ["shift-assignments"] }); toast.success("Turno eliminato"); }} />}
+    {assignmentDialog && <AssignmentDialog day={assignmentDialog.day} personId={assignmentDialog.personId} people={all} assignments={assignments.data ?? []} onClose={() => setAssignmentDialog(null)} onHistory={(collaboratorId, day) => { setAssignmentDialog(null); setHistory({ collaboratorId, day }); }} onSave={async entry => { await saveAssignment({ data: { action: "save", entry } }); await qc.invalidateQueries({ queryKey: ["shift-assignments"] }); toast.success("Turno salvato"); }} onDelete={async (collaborator_id, day) => { await saveAssignment({ data: { action: "delete", collaborator_id, day } }); await qc.invalidateQueries({ queryKey: ["shift-assignments"] }); toast.success("Turno eliminato"); }} />}
+    {history && <ShiftHistoryDialog collaboratorId={history.collaboratorId} day={history.day} name={fullName(all.find(p => p.id === history.collaboratorId))} onClose={() => setHistory(null)} />}
     {link && <Dialog open onOpenChange={o => !o && setLink(null)}><DialogContent><DialogHeader><DialogTitle>Link personale — {link.name}</DialogTitle></DialogHeader><p className="text-sm text-muted-foreground">Invialo solo al collaboratore: dal medesimo link vedrà i suoi turni con orario e potrà modificare le disponibilità. Copialo ora; non verrà conservato in chiaro.</p><Input readOnly aria-label="Link personale" value={link.url} /><Button onClick={async () => { try { await navigator.clipboard.writeText(link.url); toast.success("Link copiato"); } catch { toast.error("Seleziona e copia il link dal campo"); } }}><Copy />Copia link</Button></DialogContent></Dialog>}
   </div>;
 }

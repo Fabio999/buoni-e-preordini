@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { assignmentInputSchema, assignmentMinutes, assignmentTime, availabilityDeadline, criticalDays, formatHours, hoursByCollaborator, isAvailabilityLocked, monthDays, pendingPublication, toAssignmentStatus, shiftEntrySchema, shiftTokenSchema, type ShiftAssignment } from "@/lib/shifts";
+import { assignmentInputSchema, assignmentMinutes, assignmentTime, availabilityDeadline, criticalDays, formatHours, hoursByCollaborator, hoursExportRows, isAvailabilityLocked, monthDays, movePeriod, pendingPublication, periodDays, periodLabel, shiftHistoryChanges, shiftsExportRows, toAssignmentStatus, shiftEntrySchema, shiftTokenSchema, type ShiftAssignment } from "@/lib/shifts";
 
 describe("Disponibilità personali", () => {
   const assignment = { collaborator_id: "00000000-0000-4000-8000-000000000001", day: "2026-10-30", starts_at: "20:00", ends_at: "23:00", ends_next_day: false, note: "Banco" };
@@ -69,5 +69,50 @@ describe("Ore e controlli dei turni", () => {
       ["p1", "p2", "p3"].map(id => shift("2026-11-09", "10:00", "18:00", { collaborator_id: id })).concat(shift("2026-11-10", "10:00", "18:00")),
       [{ collaborator_id: "p1", day: "2026-11-10" }, { collaborator_id: "p2", day: "2026-11-10" }]);
     expect(result).toEqual([{ day: "2026-11-10", assigned: 1, missing: [{ id: "p3", active: true }] }]);
+  });
+});
+
+describe("Viste, export e cronologia turni", () => {
+  const base = { note: "", updated_at: "", published_at: null, ends_next_day: false } as const;
+  const people = [
+    { id: "b", first_name: "Bruno", last_name: "Verdi", active: true },
+    { id: "a", first_name: "Anna", last_name: "Rossi", active: true },
+    { id: "c", first_name: "Carla", last_name: "Neri", active: false },
+  ];
+  const shifts: ShiftAssignment[] = [
+    { ...base, id: "1", collaborator_id: "b", day: "2026-11-03", starts_at: "18:00", ends_at: "22:30", status: "bozza" },
+    { ...base, id: "2", collaborator_id: "a", day: "2026-11-03", starts_at: "15:00", ends_at: "19:00", status: "pubblicato", note: "=cassa" },
+    { ...base, id: "3", collaborator_id: "a", day: "2026-11-10", starts_at: "15:00", ends_at: "17:00", status: "modificato" },
+  ];
+  it("calcola i giorni di giorno, settimana (lun-dom anche a cavallo del mese) e mese", () => {
+    expect(periodDays("giorno", "2026-11-05")).toEqual(["2026-11-05"]);
+    expect(periodDays("settimana", "2026-12-02")).toEqual(["2026-11-30", "2026-12-01", "2026-12-02", "2026-12-03", "2026-12-04", "2026-12-05", "2026-12-06"]);
+    const november = periodDays("mese", "2026-11-17");
+    expect([november.length, november[0], november.at(-1)]).toEqual([30, "2026-11-01", "2026-11-30"]);
+  });
+  it("sposta il periodo e lo descrive in italiano", () => {
+    expect(movePeriod("giorno", "2026-10-31", 1)).toBe("2026-11-01");
+    expect(movePeriod("settimana", "2026-11-05", -1)).toBe("2026-10-29");
+    expect(movePeriod("mese", "2026-01-31", 1)).toBe("2026-02-01");
+    expect(periodLabel("mese", "2026-11-05")).toBe("novembre 2026");
+    expect(periodLabel("settimana", "2026-11-05")).toBe("2 – 8 novembre 2026");
+    expect(periodLabel("settimana", "2026-12-02")).toBe("30 novembre – 6 dicembre 2026");
+    expect(periodLabel("giorno", "2026-11-05")).toBe("giovedì 5 novembre 2026");
+  });
+  it("esporta i turni in ordine di data e orario con ore e stato", () => {
+    const rows = shiftsExportRows(people, shifts);
+    expect(rows[0]).toEqual(["Data", "Cognome", "Nome", "Inizio", "Fine", "Finisce il giorno dopo", "Ore", "Stato", "Note"]);
+    expect(rows.slice(1).map(r => [r[0], r[1], r[6], r[7]])).toEqual([["2026-11-03", "Rossi", 4, "Pubblicato"], ["2026-11-03", "Verdi", 4.5, "Bozza"], ["2026-11-10", "Rossi", 2, "Modificato"]]);
+  });
+  it("esporta le ore del periodo per collaboratore con il totale", () => {
+    expect(hoursExportRows(people, shifts, "2026-11-01", "2026-11-08")).toEqual([
+      ["Cognome", "Nome", "Turni", "Ore"], ["Rossi", "Anna", "1", 4], ["Verdi", "Bruno", "1", 4.5], ["Totale", "", "2", 8.5],
+    ]);
+  });
+  it("descrive le modifiche registrate nello storico", () => {
+    const before = { starts_at: "15:00:00", ends_at: "19:00:00", ends_next_day: false, status: "pubblicato", note: "" };
+    expect(shiftHistoryChanges("turno", before, { ...before, ends_at: "20:00:00", status: "modificato" })).toEqual(["Orario: 15:00–19:00 → 15:00–20:00", "Stato: Pubblicato → Modificato"]);
+    expect(shiftHistoryChanges("turno", null, before)).toEqual(["Orario: 15:00–19:00", "Stato: Pubblicato"]);
+    expect(shiftHistoryChanges("disponibilita", { status: "disponibile", note: "" }, null)).toEqual(["Disponibilità: Disponibile → —"]);
   });
 });

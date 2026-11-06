@@ -8,7 +8,7 @@ export const createShiftSheet = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator(input => z.object({ id: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
-    const { data: allowed, error } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" });
+    const { data: allowed, error } = await context.supabase.rpc("is_manager");
     if (error || !allowed) throw new Error("Non autorizzato");
     const { createPersonSheet } = await import("./shift-sheets.server");
     return { sheetId: await createPersonSheet(context.supabase, data.id) };
@@ -18,7 +18,7 @@ export const syncShiftSheets = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const db = context.supabase;
-    const { data: allowed, error } = await db.rpc("has_role", { _user_id: context.userId, _role: "admin" });
+    const { data: allowed, error } = await db.rpc("is_manager");
     if (error || !allowed) throw new Error("Non autorizzato");
     const { syncPersonSheet } = await import("./shift-sheets.server");
     const { data: people, error: peopleError } = await db.from("shift_collaborators").select("id,first_name,last_name,contact_email,sheet_id").eq("active", true).neq("sheet_id", "").order("last_name");

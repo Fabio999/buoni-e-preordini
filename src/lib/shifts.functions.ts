@@ -13,7 +13,7 @@ export const manageShiftCollaborator = createServerFn({ method: "POST" })
     active: z.boolean().optional(),
   }).parse(input))
   .handler(async ({ data, context }) => {
-    const { data: allowed, error: roleError } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" });
+    const { data: allowed, error: roleError } = await context.supabase.rpc("is_manager");
     if (roleError || !allowed) throw new Error("Non autorizzato");
     const { supabaseAdmin: admin } = await import("@/integrations/supabase/client.server");
     const id = data.id;
@@ -52,7 +52,7 @@ export const saveAdminShift = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator(input => shiftEntrySchema.extend({ collaborator_id: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
-    const { data: allowed, error } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" });
+    const { data: allowed, error } = await context.supabase.rpc("is_manager");
     if (error || !allowed) throw new Error("Non autorizzato");
     const query = context.supabase.from("shift_availability");
     const result = data.status === null
@@ -69,7 +69,7 @@ export const saveShiftAssignment = createServerFn({ method: "POST" })
     z.object({ action: z.literal("delete"), collaborator_id: z.string().uuid(), day: shiftDaySchema }),
   ]).parse(input))
   .handler(async ({ data, context }) => {
-    const { data: allowed, error } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" });
+    const { data: allowed, error } = await context.supabase.rpc("is_manager");
     if (error || !allowed) throw new Error("Non autorizzato");
     const table = context.supabase.from("shift_assignments");
     const result = data.action === "delete"
@@ -86,7 +86,7 @@ export const publishShifts = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator(input => z.object({ from: shiftDaySchema, to: shiftDaySchema }).refine(d => d.from <= d.to, "Periodo non valido").parse(input))
   .handler(async ({ data, context }) => {
-    const { data: allowed, error } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" });
+    const { data: allowed, error } = await context.supabase.rpc("is_manager");
     if (error || !allowed) throw new Error("Non autorizzato");
     const { data: published, error: publishError } = await context.supabase.rpc("publish_shifts", { _from: data.from, _to: data.to });
     if (publishError) throw new Error(publishError.message);
@@ -116,7 +116,7 @@ export const saveWeekPlan = createServerFn({ method: "POST" })
     remove: z.array(z.object({ collaborator_id: z.string().uuid(), day: shiftDaySchema })).max(500),
   }).parse(input))
   .handler(async ({ data, context }) => {
-    const { data: allowed, error } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" });
+    const { data: allowed, error } = await context.supabase.rpc("is_manager");
     if (error || !allowed) throw new Error("Non autorizzato");
     for (const r of data.remove) {
       const { error: removeError } = await context.supabase.from("shift_assignments").delete().eq("collaborator_id", r.collaborator_id).eq("day", r.day);

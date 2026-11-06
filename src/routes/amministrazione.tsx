@@ -14,6 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { createAccount, deleteAccount, listAccounts, updateAccount } from "@/lib/admin.functions";
 import { clientsExportRows, downloadCsv, toCsv } from "@/lib/csv";
 import { balancesByClient, useBookings, useClients, useIsAdmin, useMovements } from "@/lib/data";
+import { RankEditor } from "@/components/RankEditor";
 import { fmtDateTime } from "@/lib/format";
 import { ZONE } from "@/lib/planning";
 import { formatInTimeZone } from "date-fns-tz";
@@ -225,13 +226,13 @@ function NamesDialog({ account, onClose }: { account: Account; onClose: () => vo
           <DialogTitle>Chi lavora con {account.email}</DialogTitle>
         </DialogHeader>
         <p className="text-sm text-muted-foreground">
-          All'accesso basterà toccare il proprio nome invece di scriverlo.
+          All'accesso basterà toccare il proprio nome. Chi è Amministratore o Responsabile dovrà inserire il suo PIN.
         </p>
         <ul className="divide-y rounded-lg border">
           {!data.length && <li className="px-3 py-2 text-sm text-muted-foreground">Nessun nome inserito</li>}
           {data.map((o) => (
-            <li key={o.id} className="flex items-center justify-between px-3 py-2 text-sm">
-              {o.first_name} {o.last_name}
+            <li key={o.id} className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 text-sm">
+              <div className="min-w-0 space-y-1"><p>{o.first_name} {o.last_name}</p><RankEditor name={`${o.first_name} ${o.last_name}`} /></div>
               <Button size="icon" variant="ghost" aria-label="Elimina nome" onClick={() => remove(o.id)}>
                 <Trash2 className="h-4 w-4 text-destructive" />
               </Button>

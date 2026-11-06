@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AccessLayout, OperatorPreview } from "@/components/AccessLayout";
 import { ArrowRight, LoaderCircle } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
 
 const key = (uid: string) => `mf-operator:${uid}`;
 const OperatorContext = createContext<string>("");
@@ -28,14 +29,21 @@ export function OperatorGate({ userId, children }: { userId: string; children: R
   const [busy, setBusy] = useState(false);
   const [saved, setSaved] = useState<{ id: string; first_name: string; last_name: string }[]>([]);
   const [manual, setManual] = useState(false);
+  const [pinFor, setPinFor] = useState<string | null>(null);
+  const [pin, setPin] = useState("");
+  const [pinError, setPinError] = useState("");
+  const qc = useQueryClient();
 
   useEffect(() => {
     const stored = localStorage.getItem(key(userId));
-    if (stored) {
-      setName(stored);
-      void supabase.from("operator_sessions").upsert({ user_id: userId, operator_name: stored });
-    }
-    supabase
+    // Keep the verified session (and its rank) when it still matches; otherwise choose again.
+    const restore = stored
+      ? supabase.from("operator_sessions").select("operator_name").eq("user_id", userId).maybeSingle().then(({ data }) => {
+          if (data?.operator_name === stored) setName(stored);
+          else localStorage.removeItem(key(userId));
+        })
+      : Promise.resolve();
+    void restore.then(() => supabase
       .from("account_operators")
       .select("id, first_name, last_name")
       .eq("user_id", userId)
@@ -43,7 +51,7 @@ export function OperatorGate({ userId, children }: { userId: string; children: R
       .then(({ data }) => {
         setSaved(data ?? []);
         setReady(true);
-      });
+      }));
   }, [userId]);
 
   async function submit(e: FormEvent) {
@@ -52,19 +60,39 @@ export function OperatorGate({ userId, children }: { userId: string; children: R
     await choose(`${first.trim()} ${last.trim()}`);
   }
 
-  async function choose(full: string) {
+  async function choose(full: string, code = "") {
     setBusy(true);
-    const { error } = await supabase
-      .from("operator_sessions")
-      .upsert({ user_id: userId, operator_name: full, updated_at: new Date().toISOString() });
+    setPinError("");
+    const { error } = await supabase.rpc("start_operator_session", { _name: full, _pin: code });
     setBusy(false);
-    if (error) return;
+    if (error) {
+      if (error.message.includes("PIN_RICHIESTO")) { setPinFor(full); setPin(""); }
+      else setPinError(error.message.includes("PIN errato") ? "PIN errato" : error.message);
+      return;
+    }
     localStorage.setItem(key(userId), full);
+    setPinFor(null);
+    void qc.invalidateQueries({ queryKey: ["rank"] });
     setName(full);
   }
 
   if (!ready) return null;
   if (name) return <OperatorContext.Provider value={name}>{children}</OperatorContext.Provider>;
+  if (pinFor) return (
+    <AccessLayout step={2} title="Inserisci il tuo PIN">
+      <form onSubmit={(e) => { e.preventDefault(); void choose(pinFor, pin); }} className="space-y-5">
+        <OperatorPreview name={pinFor} />
+        <p className="text-sm text-muted-foreground">Questo nome ha diritti amministrativi: serve il PIN personale.</p>
+        <div className="space-y-1">
+          <Label htmlFor="op-pin">PIN</Label>
+          <Input id="op-pin" type="password" inputMode="numeric" autoComplete="off" className="h-11" value={pin} onChange={(e) => setPin(e.target.value)} required autoFocus />
+          {pinError && <p className="text-sm text-destructive">{pinError}</p>}
+        </div>
+        <Button type="submit" className="h-11 w-full" disabled={busy || !pin}>Entra</Button>
+        <Button type="button" variant="ghost" className="w-full" onClick={() => { setPinFor(null); setPinError(""); }}>Indietro</Button>
+      </form>
+    </AccessLayout>
+  );
   return (
     <AccessLayout step={2} title="Chi sta lavorando?">
       <form onSubmit={submit} className="space-y-5">

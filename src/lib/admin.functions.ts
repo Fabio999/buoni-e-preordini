@@ -5,7 +5,7 @@ import type { Database } from "@/integrations/supabase/types";
 
 type Ctx = { supabase: SupabaseClient<Database>; userId: string };
 async function assertAdmin(ctx: Ctx) {
-  const { data } = await ctx.supabase.rpc("has_role", { _user_id: ctx.userId, _role: "admin" });
+  const { data } = await ctx.supabase.rpc("is_rank_admin");
   if (!data) throw new Error("Non autorizzato");
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   return supabaseAdmin;

@@ -174,14 +174,27 @@ export function errMsg(e: unknown) {
   return msg;
 }
 
-export function useIsAdmin() {
+export type StaffRank = "amministratore" | "responsabile" | "nessuno";
+export const RANK_LABELS: Record<StaffRank, string> = { amministratore: "Amministratore", responsabile: "Responsabile", nessuno: "Nessun diritto" };
+
+/** Rank of the operator currently working, verified by the database (PIN at operator choice). */
+export function useRank() {
   return useQuery({
-    queryKey: ["is-admin"],
-    queryFn: async () => {
-      const { data: u } = await supabase.auth.getUser();
-      if (!u.user) return false;
-      const { data } = await supabase.rpc("has_role", { _user_id: u.user.id, _role: "admin" });
-      return !!data;
+    queryKey: ["rank"],
+    queryFn: async (): Promise<StaffRank> => {
+      const { data, error } = await supabase.rpc("current_rank");
+      if (error) return "nessuno";
+      return (data as StaffRank) ?? "nessuno";
     },
   });
+}
+/** Amministratore only (accounts, names and ranks). */
+export function useIsAdmin() {
+  const q = useRank();
+  return { ...q, data: q.data === undefined ? undefined : q.data === "amministratore" };
+}
+/** Amministratore or Responsabile (shifts, catalogue, deletions). */
+export function useIsManager() {
+  const q = useRank();
+  return { ...q, data: q.data === undefined ? undefined : q.data !== "nessuno" };
 }

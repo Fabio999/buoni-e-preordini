@@ -12,7 +12,7 @@ async function attempt(fn: () => Promise<string>): Promise<Result> {
 export const googleConnectionTest = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { data: allowed, error } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" });
+    const { data: allowed, error } = await context.supabase.rpc("is_manager");
     if (error || !allowed) throw new Error("Non autorizzato");
     const [gmail, drive, sheets] = await Promise.all([
       attempt(async () => ((await (await googleFetch("gmail", "/users/me/profile")).json()) as { emailAddress: string }).emailAddress),

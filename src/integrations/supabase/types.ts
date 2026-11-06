@@ -444,16 +444,19 @@ export type Database = {
       operator_sessions: {
         Row: {
           operator_name: string
+          rank: string
           updated_at: string
           user_id: string
         }
         Insert: {
           operator_name?: string
+          rank?: string
           updated_at?: string
           user_id: string
         }
         Update: {
           operator_name?: string
+          rank?: string
           updated_at?: string
           user_id?: string
         }
@@ -840,6 +843,30 @@ export type Database = {
         }
         Relationships: []
       }
+      staff_ranks: {
+        Row: {
+          display_name: string
+          name_key: string
+          pin_hash: string
+          rank: string
+          updated_at: string
+        }
+        Insert: {
+          display_name: string
+          name_key: string
+          pin_hash: string
+          rank: string
+          updated_at?: string
+        }
+        Update: {
+          display_name?: string
+          name_key?: string
+          pin_hash?: string
+          rank?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       stock_movements: {
         Row: {
           booking_id: string | null
@@ -971,6 +998,7 @@ export type Database = {
         Returns: string
       }
       current_operator: { Args: never; Returns: string }
+      current_rank: { Args: never; Returns: string }
       delete_balance_movement: { Args: { _id: string }; Returns: undefined }
       has_role: {
         Args: {
@@ -979,6 +1007,8 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_manager: { Args: never; Returns: boolean }
+      is_rank_admin: { Args: never; Returns: boolean }
       is_staff: { Args: { _user_id: string }; Returns: boolean }
       log_stock: {
         Args: {
@@ -1012,6 +1042,7 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      rank_key: { Args: { _name: string }; Returns: string }
       recompute_client_ledger: { Args: { _client: string }; Returns: undefined }
       register_purchase: {
         Args: {
@@ -1046,7 +1077,15 @@ export type Database = {
         Args: { _day: string; _hash: string; _note: string; _status: string }
         Returns: undefined
       }
+      set_staff_rank: {
+        Args: { _name: string; _pin: string; _rank: string }
+        Returns: undefined
+      }
       shift_availability_deadline: { Args: { _day: string }; Returns: string }
+      start_operator_session: {
+        Args: { _name: string; _pin: string }
+        Returns: string
+      }
       update_balance_movement: {
         Args: { _amount: number; _description: string; _id: string }
         Returns: undefined

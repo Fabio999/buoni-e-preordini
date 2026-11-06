@@ -27,7 +27,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { signOutOperator, useOperator } from "@/lib/operator";
-import { useIsAdmin } from "@/lib/data";
+import { useRank, RANK_LABELS } from "@/lib/data";
 import { GlobalSearch } from "./GlobalSearch";
 import logoAsset from "@/assets/mana-flask-logo.png.asset.json";
 import iconAsset from "@/assets/mana-flask-icon.jpg.asset.json";
@@ -45,12 +45,15 @@ const items = [
 function AppSidebar() {
   const path = useRouterState({ select: (r) => r.location.pathname });
   const { setOpenMobile } = useSidebar();
-  const { data: isAdmin } = useIsAdmin();
+  const { data: rank = "nessuno" } = useRank();
   const operator = useOperator();
   const initials = operator.trim().split(/\s+/).filter(Boolean).map(part => part[0]).slice(0, 2).join("").toLocaleUpperCase("it");
-  const all = isAdmin
-    ? [...items.slice(0, 4), { title: "Turni", url: "/turni", icon: CalendarClock } as const, ...items.slice(4), { title: "Amministrazione", url: "/amministrazione", icon: ShieldCheck } as const]
-    : items;
+  const all = [
+    ...items.slice(0, 4),
+    ...(rank !== "nessuno" ? [{ title: "Turni", url: "/turni", icon: CalendarClock } as const] : []),
+    ...items.slice(4),
+    ...(rank === "amministratore" ? [{ title: "Amministrazione", url: "/amministrazione", icon: ShieldCheck } as const] : []),
+  ];
   const isActive = (url: string) => (url === "/" ? path === "/" : path.startsWith(url));
   return (
     <Sidebar collapsible="icon">
@@ -85,7 +88,7 @@ function AppSidebar() {
             <span aria-hidden="true" className="absolute bottom-0 right-0 size-2 rounded-full bg-success ring-2 ring-sidebar" />
           </span>
           <div className="min-w-0 group-data-[collapsible=icon]:hidden">
-            <p className="text-[11px] text-sidebar-foreground/70">Operatore</p>
+            <p className="text-[11px] text-sidebar-foreground/70">Operatore · {RANK_LABELS[rank]}</p>
             <p className="break-words text-sm font-semibold leading-snug">{operator}</p>
           </div>
         </div>

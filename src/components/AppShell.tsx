@@ -88,7 +88,7 @@ function AppSidebar() {
             <span aria-hidden="true" className="absolute bottom-0 right-0 size-2 rounded-full bg-success ring-2 ring-sidebar" />
           </span>
           <div className="min-w-0 group-data-[collapsible=icon]:hidden">
-            <p className="text-[11px] text-sidebar-foreground/70">Operatore</p>
+            <p className="text-[11px] text-sidebar-foreground/70">Operatore · {RANK_LABELS[rank]}</p>
             <p className="break-words text-sm font-semibold leading-snug">{operator}</p>
           </div>
         </div>

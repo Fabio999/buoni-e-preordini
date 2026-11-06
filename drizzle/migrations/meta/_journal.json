@@ -190,6 +190,13 @@
       "when": 1793906564809,
       "tag": "0026_shifts_phase2",
       "breakpoints": true
+    },
+    {
+      "idx": 27,
+      "version": "7",
+      "when": 1793930846314,
+      "tag": "0027_staff_ranks",
+      "breakpoints": true
     }
   ]
 }

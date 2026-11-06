@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
-import { errMsg, useProducts, useRefresh, type Product } from "@/lib/data";
+import { errMsg, useIsManager, useProducts, useRefresh, type Product } from "@/lib/data";
 import { euro } from "@/lib/format";
 import { matchesText } from "@/lib/search";
 
@@ -34,6 +34,7 @@ export const Route = createFileRoute("/prodotti")({
 function ProductsPage() {
   const { data: products = [], isLoading } = useProducts();
   const refresh = useRefresh();
+  const { data: canEdit } = useIsManager();
   const [q, setQ] = useState("");
   const [editing, setEditing] = useState<Product | null>(null);
   const [open, setOpen] = useState(false);
@@ -56,7 +57,7 @@ function ProductsPage() {
     <div className="mx-auto max-w-5xl">
       <PageHeader
         title="Prodotti"
-        actions={
+        actions={canEdit &&
           <Button
             onClick={() => {
               setEditing(null);
@@ -95,7 +96,7 @@ function ProductsPage() {
                 <Button size="icon" variant="ghost" onClick={() => setSelling(p)} aria-label="Vendi">
                   <ShoppingBag className="h-4 w-4" />
                 </Button>
-                <Button
+                {canEdit && <><Button
                   size="icon"
                   variant="ghost"
                   onClick={() => {
@@ -108,7 +109,7 @@ function ProductsPage() {
                 </Button>
                 <Button size="icon" variant="ghost" onClick={() => remove(p)} aria-label="Elimina">
                   <Trash2 className="h-4 w-4" />
-                </Button>
+                </Button></>}
               </div>
             </li>
           ))}

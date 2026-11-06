@@ -16,7 +16,7 @@ import { PeriodControls, ShiftHistoryDialog, ShiftSummary } from "@/components/s
 import { downloadCsv, toCsv } from "@/lib/csv";
 import { AssignmentDialog, ShiftSchedule } from "@/components/shifts/ShiftSchedule";
 import { WeekPlanner, type WeekChanges } from "@/components/shifts/WeekPlanner";
-import { useIsAdmin } from "@/lib/data";
+import { useIsManager } from "@/lib/data";
 import { supabase } from "@/integrations/supabase/client";
 import { createShiftSheet, syncShiftSheets } from "@/lib/shift-sheets.functions";
 import { sheetUrl } from "@/lib/shift-sheets";
@@ -32,9 +32,9 @@ export const Route = createFileRoute("/turni")({
   ] }), component: Turni,
 });
 function Turni() {
-  const { data: admin, isLoading } = useIsAdmin();
+  const { data: admin, isLoading } = useIsManager();
   if (isLoading) return <p className="text-muted-foreground">Caricamento…</p>;
-  if (!admin) return <p className="text-muted-foreground">Questa sezione è riservata all’amministrazione.</p>;
+  if (!admin) return <p className="text-muted-foreground">Questa sezione è riservata ad amministratori e responsabili.</p>;
   return <AdminShifts />;
 }
 function AdminShifts() {
